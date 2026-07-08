@@ -4,13 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trendy_Wardrobe — Admin Dashboard</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-
     <style>
+        /* ===== ROOT VARIABLES ===== */
         :root {
             --sidebar-width: 260px;
             --header-height: 70px;
@@ -37,7 +36,6 @@
             --radius-sm: 8px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; overflow: hidden; height: 100vh; }
         a { text-decoration: none; color: inherit; }
@@ -185,7 +183,6 @@
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
 
-        /* Site Images */
         .hero-banner-section { background: var(--bg-secondary); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border-light); box-shadow: var(--shadow); margin-bottom: 30px; }
         .hero-banner-section h3 { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.4rem; margin-bottom: 4px; color: var(--gold); }
         .hero-banner-section .subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px; }
@@ -334,7 +331,6 @@
                     </div>
                     <button title="Dark Mode" id="darkModeToggle"><i class="fas fa-moon"></i></button>
                 </div>
-                <!-- ===== PHONE WITH CALL ICON IN HEADER ===== -->
                 <div class="admin-phone">
                     <i class="fas fa-phone"></i>
                     <span>0728 985 417</span>
@@ -665,19 +661,14 @@
     <div class="toast" id="toast"> <span id="toastMessage">Item added to cart!</span> <span class="toast-close" id="toastClose">&times;</span> </div>
 
     <!-- ============================================================
-    JAVASCRIPT – UPDATED FOR DEPLOYMENT
+    JAVASCRIPT – COMPLETE
     ============================================================ -->
     <script>
-        // ============================================================
-        // CONFIGURATION – UPDATE THIS URL AFTER DEPLOYING BACKEND
-        // ============================================================
-        // ⚠️ Replace with your actual Render backend URL
+        // ===== CONFIGURATION =====
         const API_URL = `https://trendy-backend-jq27.onrender.com/api`;
         const IMAGE_BASE_URL = API_URL.replace('/api', '');
 
-        // ============================================================
-        // DOM REFS
-        // ============================================================
+        // ===== DOM REFS =====
         const loginOverlay = document.getElementById('loginOverlay');
         const loginError = document.getElementById('loginError');
         const adminEmail = document.getElementById('adminEmail');
@@ -699,9 +690,7 @@
         const unreadBadge = document.getElementById('unreadBadge');
         const markAllReadBtn = document.getElementById('markAllReadBtn');
 
-        // ============================================================
-        // TOAST
-        // ============================================================
+        // ===== TOAST =====
         function showToast(msg) {
             toastMessage.textContent = msg;
             toast.classList.add('show');
@@ -709,9 +698,7 @@
         }
         toastClose.addEventListener('click', () => toast.classList.remove('show'));
 
-        // ============================================================
-        // AUTH
-        // ============================================================
+        // ===== AUTH =====
         function getToken() { return localStorage.getItem('token'); }
         function getUser() { const u = localStorage.getItem('user'); return u ? JSON.parse(u) : null; }
         function getHeaders() { return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }; }
@@ -772,9 +759,7 @@
 
         logoutBtn.addEventListener('click', logout);
 
-        // ============================================================
-        // SIDEBAR NAVIGATION
-        // ============================================================
+        // ===== SIDEBAR NAVIGATION =====
         function navigateTo(section) {
             document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
             const link = document.querySelector(`.sidebar-nav a[data-section="${section}"]`);
@@ -799,9 +784,7 @@
             link.addEventListener('click', (e) => { e.preventDefault(); navigateTo(link.dataset.section); });
         });
 
-        // ============================================================
-        // HAMBURGER
-        // ============================================================
+        // ===== HAMBURGER =====
         hamburgerBtn.addEventListener('click', () => {
             sidebar.classList.toggle('open');
             sidebarOverlay.classList.toggle('show');
@@ -811,9 +794,7 @@
             sidebarOverlay.classList.remove('show');
         });
 
-        // ============================================================
-        // DARK MODE
-        // ============================================================
+        // ===== DARK MODE =====
         document.getElementById('darkModeToggle').addEventListener('click', function() {
             document.body.classList.toggle('dark-mode');
             const icon = this.querySelector('i');
@@ -844,9 +825,7 @@
             }
         });
 
-        // ============================================================
-        // CHART
-        // ============================================================
+        // ===== CHART =====
         function renderChart(period = 'weekly') {
             const container = document.getElementById('salesChart');
             const data = { weekly: { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], values: [45, 62, 78, 55, 90, 70, 85] }, monthly: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], values: [120, 150, 180, 140, 200, 170] }, yearly: { labels: ['2019', '2020', '2021', '2022', '2023', '2024'], values: [800, 950, 1100, 1300, 1600, 1900] } };
@@ -865,9 +844,7 @@
             });
         });
 
-        // ============================================================
-        // DASHBOARD DATA
-        // ============================================================
+        // ===== DASHBOARD DATA =====
         async function loadDashboardData() {
             try {
                 const [productsRes, ordersRes, usersRes] = await Promise.all([
@@ -895,9 +872,7 @@
             } catch (err) { console.error('Dashboard load error:', err); }
         }
 
-        // ============================================================
-        // PRODUCTS
-        // ============================================================
+        // ===== PRODUCTS =====
         let products = [];
         async function loadProducts() {
             try {
@@ -1044,9 +1019,7 @@
             } catch (err) { showToast('⚠️ ' + err.message); }
         });
 
-        // ============================================================
-        // CATEGORIES
-        // ============================================================
+        // ===== CATEGORIES =====
         let categories = [];
         async function loadCategories() {
             try {
@@ -1133,9 +1106,7 @@
             } catch (err) { showToast('⚠️ ' + err.message); }
         });
 
-        // ============================================================
-        // ORDERS
-        // ============================================================
+        // ===== ORDERS =====
         async function loadOrders() {
             try {
                 const res = await fetch(`${API_URL}/orders/admin/all`, { headers: getHeaders() });
@@ -1178,9 +1149,7 @@
             } catch (err) { showToast('⚠️ ' + err.message); }
         }
 
-        // ============================================================
-        // CUSTOMERS
-        // ============================================================
+        // ===== CUSTOMERS =====
         async function loadCustomers() {
             try {
                 const res = await fetch(`${API_URL}/users`, { headers: getHeaders() }).catch(() => ({ json: () => [], ok: false }));
@@ -1194,9 +1163,7 @@
             } catch (err) { console.log('Customer data unavailable'); }
         }
 
-        // ============================================================
-        // INVENTORY
-        // ============================================================
+        // ===== INVENTORY =====
         async function loadInventory() {
             try {
                 const res = await fetch(`${API_URL}/products`);
@@ -1213,14 +1180,10 @@
             } catch (err) { showToast('⚠️ ' + err.message); }
         }
 
-        // ============================================================
-        // SETTINGS
-        // ============================================================
+        // ===== SETTINGS =====
         document.getElementById('saveSettingsBtn').addEventListener('click', () => { showToast('✅ Settings saved successfully!'); });
 
-        // ============================================================
-        // IMAGE UPLOADS
-        // ============================================================
+        // ===== IMAGE UPLOADS =====
         let heroImages = [];
         async function loadHeroImages() {
             try {
@@ -1324,9 +1287,7 @@
             });
         }
 
-        // ============================================================
-        // NOTIFICATIONS
-        // ============================================================
+        // ===== NOTIFICATIONS =====
         let notificationInterval = null;
         async function fetchNotifications() {
             try {
@@ -1395,9 +1356,7 @@
             notificationInterval = setInterval(fetchNotifications, 30000);
         }
 
-        // ============================================================
-        // COUPONS
-        // ============================================================
+        // ===== COUPONS =====
         async function loadCoupons() {
             try {
                 const res = await fetch(`${API_URL}/coupons`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
@@ -1493,9 +1452,7 @@
                 .catch(err => showToast('⚠️ ' + err.message));
         }
 
-        // ============================================================
-        // MESSAGES
-        // ============================================================
+        // ===== MESSAGES =====
         async function loadMessages() {
             try {
                 const res = await fetch(`${API_URL}/messages`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
@@ -1556,9 +1513,7 @@
             });
         }
 
-        // ============================================================
-        // LOAD DASHBOARD
-        // ============================================================
+        // ===== LOAD DASHBOARD =====
         async function loadDashboard() {
             await loadDashboardData();
             renderChart('weekly');
@@ -1578,9 +1533,7 @@
             startNotificationPolling();
         }
 
-        // ============================================================
-        // SEARCH
-        // ============================================================
+        // ===== SEARCH =====
         document.getElementById('adminSearchInput').addEventListener('keyup', function(e) {
             const query = this.value.toLowerCase().trim();
             const rows = document.querySelectorAll('#productsTableBody tr');
@@ -1590,9 +1543,7 @@
             });
         });
 
-        // ============================================================
-        // INIT
-        // ============================================================
+        // ===== INIT =====
         checkAuth();
 
         document.getElementById('productFormModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
