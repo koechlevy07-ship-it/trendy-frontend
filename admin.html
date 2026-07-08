@@ -36,6 +36,7 @@
             --radius-sm: 8px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; overflow: hidden; height: 100vh; }
         a { text-decoration: none; color: inherit; }
@@ -281,14 +282,17 @@
             <a href="#" data-section="categories"><i class="fas fa-tags"></i> Categories <span class="badge" id="categoryCountBadge">0</span></a>
             <a href="#" data-section="orders"><i class="fas fa-shopping-cart"></i> Orders <span class="badge" id="orderCountBadge">0</span></a>
             <a href="#" data-section="customers"><i class="fas fa-users"></i> Customers</a>
+            <!-- Sellers link -->
             <a href="#" data-section="sellers"><i class="fas fa-store"></i> Sellers</a>
+            <!-- Messages link -->
             <a href="#" data-section="messages"><i class="fas fa-envelope"></i> Messages <span class="badge" id="messagesBadge">0</span></a>
+            <!-- Reviews link -->
+            <a href="#" data-section="reviews"><i class="fas fa-star"></i> Reviews</a>
 
             <div class="nav-divider"></div>
             <div class="nav-label">Management</div>
             <a href="#" data-section="inventory"><i class="fas fa-warehouse"></i> Inventory</a>
             <a href="#" data-section="payments"><i class="fas fa-credit-card"></i> Payments</a>
-            <a href="#" data-section="reviews"><i class="fas fa-star"></i> Reviews</a>
             <a href="#" data-section="reports"><i class="fas fa-chart-bar"></i> Reports</a>
             <a href="#" data-section="coupons"><i class="fas fa-ticket-alt"></i> Coupons <span class="badge" id="couponCountBadge">0</span></a>
 
@@ -469,14 +473,44 @@
                 </div>
             </div>
 
-            <!-- ===== SELLERS PANEL ===== -->
+            <!-- ===== SELLERS PANEL (UPDATED) ===== -->
             <div class="tab-panel" id="panel-sellers">
                 <div class="section-header"><h2>Sellers</h2></div>
                 <div class="table-section">
                     <div class="table-wrapper">
                         <table>
-                            <thead><tr><th>Seller</th><th>Products</th><th>Revenue</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead>
+                            <thead>
+                                <tr><th>Seller</th><th>Email</th><th>Shop Name</th><th>Status</th><th style="text-align:right;">Actions</th></tr>
+                            </thead>
                             <tbody id="sellersTableBody"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== MESSAGES PANEL ===== -->
+            <div class="tab-panel" id="panel-messages">
+                <div class="section-header"><h2>Contact Messages</h2><span style="font-size:0.85rem;color:var(--text-secondary);">Messages from customers</span></div>
+                <div class="table-section">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Status</th><th style="width:180px;">Action</th></tr></thead>
+                            <tbody id="messagesTableBody"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Loading messages...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== REVIEWS PANEL (NEW) ===== -->
+            <div class="tab-panel" id="panel-reviews">
+                <div class="section-header"><h2>Product Reviews</h2></div>
+                <div class="table-section">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Product</th><th>Customer</th><th>Rating</th><th>Review</th><th>Status</th><th style="text-align:right;">Actions</th></tr>
+                            </thead>
+                            <tbody id="reviewsTableBody"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Loading...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -508,19 +542,6 @@
                 </div>
             </div>
 
-            <!-- ===== REVIEWS PANEL ===== -->
-            <div class="tab-panel" id="panel-reviews">
-                <div class="section-header"><h2>Reviews</h2></div>
-                <div class="table-section">
-                    <div class="table-wrapper">
-                        <table>
-                            <thead><tr><th>Product</th><th>Customer</th><th>Rating</th><th>Review</th><th style="text-align:right;">Actions</th></tr></thead>
-                            <tbody id="reviewsTableBody"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No reviews yet.</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
             <!-- ===== REPORTS PANEL ===== -->
             <div class="tab-panel" id="panel-reports">
                 <div class="section-header"><h2>Reports</h2></div>
@@ -542,19 +563,6 @@
                         <table>
                             <thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Min Order</th><th>Expiry</th><th>Used / Limit</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead>
                             <tbody id="couponsTableBody"><tr><td colspan="8" style="text-align:center;color:var(--text-muted);">Loading...</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== MESSAGES PANEL ===== -->
-            <div class="tab-panel" id="panel-messages">
-                <div class="section-header"><h2>Contact Messages</h2><span style="font-size:0.85rem;color:var(--text-secondary);">Messages from customers</span></div>
-                <div class="table-section">
-                    <div class="table-wrapper">
-                        <table>
-                            <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Status</th><th style="width:180px;">Action</th></tr></thead>
-                            <tbody id="messagesTableBody"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Loading messages...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -661,7 +669,7 @@
     <div class="toast" id="toast"> <span id="toastMessage">Item added to cart!</span> <span class="toast-close" id="toastClose">&times;</span> </div>
 
     <!-- ============================================================
-    JAVASCRIPT – COMPLETE
+    JAVASCRIPT – WITH REVIEWS AND SELLERS
     ============================================================ -->
     <script>
         // ===== CONFIGURATION =====
@@ -778,6 +786,8 @@
             if (section === 'inventory') loadInventory();
             if (section === 'coupons') loadCoupons();
             if (section === 'messages') loadMessages();
+            if (section === 'reviews') loadReviews();
+            if (section === 'sellers') loadSellers();
         }
 
         document.querySelectorAll('.sidebar-nav a[data-section]').forEach(link => {
@@ -1513,6 +1523,139 @@
             });
         }
 
+        // ===== REVIEWS (NEW) =====
+        async function loadReviews() {
+            try {
+                const res = await fetch(`${API_URL}/reviews/admin/all`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (!res.ok) throw new Error('Failed to fetch reviews');
+                const reviews = await res.json();
+                renderReviewsTable(reviews);
+            } catch (err) {
+                showToast('⚠️ ' + err.message);
+            }
+        }
+
+        function renderReviewsTable(reviews) {
+            const tbody = document.getElementById('reviewsTableBody');
+            if (!reviews || reviews.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No reviews yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = reviews.map(r => `
+                <tr>
+                    <td>${r.productId ? r.productId.name : 'Deleted'}</td>
+                    <td>${r.userId ? r.userId.name : 'Unknown'}</td>
+                    <td>${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</td>
+                    <td style="max-width:200px;white-space:normal;word-wrap:break-word;">${r.comment}</td>
+                    <td><span class="status-badge ${r.status}">${r.status}</span></td>
+                    <td style="text-align:right;">
+                        ${r.status === 'pending' ? `
+                            <button class="approve-review" data-id="${r._id}" style="background:var(--success);color:#fff;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;margin-right:4px;">Approve</button>
+                            <button class="reject-review" data-id="${r._id}" style="background:var(--error);color:#fff;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;">Reject</button>
+                        ` : `
+                            <span style="font-size:0.8rem;color:var(--text-muted);">${r.status}</span>
+                        `}
+                    </td>
+                </tr>
+            `).join('');
+
+            tbody.querySelectorAll('.approve-review').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    await updateReviewStatus(id, 'approved');
+                });
+            });
+            tbody.querySelectorAll('.reject-review').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    await updateReviewStatus(id, 'rejected');
+                });
+            });
+        }
+
+        async function updateReviewStatus(id, status) {
+            try {
+                const res = await fetch(`${API_URL}/reviews/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (!res.ok) throw new Error('Failed to update');
+                showToast(`✅ Review ${status}!`);
+                loadReviews();
+            } catch (err) {
+                showToast('⚠️ ' + err.message);
+            }
+        }
+
+        // ===== SELLERS (NEW) =====
+        async function loadSellers() {
+            try {
+                const res = await fetch(`${API_URL}/users`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (!res.ok) throw new Error('Failed to fetch sellers');
+                const users = await res.json();
+                const sellers = users.filter(u => u.role === 'seller');
+                renderSellersTable(sellers);
+            } catch (err) {
+                showToast('⚠️ ' + err.message);
+            }
+        }
+
+        function renderSellersTable(sellers) {
+            const tbody = document.getElementById('sellersTableBody');
+            if (!sellers || sellers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No sellers yet.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = sellers.map(s => `
+                <tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.email}</td>
+                    <td>${s.shopName || 'N/A'}</td>
+                    <td>${s.isApproved ? '<span class="status-badge paid">Approved</span>' : '<span class="status-badge pending">Pending</span>'}</td>
+                    <td style="text-align:right;">
+                        ${!s.isApproved ? `
+                            <button class="approve-seller" data-id="${s._id}" style="background:var(--success);color:#fff;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;">Approve</button>
+                        ` : `
+                            <button class="revoke-seller" data-id="${s._id}" style="background:var(--error);color:#fff;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;">Revoke</button>
+                        `}
+                    </td>
+                </tr>
+            `).join('');
+
+            tbody.querySelectorAll('.approve-seller').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    await updateSellerApproval(id, true);
+                });
+            });
+            tbody.querySelectorAll('.revoke-seller').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    await updateSellerApproval(id, false);
+                });
+            });
+        }
+
+        async function updateSellerApproval(userId, approve) {
+            try {
+                const res = await fetch(`${API_URL}/users/${userId}/approve`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isApproved: approve })
+                });
+                if (!res.ok) throw new Error('Failed to update');
+                showToast(`✅ Seller ${approve ? 'approved' : 'revoked'}!`);
+                loadSellers();
+            } catch (err) {
+                showToast('⚠️ ' + err.message);
+            }
+        }
+
         // ===== LOAD DASHBOARD =====
         async function loadDashboard() {
             await loadDashboardData();
@@ -1523,6 +1666,9 @@
             loadCustomers();
             loadInventory();
             loadCoupons();
+            loadMessages();
+            loadReviews();
+            loadSellers();
             await loadHeroImages();
             await loadSetting('menImage', 'currentMenImg', 'currentMenContainer');
             await loadSetting('womenImage', 'currentWomenImg', 'currentWomenContainer');

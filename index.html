@@ -678,7 +678,9 @@
             color: #888;
         }
 
-        /* ===== PRODUCT DETAIL MODAL ===== */
+        /* ============================================================
+           PRODUCT DETAIL MODAL (with Reviews)
+        ============================================================ */
         .product-detail-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -782,6 +784,112 @@
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
+        }
+
+        /* ============================================================
+           REVIEWS SECTION inside Product Detail
+        ============================================================ */
+        .reviews-section {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+            border-top: 1px solid var(--border-light);
+            padding-top: 16px;
+        }
+        .reviews-section h4 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .review-item {
+            border-bottom: 1px solid var(--border-light);
+            padding: 10px 0;
+        }
+        .review-item .review-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .review-item .review-header strong {
+            font-size: 0.95rem;
+        }
+        .review-item .review-stars {
+            color: var(--color-gold);
+            font-size: 0.9rem;
+        }
+        .review-item .review-date {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .review-item .review-comment {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .review-rating-summary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .review-rating-summary .avg-rating {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        .review-rating-summary .stars {
+            color: var(--color-gold);
+        }
+        .review-rating-summary .count {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .review-form-container {
+            margin-top: 16px;
+            display: none;
+        }
+        .review-form-container .star-rating {
+            display: flex;
+            gap: 4px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .review-form-container .star-rating span {
+            color: var(--text-muted);
+            transition: 0.2s;
+        }
+        .review-form-container .star-rating span.active {
+            color: var(--color-gold);
+        }
+        .review-form-container textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            min-height: 80px;
+            margin-top: 8px;
+        }
+        .review-form-container .btn-submit {
+            background: var(--text-primary);
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 8px;
+        }
+        .review-form-container .btn-submit:hover {
+            background: var(--color-gold);
+            color: var(--text-primary);
+        }
+        .review-form-container .review-message {
+            font-size: 0.85rem;
+            margin-top: 4px;
         }
 
         /* ============================================================
@@ -1845,7 +1953,9 @@
         </section>
     </div>
 
-    <!-- ===== AUTH / ACCOUNT MODAL ===== -->
+    <!-- ============================================================
+    AUTH / ACCOUNT MODAL
+    ============================================================ -->
     <div class="modal-overlay" id="authOverlay">
         <div class="modal-content" style="max-width: 750px;">
             <button class="close-btn" id="authCloseBtn">&times;</button>
@@ -1951,7 +2061,9 @@
         </div>
     </div>
 
-    <!-- ===== PRODUCT DETAIL MODAL ===== -->
+    <!-- ============================================================
+    PRODUCT DETAIL MODAL (with Reviews)
+    ============================================================ -->
     <div class="modal-overlay" id="productDetailOverlay">
         <div class="modal-content" style="max-width: 900px;">
             <button class="close-btn" id="productDetailCloseBtn">&times;</button>
@@ -1976,6 +2088,33 @@
                         <button class="add-to-cart-detail" id="detailAddToCartBtn">
                             <i class="fas fa-shopping-bag" style="margin-right:10px;"></i> Add to Cart
                         </button>
+                    </div>
+
+                    <!-- ===== REVIEWS SECTION ===== -->
+                    <div class="reviews-section">
+                        <h4>Customer Reviews</h4>
+                        <div id="reviewsContainer">
+                            <p style="color: var(--text-muted); font-size: 0.85rem;">Loading reviews...</p>
+                        </div>
+                        <!-- Review Form -->
+                        <div class="review-form-container" id="reviewFormContainer">
+                            <form id="reviewForm">
+                                <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                                    <label style="font-weight:500; font-size:0.9rem;">Your Rating:</label>
+                                    <div class="star-rating" id="starRating">
+                                        <span data-value="1">★</span>
+                                        <span data-value="2">★</span>
+                                        <span data-value="3">★</span>
+                                        <span data-value="4">★</span>
+                                        <span data-value="5">★</span>
+                                    </div>
+                                    <input type="hidden" id="reviewRating" value="0" />
+                                </div>
+                                <textarea id="reviewComment" rows="3" placeholder="Write your review..."></textarea>
+                                <button type="submit" class="btn-submit">Submit Review</button>
+                                <div class="review-message" id="reviewMessage"></div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2069,18 +2208,17 @@
     </div>
 
     <!-- ============================================================
-    JAVASCRIPT – UPDATED FOR DEPLOYMENT
+    JAVASCRIPT – COMPLETE (with Reviews)
     ============================================================ -->
     <script>
         // ============================================================
-        // CONFIGURATION – UPDATE THIS URL AFTER DEPLOYING BACKEND
+        // CONFIGURATION
         // ============================================================
-        // ⚠️ Replace with your actual Render backend URL
         const API_URL = `https://trendy-backend-jq27.onrender.com/api`;
         const IMAGE_BASE_URL = API_URL.replace('/api', '');
 
         // ============================================================
-        // DOM REFS (same as before)
+        // DOM REFS
         // ============================================================
         const productsGrid = document.getElementById('productsGrid');
         const cartBadge = document.getElementById('cartBadge');
@@ -2166,6 +2304,15 @@
         const applyCouponBtn = document.getElementById('applyCouponBtn');
         const checkoutCoupon = document.getElementById('checkoutCoupon');
         const couponMessage = document.getElementById('couponMessage');
+
+        // Reviews
+        const reviewsContainer = document.getElementById('reviewsContainer');
+        const reviewForm = document.getElementById('reviewForm');
+        const reviewFormContainer = document.getElementById('reviewFormContainer');
+        const reviewRating = document.getElementById('reviewRating');
+        const reviewComment = document.getElementById('reviewComment');
+        const reviewMessage = document.getElementById('reviewMessage');
+        const starRating = document.getElementById('starRating');
 
         // ============================================================
         // TOAST
@@ -2597,7 +2744,7 @@
         }
 
         // ============================================================
-        // CHECKOUT (Cash on Delivery only)
+        // CHECKOUT
         // ============================================================
         let appliedCoupon = null;
         let currentCartTotal = 0;
@@ -2714,8 +2861,6 @@
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Order failed');
-
-                // Cash on Delivery – immediate success
                 cartItems = [];
                 saveCart();
                 updateCartBadge();
@@ -3006,6 +3151,10 @@
 
                 productDetailOverlay.classList.add('show');
                 document.body.style.overflow = 'hidden';
+
+                // ===== LOAD REVIEWS =====
+                loadReviews(p._id);
+
             } catch (err) {
                 showToast('⚠️ Could not load product details.');
                 console.error(err);
@@ -3020,6 +3169,130 @@
         productDetailCloseBtn.addEventListener('click', closeProductDetail);
         productDetailOverlay.addEventListener('click', function(e) {
             if (e.target === this) closeProductDetail();
+        });
+
+        // ============================================================
+        // REVIEWS
+        // ============================================================
+        let currentProductReviews = [];
+
+        async function loadReviews(productId) {
+            try {
+                const res = await fetch(`${API_URL}/reviews/product/${productId}`);
+                const reviews = await res.json();
+                currentProductReviews = reviews;
+                renderReviews(reviews);
+                await checkReviewPermission(productId);
+            } catch (err) {
+                console.error('Error loading reviews:', err);
+            }
+        }
+
+        function renderReviews(reviews) {
+            const container = reviewsContainer;
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">No reviews yet. Be the first!</p>';
+                return;
+            }
+            const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+            const avgHtml = `
+                <div class="review-rating-summary">
+                    <span class="avg-rating">${avg.toFixed(1)}</span>
+                    <span class="stars">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5 - Math.round(avg))}</span>
+                    <span class="count">(${reviews.length} reviews)</span>
+                </div>
+            `;
+            const list = reviews.map(r => `
+                <div class="review-item">
+                    <div class="review-header">
+                        <strong>${r.userId ? r.userId.name : 'Anonymous'}</strong>
+                        <span class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+                        <span class="review-date">${new Date(r.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div class="review-comment">${r.comment}</div>
+                </div>
+            `).join('');
+            container.innerHTML = avgHtml + list;
+        }
+
+        async function checkReviewPermission(productId) {
+            const token = getToken();
+            if (!token) {
+                reviewFormContainer.style.display = 'none';
+                return;
+            }
+            try {
+                const res = await fetch(`${API_URL}/orders/my-orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const orders = await res.json();
+                const hasPurchased = orders.some(order =>
+                    order.status === 'delivered' && order.items.some(item => item.productId === productId)
+                );
+                const reviewRes = await fetch(`${API_URL}/reviews/product/${productId}`);
+                const reviews = await reviewRes.json();
+                const user = getUser();
+                const alreadyReviewed = reviews.some(r => r.userId && r.userId._id === user?._id);
+                if (hasPurchased && !alreadyReviewed) {
+                    reviewFormContainer.style.display = 'block';
+                    reviewFormContainer.dataset.productId = productId;
+                    reviewRating.value = 0;
+                    reviewComment.value = '';
+                    reviewMessage.textContent = '';
+                    reviewMessage.style.color = '';
+                    document.querySelectorAll('.star-rating span').forEach(s => {
+                        s.style.color = 'var(--text-muted)';
+                    });
+                } else {
+                    reviewFormContainer.style.display = 'none';
+                }
+            } catch (err) {
+                console.error('Error checking review permission:', err);
+            }
+        }
+
+        // Star rating UI
+        document.querySelectorAll('.star-rating span').forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.dataset.value);
+                reviewRating.value = value;
+                document.querySelectorAll('.star-rating span').forEach(s => {
+                    s.style.color = parseInt(s.dataset.value) <= value ? 'var(--color-gold)' : 'var(--text-muted)';
+                });
+            });
+        });
+
+        reviewForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const productId = this.dataset.productId;
+            const rating = parseInt(reviewRating.value);
+            const comment = reviewComment.value.trim();
+            if (!rating || rating < 1 || rating > 5) {
+                reviewMessage.textContent = 'Please select a rating.';
+                reviewMessage.style.color = '#D81B60';
+                return;
+            }
+            if (!comment) {
+                reviewMessage.textContent = 'Please write a comment.';
+                reviewMessage.style.color = '#D81B60';
+                return;
+            }
+            try {
+                const res = await fetch(`${API_URL}/reviews`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, rating, comment })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message);
+                reviewMessage.style.color = '#2E7D32';
+                reviewMessage.textContent = '✅ Review submitted for approval!';
+                reviewFormContainer.style.display = 'none';
+                loadReviews(productId);
+            } catch (err) {
+                reviewMessage.style.color = '#D81B60';
+                reviewMessage.textContent = '⚠️ ' + err.message;
+            }
         });
 
         // ============================================================
@@ -3045,7 +3318,7 @@
         });
 
         // ============================================================
-        // PRODUCTS – FIXED with error handling & logs
+        // PRODUCTS
         // ============================================================
         async function fetchProducts(filter = 'all', gender = null, search = '') {
             try {
@@ -3283,7 +3556,7 @@
         loadProducts();
         loadHeroImages();
         loadGenderImages();
-        console.log('✅ Frontend ready with Checkout, Stock & Coupons.');
+        console.log('✅ Frontend ready with Checkout, Stock, Coupons & Reviews.');
         console.log('📡 API URL:', API_URL);
     </script>
 </body>
