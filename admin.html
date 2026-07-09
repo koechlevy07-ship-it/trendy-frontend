@@ -711,7 +711,10 @@
     </div>
 
     <!-- ===== TOAST ===== -->
-    <div class="toast" id="toast"> <span id="toastMessage">Item added to cart!</span> <span class="toast-close" id="toastClose">&times;</span> </div>
+    <div class="toast" id="toast">
+        <span id="toastMessage">Item added to cart!</span>
+        <span class="toast-close" id="toastClose">&times;</span>
+    </div>
 
     <!-- ============================================================ -->
     <!-- JAVASCRIPT – WITH FULL SOCIAL MEDIA SUPPORT                   -->
@@ -760,7 +763,11 @@
 
         async function adminLogin(email, password) {
             try {
-                const res = await fetch(`${API_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+                const res = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Login failed');
                 if (data.user.role !== 'admin') throw new Error('Admin access required.');
@@ -824,7 +831,8 @@
             if (panel) panel.classList.add('active');
             const titles = { dashboard: 'Dashboard', products: 'Products', categories: 'Categories', orders: 'Orders', customers: 'Customers', sellers: 'Sellers', inventory: 'Inventory', payments: 'Payments', reviews: 'Reviews', reports: 'Reports', coupons: 'Coupons', settings: 'Settings', messages: 'Messages' };
             pageTitle.textContent = titles[section] || 'Dashboard';
-            if (window.innerWidth <= 992) { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('show'); }
+            if (window.innerWidth <= 992) { sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('show'); }
             if (section === 'dashboard') loadDashboardData();
             if (section === 'products') loadProducts();
             if (section === 'categories') loadCategories();
@@ -840,7 +848,8 @@
         }
 
         document.querySelectorAll('.sidebar-nav a[data-section]').forEach(link => {
-            link.addEventListener('click', (e) => { e.preventDefault(); navigateTo(link.dataset.section); });
+            link.addEventListener('click', (e) => { e.preventDefault();
+                navigateTo(link.dataset.section); });
         });
 
         // ===== HAMBURGER =====
@@ -923,7 +932,8 @@
                 document.getElementById('orderCountBadge').textContent = orders.length;
                 const recentOrders = orders.slice(0, 5);
                 const tbody = document.getElementById('recentOrdersBody');
-                if (recentOrders.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No recent orders.</td></tr>`; } else {
+                if (recentOrders.length === 0) { tbody.innerHTML =
+                    `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No recent orders.</td></tr>`; } else {
                     tbody.innerHTML = recentOrders.map(o =>
                         `<tr><td>#${o._id.toString().slice(-6)}</td><td>${o.shippingAddress?.fullName || 'N/A'}</td><td>Ksh ${(o.total || 0).toLocaleString()}</td><td><span class="status-badge ${o.status}">${o.status || 'pending'}</span></td><td>${new Date(o.createdAt).toLocaleDateString()}</td></tr>`
                     ).join('');
@@ -944,7 +954,8 @@
 
         function renderProductsTable() {
             const tbody = document.getElementById('productsTableBody');
-            if (!products.length) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">No products found.</td></tr>`; return; }
+            if (!products.length) { tbody.innerHTML =
+                `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">No products found.</td></tr>`; return; }
             tbody.innerHTML = products.map(p => `
                 <tr>
                     <td><strong>${p.name}</strong></td>
@@ -959,12 +970,14 @@
                     </td>
                 </tr>
             `).join('');
-            document.querySelectorAll('.edit-btn').forEach(btn => { btn.addEventListener('click', () => openEditProduct(btn.dataset.id)); });
+            document.querySelectorAll('.edit-btn').forEach(btn => { btn.addEventListener('click', () =>
+                    openEditProduct(btn.dataset.id)); });
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     if (!confirm('Delete this product?')) return;
                     try {
-                        const res = await fetch(`${API_URL}/products/${btn.dataset.id}`, { method: 'DELETE', headers: getHeaders() });
+                        const res = await fetch(`${API_URL}/products/${btn.dataset.id}`, { method: 'DELETE',
+                            headers: getHeaders() });
                         if (!res.ok) throw new Error('Delete failed');
                         showToast('✅ Product deleted');
                         await loadProducts();
@@ -1008,7 +1021,8 @@
             populateCategorySelect();
             document.getElementById('productFormModal').classList.add('show');
         });
-        document.getElementById('productFormCancel').addEventListener('click', () => { document.getElementById('productFormModal').classList.remove('show'); });
+        document.getElementById('productFormCancel').addEventListener('click', () => { document.getElementById(
+                'productFormModal').classList.remove('show'); });
 
         document.getElementById('productImageInput').addEventListener('change', async function(e) {
             const files = this.files;
@@ -1016,7 +1030,8 @@
             const formData = new FormData();
             for (let i = 0; i < files.length; i++) { formData.append('productImages', files[i]); }
             try {
-                const res = await fetch(`${API_URL}/upload/products`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: formData });
+                const res = await fetch(`${API_URL}/upload/products`, { method: 'POST', headers: { 'Authorization':
+                        `Bearer ${getToken()}` }, body: formData });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Upload failed');
                 const current = document.getElementById('productImages').value;
@@ -1093,16 +1108,20 @@
 
         function renderCategoriesTable() {
             const tbody = document.getElementById('categoriesTableBody');
-            if (!categories.length) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No categories found.</td></tr>`; return; }
+            if (!categories.length) { tbody.innerHTML =
+                `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No categories found.</td></tr>`; return; }
             tbody.innerHTML = categories.map(c =>
                 `<tr><td><strong>${c.name}</strong> ${c.icon ? `<i class="fas ${c.icon}" style="color:var(--gold);margin-left:8px;"></i>` : ''}</td><td><code style="background:var(--bg-primary);padding:2px 8px;border-radius:4px;font-size:0.75rem;">${c.slug}</code></td><td>${c.description || '—'}</td><td><span class="status-badge" style="background:#E3F2FD;color:#0D47A1;">${c.productCount || 0}</span></td><td style="text-align:right;"><button class="edit-category" data-id="${c._id}" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:1rem;padding:4px 8px;"><i class="fas fa-edit"></i></button><button class="delete-category" data-id="${c._id}" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:1rem;padding:4px 8px;"><i class="fas fa-trash-alt"></i></button></td></tr>`
             ).join('');
-            document.querySelectorAll('.edit-category').forEach(btn => { btn.addEventListener('click', () => openEditCategory(btn.dataset.id)); });
+            document.querySelectorAll('.edit-category').forEach(btn => { btn.addEventListener('click', () =>
+                    openEditCategory(btn.dataset.id)); });
             document.querySelectorAll('.delete-category').forEach(btn => {
                 btn.addEventListener('click', async () => {
-                    if (!confirm(`Delete category "${categories.find(c => c._id === btn.dataset.id)?.name}"?`)) return;
+                    if (!confirm(`Delete category "${categories.find(c => c._id === btn.dataset.id)?.name}"?`))
+                        return;
                     try {
-                        const res = await fetch(`${API_URL}/categories/${btn.dataset.id}`, { method: 'DELETE', headers: getHeaders() });
+                        const res = await fetch(`${API_URL}/categories/${btn.dataset.id}`, { method: 'DELETE',
+                            headers: getHeaders() });
                         const data = await res.json();
                         if (!res.ok) throw new Error(data.message || 'Delete failed');
                         showToast('✅ Category deleted');
@@ -1140,7 +1159,8 @@
             document.getElementById('categoryIcon').value = 'fa-tag';
             document.getElementById('categoryFormModal').classList.add('show');
         });
-        document.getElementById('categoryFormCancel').addEventListener('click', () => { document.getElementById('categoryFormModal').classList.remove('show'); });
+        document.getElementById('categoryFormCancel').addEventListener('click', () => { document.getElementById(
+                'categoryFormModal').classList.remove('show'); });
 
         document.getElementById('categoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1172,7 +1192,8 @@
                 if (!res.ok) throw new Error('Failed to fetch orders');
                 const orders = await res.json();
                 const tbody = document.getElementById('ordersTableBody');
-                if (!orders.length) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);">No orders found.</td></tr>`; return; }
+                if (!orders.length) { tbody.innerHTML =
+                    `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);">No orders found.</td></tr>`; return; }
                 tbody.innerHTML = orders.map(o => `
                     <tr>
                         <td>#${o._id.toString().slice(-6)}</td>
@@ -1198,7 +1219,8 @@
                         const id = this.dataset.id;
                         const status = this.value;
                         try {
-                            const res = await fetch(`${API_URL}/orders/${id}/status`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ status }) });
+                            const res = await fetch(`${API_URL}/orders/${id}/status`, { method: 'PUT',
+                                headers: getHeaders(), body: JSON.stringify({ status }) });
                             if (!res.ok) throw new Error('Update failed');
                             showToast('✅ Order status updated');
                             loadOrders();
@@ -1211,11 +1233,13 @@
         // ===== CUSTOMERS =====
         async function loadCustomers() {
             try {
-                const res = await fetch(`${API_URL}/users`, { headers: getHeaders() }).catch(() => ({ json: () => [], ok: false }));
+                const res = await fetch(`${API_URL}/users`, { headers: getHeaders() }).catch(() => ({ json: () => [],
+                        ok: false }));
                 if (!res.ok) throw new Error('Failed to fetch users');
                 const users = await res.json();
                 const tbody = document.getElementById('customersTableBody');
-                if (!users.length) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No customers found.</td></tr>`; return; }
+                if (!users.length) { tbody.innerHTML =
+                    `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No customers found.</td></tr>`; return; }
                 tbody.innerHTML = users.map(u =>
                     `<tr><td><strong>${u.name || 'N/A'}</strong></td><td>${u.email || 'N/A'}</td><td>${u.orderCount || 0}</td><td>Ksh ${(u.totalSpent || 0).toLocaleString()}</td><td><span class="status-badge" style="background:#DCFCE7;color:#166534;">Active</span></td></tr>`
                 ).join('');
@@ -1229,7 +1253,8 @@
                 if (!res.ok) throw new Error('Failed to fetch products');
                 const products = await res.json();
                 const tbody = document.getElementById('inventoryTableBody');
-                if (!products.length) { tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--text-muted);">No products in inventory.</td></tr>`; return; }
+                if (!products.length) { tbody.innerHTML =
+                    `<tr><td colspan="3" style="text-align:center;color:var(--text-muted);">No products in inventory.</td></tr>`; return; }
                 tbody.innerHTML = products.map(p => {
                     const stockStatus = p.stock > 0 ? 'In Stock' : 'Out of Stock';
                     const statusColor = p.stock > 0 ? '#DCFCE7' : '#FEE2E2';
@@ -1281,13 +1306,15 @@
                 if (!res.ok) throw new Error('Failed to save settings');
                 const data = await res.json();
                 showToast('✅ All social links saved successfully!');
-                document.getElementById('settingsMessage').innerHTML = '<div class="alert alert-success">All social links updated.</div>';
+                document.getElementById('settingsMessage').innerHTML =
+                    '<div class="alert alert-success">All social links updated.</div>';
                 setTimeout(() => {
                     document.getElementById('settingsMessage').innerHTML = '';
                 }, 4000);
             } catch (err) {
                 showToast('⚠️ ' + err.message);
-                document.getElementById('settingsMessage').innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
+                document.getElementById('settingsMessage').innerHTML =
+                    `<div class="alert alert-danger">Error: ${err.message}</div>`;
             }
         });
 
@@ -1299,13 +1326,16 @@
                 const data = await res.json();
                 heroImages = Array.isArray(data) ? data : [];
                 renderHeroPreviews();
-            } catch (e) { console.error('Error loading hero images:', e); heroImages = []; renderHeroPreviews(); }
+            } catch (e) { console.error('Error loading hero images:', e);
+                heroImages = [];
+                renderHeroPreviews(); }
         }
 
         function renderHeroPreviews() {
             const grid = document.getElementById('heroPreviewGrid');
             if (!grid) return;
-            if (!heroImages || heroImages.length === 0) { grid.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No hero images uploaded.</p>'; return; }
+            if (!heroImages || heroImages.length === 0) { grid.innerHTML =
+                '<p style="color:var(--text-muted); font-size:0.85rem;">No hero images uploaded.</p>'; return; }
             grid.innerHTML = heroImages.map((url, index) =>
                 `<div class="hero-preview-item"><img src="${url}" alt="Hero ${index+1}" /><button class="remove-hero" data-index="${index}">&times;</button></div>`
             ).join('');
@@ -1323,7 +1353,8 @@
 
         async function saveHeroImages() {
             try {
-                const res = await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ key: 'heroImages', value: heroImages }) });
+                const res = await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(),
+                        body: JSON.stringify({ key: 'heroImages', value: heroImages }) });
                 if (!res.ok) throw new Error('Failed to save hero images');
                 showToast('✅ Hero images updated');
             } catch (err) { showToast('⚠️ ' + err.message); }
@@ -1340,11 +1371,13 @@
         document.getElementById('heroImageInput').addEventListener('change', async function(e) {
             const files = this.files;
             if (!files.length) return;
-            if (heroImages.length + files.length > 5) { showToast('⚠️ Maximum 5 hero images allowed.'); this.value = ''; return; }
+            if (heroImages.length + files.length > 5) { showToast('⚠️ Maximum 5 hero images allowed.');
+                this.value = ''; return; }
             const formData = new FormData();
             for (let i = 0; i < files.length; i++) { formData.append('heroImages', files[i]); }
             try {
-                const res = await fetch(`${API_URL}/upload/hero-multiple`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: formData });
+                const res = await fetch(`${API_URL}/upload/hero-multiple`, { method: 'POST', headers: {
+                        'Authorization': `Bearer ${getToken()}` }, body: formData });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Upload failed');
                 heroImages = [...heroImages, ...data.urls];
@@ -1361,7 +1394,9 @@
                 const url = await res.json();
                 const img = document.getElementById(imgId);
                 const container = document.getElementById(containerId);
-                if (url && url !== null) { img.src = url; container.style.display = 'block'; } else { img.src = ''; container.style.display = 'none'; }
+                if (url && url !== null) { img.src = url;
+                    container.style.display = 'block'; } else { img.src = '';
+                    container.style.display = 'none'; }
             } catch (e) { console.error(`Error loading ${key}:`, e); }
         }
 
@@ -1374,10 +1409,12 @@
                 const formData = new FormData();
                 formData.append('genderImage', file);
                 try {
-                    const res = await fetch(`${API_URL}/upload/gender`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: formData });
+                    const res = await fetch(`${API_URL}/upload/gender`, { method: 'POST', headers: {
+                            'Authorization': `Bearer ${getToken()}` }, body: formData });
                     const data = await res.json();
                     if (!res.ok) throw new Error(data.message || 'Upload failed');
-                    const saveRes = await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ key: uploadKey, value: data.url }) });
+                    const saveRes = await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(),
+                            body: JSON.stringify({ key: uploadKey, value: data.url }) });
                     if (!saveRes.ok) throw new Error('Failed to save setting');
                     showToast(`✅ ${uploadKey} updated`);
                     await loadSetting(uploadKey, imgId, containerId);
@@ -1387,7 +1424,8 @@
             removeBtn.addEventListener('click', async function() {
                 if (!confirm(`Remove ${uploadKey} image?`)) return;
                 try {
-                    const res = await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ key: uploadKey, value: null }) });
+                    const res = await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(),
+                            body: JSON.stringify({ key: uploadKey, value: null }) });
                     if (!res.ok) throw new Error('Failed to remove');
                     showToast(`✅ ${uploadKey} removed`);
                     await loadSetting(uploadKey, imgId, containerId);
@@ -1408,7 +1446,8 @@
 
         function renderNotifications(notifications, unread) {
             if (!notificationList) return;
-            if (notifications.length === 0) { notificationList.innerHTML = `<div class="notification-empty">No notifications</div>`; updateBadge(0); return; }
+            if (notifications.length === 0) { notificationList.innerHTML =
+                    `<div class="notification-empty">No notifications</div>`; updateBadge(0); return; }
             let html = '';
             notifications.forEach(n => {
                 const time = new Date(n.createdAt).toLocaleString();
@@ -1422,18 +1461,23 @@
             });
             notificationList.innerHTML = html;
             notificationList.querySelectorAll('.mark-read-btn').forEach(btn => {
-                btn.addEventListener('click', async function(e) { e.stopPropagation(); const id = this.dataset.id; await markNotificationRead(id); });
+                btn.addEventListener('click', async function(e) { e.stopPropagation();
+                    const id = this.dataset.id;
+                    await markNotificationRead(id); });
             });
             updateBadge(unread);
         }
 
         function updateBadge(unreadCount) {
-            if (unreadCount > 0) { unreadBadge.style.display = 'flex'; unreadBadge.textContent = unreadCount > 9 ? '9+' : unreadCount; } else { unreadBadge.style.display = 'none'; }
+            if (unreadCount > 0) { unreadBadge.style.display = 'flex';
+                unreadBadge.textContent = unreadCount > 9 ? '9+' : unreadCount; } else { unreadBadge.style.display =
+                    'none'; }
         }
 
         async function markNotificationRead(id) {
             try {
-                const res = await fetch(`${API_URL}/notifications/${id}/read`, { method: 'PUT', headers: { 'Authorization': `Bearer ${getToken()}` } });
+                const res = await fetch(`${API_URL}/notifications/${id}/read`, { method: 'PUT', headers: {
+                        'Authorization': `Bearer ${getToken()}` } });
                 if (!res.ok) throw new Error('Failed to mark as read');
                 await fetchNotifications();
             } catch (err) { showToast('⚠️ ' + err.message); }
@@ -1441,7 +1485,8 @@
 
         async function markAllRead() {
             try {
-                const res = await fetch(`${API_URL}/notifications/read-all`, { method: 'PUT', headers: { 'Authorization': `Bearer ${getToken()}` } });
+                const res = await fetch(`${API_URL}/notifications/read-all`, { method: 'PUT', headers: {
+                        'Authorization': `Bearer ${getToken()}` } });
                 if (!res.ok) throw new Error('Failed to mark all as read');
                 await fetchNotifications();
                 showToast('✅ All notifications marked as read');
@@ -1454,7 +1499,8 @@
             if (notificationDropdown.classList.contains('open')) { fetchNotifications(); }
         });
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('#notificationBell') && !e.target.closest('.notification-dropdown')) { notificationDropdown.classList.remove('open'); }
+            if (!e.target.closest('#notificationBell') && !e.target.closest('.notification-dropdown')) { notificationDropdown
+                    .classList.remove('open'); }
         });
         markAllReadBtn.addEventListener('click', markAllRead);
 
@@ -1475,14 +1521,16 @@
                 document.getElementById('couponCountBadge').textContent = coupons.length;
             } catch (err) {
                 showToast('⚠️ ' + err.message);
-                document.getElementById('couponsTableBody').innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);">${err.message}</td></tr>`;
+                document.getElementById('couponsTableBody').innerHTML =
+                    `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);">${err.message}</td></tr>`;
             }
         }
 
         function renderCouponsTable(coupons) {
             const tbody = document.getElementById('couponsTableBody');
             if (!coupons || coupons.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);">No coupons found.</td></tr>`;
+                tbody.innerHTML =
+                    `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);">No coupons found.</td></tr>`;
                 return;
             }
             tbody.innerHTML = coupons.map(c => `
@@ -1501,12 +1549,14 @@
                 </tr>
             `).join('');
 
-            tbody.querySelectorAll('.edit-coupon').forEach(btn => btn.addEventListener('click', () => openEditCoupon(btn.dataset.id)));
+            tbody.querySelectorAll('.edit-coupon').forEach(btn => btn.addEventListener('click', () => openEditCoupon(btn
+                .dataset.id)));
             tbody.querySelectorAll('.delete-coupon').forEach(btn => {
                 btn.addEventListener('click', async function() {
                     if (!confirm('Delete this coupon?')) return;
                     try {
-                        const res = await fetch(`${API_URL}/coupons/${this.dataset.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } });
+                        const res = await fetch(`${API_URL}/coupons/${this.dataset.id}`, { method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${getToken()}` } });
                         if (!res.ok) throw new Error('Delete failed');
                         showToast('✅ Coupon deleted');
                         loadCoupons();
@@ -1526,7 +1576,8 @@
             document.getElementById('couponId').value = '';
             document.getElementById('couponFormModal').classList.add('show');
         });
-        document.getElementById('couponFormCancel').addEventListener('click', () => { document.getElementById('couponFormModal').classList.remove('show'); });
+        document.getElementById('couponFormCancel').addEventListener('click', () => { document.getElementById(
+                'couponFormModal').classList.remove('show'); });
 
         document.getElementById('couponForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -1544,7 +1595,8 @@
             try {
                 const url = id ? `${API_URL}/coupons/${id}` : `${API_URL}/coupons`;
                 const method = id ? 'PUT' : 'POST';
-                const res = await fetch(url, { method, headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                const res = await fetch(url, { method, headers: { 'Authorization': `Bearer ${getToken()}`,
+                            'Content-Type': 'application/json' }, body: JSON.stringify(data) });
                 if (!res.ok) throw new Error('Failed to save coupon');
                 showToast(id ? '✅ Coupon updated' : '✅ Coupon added');
                 document.getElementById('couponFormModal').classList.remove('show');
@@ -1565,7 +1617,8 @@
                     document.getElementById('couponDiscountValue').value = coupon.discountValue;
                     document.getElementById('couponMinOrder').value = coupon.minOrder || 0;
                     document.getElementById('couponMaxDiscount').value = coupon.maxDiscount || '';
-                    document.getElementById('couponExpiresAt').value = new Date(coupon.expiresAt).toISOString().split('T')[0];
+                    document.getElementById('couponExpiresAt').value = new Date(coupon.expiresAt).toISOString().split(
+                        'T')[0];
                     document.getElementById('couponUsageLimit').value = coupon.usageLimit;
                     document.getElementById('couponActive').value = coupon.active ? 'true' : 'false';
                     document.getElementById('couponFormModal').classList.add('show');
@@ -1586,12 +1639,14 @@
 
         function renderMessages(messages) {
             const tbody = document.getElementById('messagesTableBody');
-            if (!messages || messages.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">No messages yet.</td></tr>`; return; }
+            if (!messages || messages.length === 0) { tbody.innerHTML =
+                `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">No messages yet.</td></tr>`; return; }
             let html = '';
             messages.forEach(msg => {
                 const replied = msg.replied;
                 const rowClass = replied ? 'message-row replied' : 'message-row';
-                const statusHtml = replied ? `<span class="reply-badge">Replied</span>` : `<span class="status-badge" style="background:#FEF3C7;color:#92400E;">Pending</span>`;
+                const statusHtml = replied ? `<span class="reply-badge">Replied</span>` :
+                    `<span class="status-badge" style="background:#FEF3C7;color:#92400E;">Pending</span>`;
                 const replyForm = !replied ? `
                     <div class="reply-form-container">
                         <textarea class="reply-text" placeholder="Type your reply..." rows="2"></textarea>
@@ -1651,7 +1706,8 @@
         function renderReviewsTable(reviews) {
             const tbody = document.getElementById('reviewsTableBody');
             if (!reviews || reviews.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No reviews yet.</td></tr>`;
+                tbody.innerHTML =
+                `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No reviews yet.</td></tr>`;
                 return;
             }
             tbody.innerHTML = reviews.map(r => `
@@ -1719,7 +1775,8 @@
         function renderSellersTable(sellers) {
             const tbody = document.getElementById('sellersTableBody');
             if (!sellers || sellers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No sellers yet.</td></tr>`;
+                tbody.innerHTML =
+                `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No sellers yet.</td></tr>`;
                 return;
             }
             tbody.innerHTML = sellers.map(s => `
@@ -1795,7 +1852,8 @@
                 document.getElementById('productFormTitle').textContent = 'Import from Instagram';
                 document.getElementById('productId').value = '';
                 document.getElementById('productName').value = data.productName || 'Instagram Product';
-                document.getElementById('productSlug').value = data.productName ? data.productName.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'instagram-product';
+                document.getElementById('productSlug').value = data.productName ? data.productName.toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-') : 'instagram-product';
                 document.getElementById('productDescription').value = data.caption || '';
                 document.getElementById('productPrice').value = '';
                 document.getElementById('productStock').value = 0;
@@ -1846,7 +1904,8 @@
             await loadSetting('womenImage', 'currentWomenImg', 'currentWomenContainer');
             await loadSetting('kidsImage', 'currentKidsImg', 'currentKidsContainer');
             setupImageUpload('menImageInput', 'menImage', 'currentMenImg', 'currentMenContainer', 'removeMenBtn');
-            setupImageUpload('womenImageInput', 'womenImage', 'currentWomenImg', 'currentWomenContainer', 'removeWomenBtn');
+            setupImageUpload('womenImageInput', 'womenImage', 'currentWomenImg', 'currentWomenContainer',
+            'removeWomenBtn');
             setupImageUpload('kidsImageInput', 'kidsImage', 'currentKidsImg', 'currentKidsContainer', 'removeKidsBtn');
             startNotificationPolling();
             // Social settings are loaded when Settings panel is opened via navigateTo()
@@ -1865,9 +1924,12 @@
         // ===== INIT =====
         checkAuth();
 
-        document.getElementById('productFormModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
-        document.getElementById('categoryFormModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
-        document.getElementById('couponFormModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
+        document.getElementById('productFormModal').addEventListener('click', function(e) { if (e.target === this) this
+                .classList.remove('show'); });
+        document.getElementById('categoryFormModal').addEventListener('click', function(e) { if (e.target === this) this
+                .classList.remove('show'); });
+        document.getElementById('couponFormModal').addEventListener('click', function(e) { if (e.target === this) this
+                .classList.remove('show'); });
 
         console.log('📡 Admin API URL:', API_URL);
     </script>
