@@ -418,9 +418,25 @@
                 </div>
             </div>
 
-            <!-- ===== PRODUCTS PANEL ===== -->
+            <!-- ===== PRODUCTS PANEL (with Instagram Importer) ===== -->
             <div class="tab-panel" id="panel-products">
-                <div class="section-header"><h2>Products</h2><button class="btn-add" id="addProductBtn"><i class="fas fa-plus"></i> Add Product</button></div>
+                <div class="section-header">
+                    <h2>Products</h2>
+                    <button class="btn-add" id="addProductBtn"><i class="fas fa-plus"></i> Add Product</button>
+                </div>
+                <!-- Instagram Importer -->
+                <div class="table-section" style="margin-bottom:20px;">
+                    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                        <input type="text" id="instagramLinkInput" placeholder="Paste Instagram post link..." style="flex:1; min-width:300px; padding:10px 14px; border:1px solid var(--border-light); border-radius:4px; font-family:'Inter',sans-serif; font-size:0.9rem; background:var(--bg-primary);">
+                        <button id="importInstagramBtn" style="background:var(--gold); color:#fff; border:none; padding:10px 24px; border-radius:4px; font-family:'Inter',sans-serif; font-weight:600; font-size:0.8rem; cursor:pointer; transition:var(--transition);">
+                            <i class="fab fa-instagram"></i> Import Product
+                        </button>
+                    </div>
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">
+                        <i class="fas fa-info-circle"></i> Paste an Instagram product post URL. We'll fetch the caption, images, and suggest a category. You can review and edit before saving.
+                    </p>
+                </div>
+                <!-- Products Table -->
                 <div class="table-section">
                     <div class="table-wrapper">
                         <table>
@@ -678,7 +694,7 @@
     <div class="toast" id="toast"> <span id="toastMessage">Item added to cart!</span> <span class="toast-close" id="toastClose">&times;</span> </div>
 
     <!-- ============================================================
-    JAVASCRIPT – WITH COUPON SEARCH & ALL FEATURES
+    JAVASCRIPT – WITH INSTAGRAM IMPORT
     ============================================================ -->
     <script>
         // ===== CONFIGURATION =====
@@ -706,6 +722,8 @@
         const notificationList = document.getElementById('notificationList');
         const unreadBadge = document.getElementById('unreadBadge');
         const markAllReadBtn = document.getElementById('markAllReadBtn');
+        const instagramLinkInput = document.getElementById('instagramLinkInput');
+        const importInstagramBtn = document.getElementById('importInstagramBtn');
 
         // ===== TOAST =====
         function showToast(msg) {
@@ -1678,7 +1696,68 @@
             }
         }
 
-        // ===== LOAD DASHBOARD =====
+        // ============================================================
+        // INSTAGRAM PRODUCT IMPORTER
+        // ============================================================
+        importInstagramBtn.addEventListener('click', async function() {
+            const link = instagramLinkInput.value.trim();
+            if (!link) {
+                showToast('⚠️ Please paste an Instagram post link.');
+                return;
+            }
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
+            this.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/instagram/import`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${getToken()}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: link })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Import failed');
+
+                // Fill product form with imported data
+                document.getElementById('productFormTitle').textContent = 'Import from Instagram';
+                document.getElementById('productId').value = '';
+                document.getElementById('productName').value = data.productName || 'Instagram Product';
+                document.getElementById('productSlug').value = data.productName ? data.productName.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'instagram-product';
+                document.getElementById('productDescription').value = data.caption || '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productStock').value = 0;
+                document.getElementById('productSizes').value = '';
+                document.getElementById('productColors').value = '';
+
+                // Set category
+                await loadCategories();
+                populateCategorySelect();
+                if (data.suggestedCategory) {
+                    document.getElementById('productCategory').value = data.suggestedCategory;
+                }
+
+                // Show imported images as preview
+                const imageUrls = data.images || [];
+                document.getElementById('productImages').value = imageUrls.join(',');
+                renderProductImagePreviews(imageUrls);
+
+                document.getElementById('productFormModal').classList.add('show');
+                showToast('✅ Product data imported! Review and save.');
+
+            } catch (err) {
+                showToast('⚠️ ' + err.message);
+            } finally {
+                this.innerHTML = '<i class="fab fa-instagram"></i> Import Product';
+                this.disabled = false;
+                instagramLinkInput.value = '';
+            }
+        });
+
+        // ============================================================
+        // LOAD DASHBOARD
+        // ============================================================
         async function loadDashboard() {
             await loadDashboardData();
             renderChart('weekly');
