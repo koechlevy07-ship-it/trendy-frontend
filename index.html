@@ -479,15 +479,53 @@
             transform: translateX(0);
         }
 
+        /* ===== CATEGORIES FILTER BAR ===== */
+        .categories-filter {
+            background: var(--bg-secondary);
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            align-items: center;
+        }
+        .categories-filter .filter-btn {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            padding: 8px 24px;
+            border-radius: 50px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+        .categories-filter .filter-btn:hover {
+            border-color: var(--color-gold);
+            color: var(--text-primary);
+        }
+        .categories-filter .filter-btn.active {
+            background: var(--color-gold);
+            border-color: var(--color-gold);
+            color: #FFFFFF;
+        }
+        .categories-filter .filter-btn.active:hover {
+            background: var(--color-gold-dark);
+        }
+
         /* ===== PRODUCT GRID ===== */
         .products-grid-section {
             background: var(--bg-primary);
-            padding: 80px 0;
+            padding: 60px 0 80px;
             border-top: 1px solid var(--border-light);
         }
         .products-grid-section .section-head {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
         }
         .products-grid-section .section-head h2 {
             font-family: 'Poppins', sans-serif;
@@ -1845,7 +1883,7 @@
             <nav class="nav-bar" id="mainNav">
                 <a href="#" class="active" data-page="home" id="homeNav">HOME</a>
                 <div class="dropdown" data-category="trench-coat">
-                    <a href="#" class="dropdown-toggle">TRENCH COATS <span class="plus-icon">+</span></a>
+                    <a href="#" class="dropdown-toggle">Trendy_Trenchcoats <span class="plus-icon">+</span></a>
                     <div class="dropdown-content">
                         <a href="#" data-gender="men">MEN</a>
                         <a href="#" data-gender="women">WOMEN</a>
@@ -1853,7 +1891,7 @@
                     </div>
                 </div>
                 <div class="dropdown" data-category="wardrobe">
-                    <a href="#" class="dropdown-toggle">WARDROBE <span class="plus-icon">+</span></a>
+                    <a href="#" class="dropdown-toggle">Trendy_Wardrobe <span class="plus-icon">+</span></a>
                     <div class="dropdown-content">
                         <a href="#" data-gender="men">MEN</a>
                         <a href="#" data-gender="women">WOMEN</a>
@@ -1910,6 +1948,12 @@
                 </div>
             </div>
         </section>
+
+        <!-- ===== CATEGORIES FILTER BAR ===== -->
+        <div class="categories-filter" id="categoriesFilter">
+            <button class="filter-btn active" data-category="all">All</button>
+            <!-- Categories will be dynamically added here -->
+        </div>
 
         <section class="products-grid-section" id="productsSection">
             <div class="container">
@@ -2166,8 +2210,8 @@
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="#" id="footerHome">Home</a></li>
-                        <li><a href="#">Trench Coats</a></li>
-                        <li><a href="#">Wardrobe</a></li>
+                        <li><a href="#">Trendy_Trenchcoats</a></li>
+                        <li><a href="#">Trendy_Wardrobe</a></li>
                         <li><a href="#">Shoes</a></li>
                         <li><a href="#" id="footerContact">Contact Us</a></li>
                     </ul>
@@ -2211,13 +2255,12 @@
     </div>
 
     <!-- ============================================================
-    JAVASCRIPT – COMPLETE (with Dynamic Social Links)
+    JAVASCRIPT – COMPLETE (with Dynamic Social Links & Categories)
     ============================================================ -->
     <script>
         // ============================================================
         // CONFIGURATION
         // ============================================================
-        // ✅ FIXED: Correct API URL (jq27, not jg27)
         const API_URL = `https://trendy-backend-jq27.onrender.com/api`;
         const IMAGE_BASE_URL = API_URL.replace('/api', '');
 
@@ -2317,6 +2360,9 @@
         const reviewComment = document.getElementById('reviewComment');
         const reviewMessage = document.getElementById('reviewMessage');
         const starRating = document.getElementById('starRating');
+
+        // Categories Filter
+        const categoriesFilter = document.getElementById('categoriesFilter');
 
         // ============================================================
         // TOAST
@@ -2702,6 +2748,48 @@
                 `;
             });
             container.innerHTML = html;
+        }
+
+        // ============================================================
+        // CATEGORIES – FETCH & RENDER FILTER BUTTONS
+        // ============================================================
+        let allCategories = [];
+        let currentCategory = 'all';
+
+        async function loadCategories() {
+            try {
+                const res = await fetch(`${API_URL}/categories`);
+                if (!res.ok) throw new Error('Failed to fetch categories');
+                allCategories = await res.json();
+                renderCategoryFilters();
+            } catch (err) {
+                console.error('Error loading categories:', err);
+                // If categories fail, still show "All" button
+                renderCategoryFilters();
+            }
+        }
+
+        function renderCategoryFilters() {
+            // Keep the "All" button
+            categoriesFilter.innerHTML = `<button class="filter-btn active" data-category="all">All</button>`;
+            // Add category buttons
+            allCategories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.dataset.category = cat.slug;
+                btn.textContent = cat.name;
+                categoriesFilter.appendChild(btn);
+            });
+            // Add click listeners
+            categoriesFilter.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    categoriesFilter.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentCategory = this.dataset.category;
+                    // Reload products with the selected category filter
+                    loadProducts(currentCategory === 'all' ? 'all' : currentCategory, null, '');
+                });
+            });
         }
 
         // ============================================================
@@ -3327,7 +3415,7 @@
         async function fetchProducts(filter = 'all', gender = null, search = '') {
             try {
                 const params = new URLSearchParams();
-                if (filter !== 'all') params.append('category', filter);
+                if (filter !== 'all' && filter !== '') params.append('category', filter);
                 if (gender) params.append('gender', gender);
                 if (search) params.append('search', search);
                 const url = `${API_URL}/products?${params.toString()}`;
@@ -3476,6 +3564,11 @@
                 const gender = this.dataset.gender;
                 document.querySelectorAll('.gender-card').forEach(c => c.style.borderColor = '');
                 this.style.borderColor = 'var(--color-gold)';
+                // Also update the category filter to "All" and then filter by gender
+                categoriesFilter.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                const allBtn = categoriesFilter.querySelector('[data-category="all"]');
+                if (allBtn) allBtn.classList.add('active');
+                currentCategory = 'all';
                 loadProducts('all', gender);
                 showToast(`🛍️ Showing ${gender.toUpperCase()} collection`);
                 document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
@@ -3516,7 +3609,13 @@
                     content.classList.remove('show');
                     dropdown.classList.remove('locked');
                 }
-                loadProducts(category, gender);
+                // Set category filter to match the dropdown's category
+                const catSlug = category;
+                categoriesFilter.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                const catBtn = categoriesFilter.querySelector(`[data-category="${catSlug}"]`);
+                if (catBtn) catBtn.classList.add('active');
+                currentCategory = catSlug;
+                loadProducts(catSlug, gender);
                 showToast(`🛍️ Showing ${gender.toUpperCase()} ${category.replace('-', ' ')}`);
             });
         });
@@ -3531,6 +3630,10 @@
                 if (window.innerWidth <= 768) {
                     document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
                 }
+                currentCategory = filter === 'all' ? 'all' : filter;
+                categoriesFilter.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                const catBtn = categoriesFilter.querySelector(`[data-category="${currentCategory}"]`);
+                if (catBtn) catBtn.classList.add('active');
                 loadProducts(filter);
             });
         });
@@ -3599,11 +3702,15 @@
         showHomeSection();
         loadCart();
         loadWishlist();
-        loadProducts();
         loadHeroImages();
         loadGenderImages();
-        loadSocialLinks(); // <-- Load social links on page start
-        console.log('✅ Frontend ready with Checkout, Stock, Coupons & Reviews.');
+        loadCategories();
+        loadSocialLinks();
+        // Load products after categories are loaded – wait for categories to be ready
+        setTimeout(() => {
+            loadProducts('all', null, '');
+        }, 200);
+        console.log('✅ Frontend ready with dynamic categories & social links.');
         console.log('📡 API URL:', API_URL);
     </script>
 </body>
