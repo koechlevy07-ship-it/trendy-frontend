@@ -593,21 +593,41 @@
                 </div>
             </div>
 
-            <!-- ===== SETTINGS PANEL ===== -->
+            <!-- ============================================================== -->
+            <!-- ===== SETTINGS PANEL – WITH ALL SOCIAL MEDIA LINKS ===== -->
+            <!-- ============================================================== -->
             <div class="tab-panel" id="panel-settings">
                 <div class="section-header"><h2>Settings</h2></div>
                 <div class="table-section">
                     <div style="padding:10px 0;">
+                        <!-- General Settings -->
                         <div class="form-grid">
                             <div class="form-group"><label>Website Name</label><input type="text" id="settingSiteName" value="Trendy_Wardrobe" /></div>
                             <div class="form-group"><label>Admin Email</label><input type="email" id="settingAdminEmail" value="markelpalace@gmail.com" /></div>
-                            <div class="form-group"><label>Currency</label><select id="settingCurrency"><option value="Ksh">Ksh (Kenyan Shilling)</option><option value="$">USD ($)</option><option value="€">EUR (€)</option></select></div>
+                            <div class="form-group"><label>Currency</label><select id="settingCurrency"><option value="Ksh">Ksh</option><option value="$">USD</option><option value="€">EUR</option></select></div>
                             <div class="form-group"><label>Default Language</label><select id="settingLanguage"><option value="en">English</option><option value="sw">Swahili</option></select></div>
                         </div>
-                        <button class="btn-add" id="saveSettingsBtn" style="margin-top:12px;"><i class="fas fa-save"></i> Save Settings</button>
+
+                        <!-- ===== SOCIAL MEDIA LINKS ===== -->
+                        <div style="margin-top:24px; border-top:1px solid var(--border-light); padding-top:20px;">
+                            <h4 style="font-weight:600; margin-bottom:12px;"><i class="fas fa-share-alt"></i> Social Media Links</h4>
+                            <div class="form-grid">
+                                <div class="form-group"><label><i class="fab fa-instagram" style="color:#E1306C;"></i> Instagram</label><input type="url" id="settingInstagram" placeholder="https://instagram.com/..." /></div>
+                                <div class="form-group"><label><i class="fab fa-facebook" style="color:#1877F2;"></i> Facebook</label><input type="url" id="settingFacebook" placeholder="https://facebook.com/..." /></div>
+                                <div class="form-group"><label><i class="fab fa-twitter" style="color:#000000;"></i> Twitter / X</label><input type="url" id="settingTwitter" placeholder="https://twitter.com/..." /></div>
+                                <div class="form-group"><label><i class="fab fa-youtube" style="color:#FF0000;"></i> YouTube</label><input type="url" id="settingYoutube" placeholder="https://youtube.com/..." /></div>
+                                <div class="form-group"><label><i class="fab fa-tiktok" style="color:#000000;"></i> TikTok</label><input type="url" id="settingTiktok" placeholder="https://tiktok.com/..." /></div>
+                                <div class="form-group"><label><i class="fab fa-linkedin" style="color:#0A66C2;"></i> LinkedIn</label><input type="url" id="settingLinkedin" placeholder="https://linkedin.com/..." /></div>
+                            </div>
+                            <small style="color:var(--text-muted);">Leave empty to hide the icon on your storefront.</small>
+                        </div>
+
+                        <button class="btn-add" id="saveSettingsBtn" style="margin-top:20px;"><i class="fas fa-save"></i> Save Settings</button>
+                        <div id="settingsMessage" style="margin-top:12px;"></div>
                     </div>
                 </div>
             </div>
+            <!-- ===== END SETTINGS PANEL ===== -->
         </div>
     </div>
 
@@ -693,9 +713,9 @@
     <!-- ===== TOAST ===== -->
     <div class="toast" id="toast"> <span id="toastMessage">Item added to cart!</span> <span class="toast-close" id="toastClose">&times;</span> </div>
 
-    <!-- ============================================================
-    JAVASCRIPT – WITH INSTAGRAM IMPORT
-    ============================================================ -->
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT – WITH FULL SOCIAL MEDIA SUPPORT                   -->
+    <!-- ============================================================ -->
     <script>
         // ===== CONFIGURATION =====
         const API_URL = `https://trendy-backend-jq27.onrender.com/api`;
@@ -815,6 +835,8 @@
             if (section === 'messages') loadMessages();
             if (section === 'reviews') loadReviews();
             if (section === 'sellers') loadSellers();
+            // Load social settings when Settings panel opens
+            if (section === 'settings') loadSocialSettings();
         }
 
         document.querySelectorAll('.sidebar-nav a[data-section]').forEach(link => {
@@ -1217,8 +1239,57 @@
             } catch (err) { showToast('⚠️ ' + err.message); }
         }
 
-        // ===== SETTINGS =====
-        document.getElementById('saveSettingsBtn').addEventListener('click', () => { showToast('✅ Settings saved successfully!'); });
+        // ============================================================
+        // SETTINGS – SOCIAL MEDIA (Load & Save)
+        // ============================================================
+
+        // Load all social links into the settings inputs
+        async function loadSocialSettings() {
+            try {
+                const res = await fetch(`${API_URL}/settings`);
+                if (!res.ok) throw new Error('Failed to fetch settings');
+                const data = await res.json();
+                const social = data.social || {};
+                document.getElementById('settingInstagram').value = social.instagram || '';
+                document.getElementById('settingFacebook').value = social.facebook || '';
+                document.getElementById('settingTwitter').value = social.twitter || '';
+                document.getElementById('settingYoutube').value = social.youtube || '';
+                document.getElementById('settingTiktok').value = social.tiktok || '';
+                document.getElementById('settingLinkedin').value = social.linkedin || '';
+            } catch (err) {
+                console.error('Error loading social settings:', err);
+            }
+        }
+
+        // Save all social links
+        document.getElementById('saveSettingsBtn').addEventListener('click', async function() {
+            const social = {
+                instagram: document.getElementById('settingInstagram').value.trim(),
+                facebook: document.getElementById('settingFacebook').value.trim(),
+                twitter: document.getElementById('settingTwitter').value.trim(),
+                youtube: document.getElementById('settingYoutube').value.trim(),
+                tiktok: document.getElementById('settingTiktok').value.trim(),
+                linkedin: document.getElementById('settingLinkedin').value.trim()
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/settings`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ social })
+                });
+                if (!res.ok) throw new Error('Failed to save settings');
+                const data = await res.json();
+                showToast('✅ All social links saved successfully!');
+                document.getElementById('settingsMessage').innerHTML = '<div class="alert alert-success">All social links updated.</div>';
+                setTimeout(() => {
+                    document.getElementById('settingsMessage').innerHTML = '';
+                }, 4000);
+            } catch (err) {
+                showToast('⚠️ ' + err.message);
+                document.getElementById('settingsMessage').innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
+            }
+        });
 
         // ===== IMAGE UPLOADS =====
         let heroImages = [];
@@ -1778,6 +1849,7 @@
             setupImageUpload('womenImageInput', 'womenImage', 'currentWomenImg', 'currentWomenContainer', 'removeWomenBtn');
             setupImageUpload('kidsImageInput', 'kidsImage', 'currentKidsImg', 'currentKidsContainer', 'removeKidsBtn');
             startNotificationPolling();
+            // Social settings are loaded when Settings panel is opened via navigateTo()
         }
 
         // ===== SEARCH =====

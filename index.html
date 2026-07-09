@@ -2183,10 +2183,13 @@
                 <div>
                     <h4>Connect</h4>
                     <div class="social-icons">
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
+                        <!-- ===== DYNAMIC SOCIAL ICONS (all start hidden) ===== -->
+                        <a id="instagram-link" href="#" target="_blank" style="display:none;"><i class="fab fa-instagram"></i></a>
+                        <a id="facebook-link" href="#" target="_blank" style="display:none;"><i class="fab fa-facebook-f"></i></a>
+                        <a id="twitter-link" href="#" target="_blank" style="display:none;"><i class="fab fa-twitter"></i></a>
+                        <a id="youtube-link" href="#" target="_blank" style="display:none;"><i class="fab fa-youtube"></i></a>
+                        <a id="tiktok-link" href="#" target="_blank" style="display:none;"><i class="fab fa-tiktok"></i></a>
+                        <a id="linkedin-link" href="#" target="_blank" style="display:none;"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                     <p class="footer-contact-line">
                         <i class="fas fa-envelope"></i> markelpalace@gmail.com
@@ -2208,7 +2211,7 @@
     </div>
 
     <!-- ============================================================
-    JAVASCRIPT – COMPLETE (with Reviews)
+    JAVASCRIPT – COMPLETE (with Dynamic Social Links)
     ============================================================ -->
     <script>
         // ============================================================
@@ -3547,6 +3550,48 @@
         });
 
         // ============================================================
+        // SOCIAL LINKS – FETCH & SHOW/HIDE ICONS
+        // ============================================================
+        const socialPlatforms = [
+            { key: 'facebook', elementId: 'facebook-link' },
+            { key: 'twitter', elementId: 'twitter-link' },
+            { key: 'instagram', elementId: 'instagram-link' },
+            { key: 'youtube', elementId: 'youtube-link' },
+            { key: 'tiktok', elementId: 'tiktok-link' },
+            { key: 'linkedin', elementId: 'linkedin-link' }
+        ];
+
+        async function loadSocialLinks() {
+            try {
+                const response = await fetch(`${API_URL}/settings`);
+                if (!response.ok) throw new Error('Failed to fetch settings');
+                const data = await response.json();
+                const social = data.social || {};
+
+                socialPlatforms.forEach(platform => {
+                    const element = document.getElementById(platform.elementId);
+                    if (!element) return;
+
+                    const url = social[platform.key] || '';
+                    if (url.trim() !== '') {
+                        element.href = url.trim();
+                        element.style.display = 'inline-block';
+                        console.log(`✅ ${platform.key} link loaded`);
+                    } else {
+                        element.style.display = 'none';
+                    }
+                });
+            } catch (error) {
+                console.error('❌ Error loading social links:', error);
+                // Hide all on error
+                socialPlatforms.forEach(platform => {
+                    const element = document.getElementById(platform.elementId);
+                    if (element) element.style.display = 'none';
+                });
+            }
+        }
+
+        // ============================================================
         // INIT
         // ============================================================
         updateAuthUI();
@@ -3556,6 +3601,7 @@
         loadProducts();
         loadHeroImages();
         loadGenderImages();
+        loadSocialLinks(); // <-- Load social links on page start
         console.log('✅ Frontend ready with Checkout, Stock, Coupons & Reviews.');
         console.log('📡 API URL:', API_URL);
     </script>
