@@ -560,22 +560,17 @@
                 </div>
             </div>
 
-            <!-- ============================================================ -->
-            <!-- ===== SETTINGS PANEL – WITH ALL SOCIAL MEDIA LINKS ===== -->
-            <!-- ============================================================ -->
+            <!-- ===== SETTINGS PANEL – SOCIAL MEDIA ===== -->
             <div class="tab-panel" id="panel-settings">
                 <div class="section-header"><h2>Settings</h2></div>
                 <div class="table-section">
                     <div style="padding:10px 0;">
-                        <!-- General Settings -->
                         <div class="form-grid">
                             <div class="form-group"><label>Website Name</label><input type="text" id="settingSiteName" value="Trendy_Wardrobe" /></div>
                             <div class="form-group"><label>Admin Email</label><input type="email" id="settingAdminEmail" value="markelpalace@gmail.com" /></div>
                             <div class="form-group"><label>Currency</label><select id="settingCurrency"><option value="Ksh">Ksh</option><option value="$">USD</option><option value="€">EUR</option></select></div>
                             <div class="form-group"><label>Default Language</label><select id="settingLanguage"><option value="en">English</option><option value="sw">Swahili</option></select></div>
                         </div>
-
-                        <!-- ===== SOCIAL MEDIA LINKS ===== -->
                         <div style="margin-top:24px; border-top:1px solid var(--border-light); padding-top:20px;">
                             <h4 style="font-weight:600; margin-bottom:12px;"><i class="fas fa-share-alt"></i> Social Media Links</h4>
                             <div class="form-grid">
@@ -588,13 +583,11 @@
                             </div>
                             <small style="color:var(--text-muted);">Leave empty to hide the icon on your storefront.</small>
                         </div>
-
                         <button class="btn-add" id="saveSettingsBtn" style="margin-top:20px;"><i class="fas fa-save"></i> Save Settings</button>
                         <div id="settingsMessage" style="margin-top:12px;"></div>
                     </div>
                 </div>
             </div>
-            <!-- ===== END SETTINGS PANEL ===== -->
         </div>
     </div>
 
@@ -684,12 +677,13 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT – WITH FULL SOCIAL MEDIA SUPPORT                   -->
+    <!-- JAVASCRIPT – FULLY FIXED FOR CATEGORY SAVE                   -->
     <!-- ============================================================ -->
     <script>
         const API_URL = `https://trendy-backend-jq27.onrender.com/api`;
         const IMAGE_BASE_URL = API_URL.replace('/api', '');
 
+        // ===== TOAST =====
         function showToast(msg) {
             document.getElementById('toastMessage').textContent = msg;
             document.getElementById('toast').classList.add('show');
@@ -697,6 +691,7 @@
         }
         document.getElementById('toastClose').addEventListener('click', () => document.getElementById('toast').classList.remove('show'));
 
+        // ===== AUTH =====
         function getToken() { return localStorage.getItem('token'); }
         function getUser() { const u = localStorage.getItem('user'); return u ? JSON.parse(u) : null; }
         function getHeaders() { return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }; }
@@ -741,6 +736,7 @@
             }
         });
 
+        // ===== NAVIGATION =====
         function navigateTo(section) {
             document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
             const link = document.querySelector(`.sidebar-nav a[data-section="${section}"]`);
@@ -779,6 +775,7 @@
             document.getElementById('sidebarOverlay').classList.remove('show');
         });
 
+        // ===== DARK MODE =====
         document.getElementById('darkModeToggle').addEventListener('click', function() {
             document.body.classList.toggle('dark-mode');
             const icon = this.querySelector('i');
@@ -805,6 +802,7 @@
             }
         });
 
+        // ===== CHART =====
         function renderChart(period = 'weekly') {
             const container = document.getElementById('salesChart');
             const data = {
@@ -827,6 +825,7 @@
             });
         });
 
+        // ===== DASHBOARD DATA =====
         async function loadDashboardData() {
             try {
                 const [productsRes, ordersRes, usersRes] = await Promise.all([
@@ -856,6 +855,7 @@
             } catch (err) { console.error('Dashboard load error:', err); }
         }
 
+        // ===== PRODUCTS =====
         let products = [];
         async function loadProducts() {
             try {
@@ -992,6 +992,7 @@
             loadCategories();
         });
 
+        // ===== CATEGORIES – FULLY FIXED SAVE =====
         let categories = [];
         async function loadCategories() {
             try {
@@ -1050,6 +1051,7 @@
         });
         document.getElementById('categoryFormCancel').addEventListener('click', () => document.getElementById('categoryFormModal').classList.remove('show'));
 
+        // ✅ FIX: The category form submit handler now uses getHeaders() and proper error handling
         document.getElementById('categoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('categoryId').value;
@@ -1060,15 +1062,26 @@
                 icon: document.getElementById('categoryIcon').value.trim() || 'fa-tag',
                 image: document.getElementById('categoryImage').value.trim() || '',
             };
-            const url = id ? `${API_URL}/categories/${id}` : `${API_URL}/categories`;
-            const method = id ? 'PUT' : 'POST';
-            const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(data) });
-            if (!res.ok) throw new Error('Failed to save category');
-            showToast(id ? '✅ Category updated' : '✅ Category added');
-            document.getElementById('categoryFormModal').classList.remove('show');
-            loadCategories();
+            if (!data.name || !data.slug) { showToast('⚠️ Name and slug are required.'); return; }
+            try {
+                const url = id ? `${API_URL}/categories/${id}` : `${API_URL}/categories`;
+                const method = id ? 'PUT' : 'POST';
+                const res = await fetch(url, {
+                    method,
+                    headers: getHeaders(),
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.message || 'Failed to save category');
+                showToast(id ? '✅ Category updated' : '✅ Category added');
+                document.getElementById('categoryFormModal').classList.remove('show');
+                await loadCategories();
+            } catch (err) {
+                showToast('⚠️ ' + err.message);
+            }
         });
 
+        // ===== ORDERS =====
         async function loadOrders() {
             try {
                 const res = await fetch(`${API_URL}/orders/admin/all`, { headers: getHeaders() });
@@ -1107,6 +1120,7 @@
             } catch (err) { showToast('⚠️ ' + err.message); }
         }
 
+        // ===== CUSTOMERS =====
         async function loadCustomers() {
             try {
                 const res = await fetch(`${API_URL}/users`, { headers: getHeaders() });
@@ -1119,6 +1133,7 @@
             } catch (err) { console.log('Customer data unavailable'); }
         }
 
+        // ===== INVENTORY =====
         async function loadInventory() {
             try {
                 const res = await fetch(`${API_URL}/products`);
@@ -1134,6 +1149,7 @@
             } catch (err) { showToast('⚠️ ' + err.message); }
         }
 
+        // ===== COUPONS =====
         async function loadCoupons(search = '') {
             try {
                 const url = search ? `${API_URL}/coupons?search=${encodeURIComponent(search)}` : `${API_URL}/coupons`;
@@ -1194,6 +1210,7 @@
             loadCoupons();
         });
 
+        // ===== MESSAGES =====
         async function loadMessages() {
             try {
                 const res = await fetch(`${API_URL}/messages`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
@@ -1244,6 +1261,7 @@
             } catch (err) { showToast('⚠️ ' + err.message); }
         }
 
+        // ===== REVIEWS =====
         async function loadReviews() {
             try {
                 const res = await fetch(`${API_URL}/reviews/admin/all`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
@@ -1281,6 +1299,7 @@
             loadReviews();
         }
 
+        // ===== SELLERS =====
         async function loadSellers() {
             try {
                 const res = await fetch(`${API_URL}/users`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
@@ -1315,6 +1334,7 @@
             loadSellers();
         }
 
+        // ===== SOCIAL SETTINGS =====
         async function loadSocialSettings() {
             try {
                 const res = await fetch(`${API_URL}/settings`);
@@ -1341,7 +1361,6 @@
                 tiktok: document.getElementById('settingTiktok').value.trim(),
                 linkedin: document.getElementById('settingLinkedin').value.trim()
             };
-
             try {
                 const res = await fetch(`${API_URL}/settings`, {
                     method: 'PUT',
@@ -1358,6 +1377,7 @@
             }
         });
 
+        // ===== IMAGE UPLOADS (hero, gender) =====
         let heroImages = [];
         async function loadHeroImages() {
             try {
@@ -1444,6 +1464,7 @@
             });
         }
 
+        // ===== NOTIFICATIONS =====
         async function fetchNotifications() {
             try {
                 const res = await fetch(`${API_URL}/notifications`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
@@ -1499,6 +1520,7 @@
             fetchNotifications();
         });
 
+        // ===== INSTAGRAM IMPORTER =====
         document.getElementById('importInstagramBtn').addEventListener('click', async function() {
             const link = document.getElementById('instagramLinkInput').value.trim();
             if (!link) { showToast('⚠️ Please paste an Instagram post link.'); return; }
@@ -1535,6 +1557,7 @@
             document.getElementById('instagramLinkInput').value = '';
         });
 
+        // ===== DASHBOARD LOAD =====
         async function loadDashboard() {
             await loadDashboardData();
             renderChart('weekly');
@@ -1558,6 +1581,7 @@
             setInterval(fetchNotifications, 30000);
         }
 
+        // ===== SEARCH =====
         document.getElementById('adminSearchInput').addEventListener('keyup', function() {
             const query = this.value.toLowerCase().trim();
             document.querySelectorAll('#productsTableBody tr').forEach(row => {
@@ -1565,6 +1589,7 @@
             });
         });
 
+        // ===== INIT =====
         if (getToken() && getUser() && getUser().role === 'admin') {
             document.getElementById('loginOverlay').classList.add('hidden');
             const user = getUser();
@@ -1573,6 +1598,7 @@
             loadDashboard();
         }
 
+        // Close modals when clicking outside
         document.getElementById('productFormModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
         document.getElementById('categoryFormModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
         document.getElementById('couponFormModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
