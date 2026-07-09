@@ -406,6 +406,7 @@
                     <h2>Products</h2>
                     <button class="btn-add" id="addProductBtn"><i class="fas fa-plus"></i> Add Product</button>
                 </div>
+                <!-- Instagram Importer -->
                 <div class="table-section" style="margin-bottom:20px;">
                     <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
                         <input type="text" id="instagramLinkInput" placeholder="Paste Instagram post link..." style="flex:1; min-width:300px; padding:10px 14px; border:1px solid var(--border-light); border-radius:4px; font-size:0.9rem; background:var(--bg-primary);">
@@ -560,7 +561,7 @@
                 </div>
             </div>
 
-            <!-- ===== SETTINGS PANEL – SOCIAL MEDIA ===== -->
+            <!-- ===== SETTINGS PANEL ===== -->
             <div class="tab-panel" id="panel-settings">
                 <div class="section-header"><h2>Settings</h2></div>
                 <div class="table-section">
@@ -677,13 +678,12 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT – FULLY FIXED FOR CATEGORY SAVE                   -->
+    <!-- JAVASCRIPT – WITH FULL IMAGE UPLOAD SUPPORT                  -->
     <!-- ============================================================ -->
     <script>
         const API_URL = `https://trendy-backend-jq27.onrender.com/api`;
         const IMAGE_BASE_URL = API_URL.replace('/api', '');
 
-        // ===== TOAST =====
         function showToast(msg) {
             document.getElementById('toastMessage').textContent = msg;
             document.getElementById('toast').classList.add('show');
@@ -691,7 +691,6 @@
         }
         document.getElementById('toastClose').addEventListener('click', () => document.getElementById('toast').classList.remove('show'));
 
-        // ===== AUTH =====
         function getToken() { return localStorage.getItem('token'); }
         function getUser() { const u = localStorage.getItem('user'); return u ? JSON.parse(u) : null; }
         function getHeaders() { return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }; }
@@ -736,7 +735,6 @@
             }
         });
 
-        // ===== NAVIGATION =====
         function navigateTo(section) {
             document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
             const link = document.querySelector(`.sidebar-nav a[data-section="${section}"]`);
@@ -775,7 +773,6 @@
             document.getElementById('sidebarOverlay').classList.remove('show');
         });
 
-        // ===== DARK MODE =====
         document.getElementById('darkModeToggle').addEventListener('click', function() {
             document.body.classList.toggle('dark-mode');
             const icon = this.querySelector('i');
@@ -802,7 +799,6 @@
             }
         });
 
-        // ===== CHART =====
         function renderChart(period = 'weekly') {
             const container = document.getElementById('salesChart');
             const data = {
@@ -825,7 +821,6 @@
             });
         });
 
-        // ===== DASHBOARD DATA =====
         async function loadDashboardData() {
             try {
                 const [productsRes, ordersRes, usersRes] = await Promise.all([
@@ -929,20 +924,31 @@
         });
         document.getElementById('productFormCancel').addEventListener('click', () => document.getElementById('productFormModal').classList.remove('show'));
 
+        // ===== PRODUCT IMAGE UPLOAD =====
         document.getElementById('productImageInput').addEventListener('change', async function() {
             const files = this.files;
             if (!files.length) return;
             const formData = new FormData();
-            for (let i = 0; i < files.length; i++) formData.append('productImages', files[i]);
-            const res = await fetch(`${API_URL}/upload/products`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: formData });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Upload failed');
-            const current = document.getElementById('productImages').value;
-            const existing = current ? current.split(',') : [];
-            const all = [...existing, ...data.urls];
-            document.getElementById('productImages').value = all.join(',');
-            renderProductImagePreviews(all);
-            showToast('✅ Images uploaded');
+            for (let i = 0; i < files.length; i++) {
+                formData.append('productImages', files[i]);
+            }
+            try {
+                const res = await fetch(`${API_URL}/upload/multiple`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}` },
+                    body: formData
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Upload failed');
+                const current = document.getElementById('productImages').value;
+                const existing = current ? current.split(',') : [];
+                const all = [...existing, ...data.urls];
+                document.getElementById('productImages').value = all.join(',');
+                renderProductImagePreviews(all);
+                showToast('✅ Images uploaded');
+            } catch (err) {
+                showToast('⚠️ ' + err.message);
+            }
             this.value = '';
         });
 
@@ -992,7 +998,7 @@
             loadCategories();
         });
 
-        // ===== CATEGORIES – FULLY FIXED SAVE =====
+        // ===== CATEGORIES =====
         let categories = [];
         async function loadCategories() {
             try {
@@ -1051,7 +1057,6 @@
         });
         document.getElementById('categoryFormCancel').addEventListener('click', () => document.getElementById('categoryFormModal').classList.remove('show'));
 
-        // ✅ FIX: The category form submit handler now uses getHeaders() and proper error handling
         document.getElementById('categoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('categoryId').value;
@@ -1063,22 +1068,13 @@
                 image: document.getElementById('categoryImage').value.trim() || '',
             };
             if (!data.name || !data.slug) { showToast('⚠️ Name and slug are required.'); return; }
-            try {
-                const url = id ? `${API_URL}/categories/${id}` : `${API_URL}/categories`;
-                const method = id ? 'PUT' : 'POST';
-                const res = await fetch(url, {
-                    method,
-                    headers: getHeaders(),
-                    body: JSON.stringify(data)
-                });
-                const result = await res.json();
-                if (!res.ok) throw new Error(result.message || 'Failed to save category');
-                showToast(id ? '✅ Category updated' : '✅ Category added');
-                document.getElementById('categoryFormModal').classList.remove('show');
-                await loadCategories();
-            } catch (err) {
-                showToast('⚠️ ' + err.message);
-            }
+            const url = id ? `${API_URL}/categories/${id}` : `${API_URL}/categories`;
+            const method = id ? 'PUT' : 'POST';
+            const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(data) });
+            if (!res.ok) throw new Error('Failed to save category');
+            showToast(id ? '✅ Category updated' : '✅ Category added');
+            document.getElementById('categoryFormModal').classList.remove('show');
+            loadCategories();
         });
 
         // ===== ORDERS =====
@@ -1377,7 +1373,7 @@
             }
         });
 
-        // ===== IMAGE UPLOADS (hero, gender) =====
+        // ===== IMAGE UPLOADS – HERO & GENDER =====
         let heroImages = [];
         async function loadHeroImages() {
             try {
@@ -1411,14 +1407,24 @@
             if (!files.length) return;
             if (heroImages.length + files.length > 5) { showToast('⚠️ Maximum 5 hero images allowed.'); this.value = ''; return; }
             const formData = new FormData();
-            for (let i = 0; i < files.length; i++) formData.append('heroImages', files[i]);
-            const res = await fetch(`${API_URL}/upload/hero-multiple`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: formData });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Upload failed');
-            heroImages = [...heroImages, ...data.urls];
-            await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ key: 'heroImages', value: heroImages }) });
-            renderHeroPreviews();
-            showToast(`✅ ${files.length} hero images uploaded`);
+            for (let i = 0; i < files.length; i++) {
+                formData.append('heroImages', files[i]);
+            }
+            try {
+                const res = await fetch(`${API_URL}/upload/hero-multiple`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}` },
+                    body: formData
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Upload failed');
+                heroImages = [...heroImages, ...data.urls];
+                await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ key: 'heroImages', value: heroImages }) });
+                renderHeroPreviews();
+                showToast(`✅ ${files.length} hero images uploaded`);
+            } catch (err) {
+                showToast('⚠️ ' + err.message);
+            }
             this.value = '';
         });
 
@@ -1440,6 +1446,7 @@
             } catch (e) { console.error(`Error loading ${key}:`, e); }
         }
 
+        // GENDER IMAGE UPLOAD
         function setupImageUpload(inputId, uploadKey, imgId, containerId, removeBtnId) {
             const input = document.getElementById(inputId);
             const removeBtn = document.getElementById(removeBtnId);
@@ -1448,17 +1455,33 @@
                 if (!file) return;
                 const formData = new FormData();
                 formData.append('genderImage', file);
-                const res = await fetch(`${API_URL}/upload/gender`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: formData });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Upload failed');
-                await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ key: uploadKey, value: data.url }) });
-                showToast(`✅ ${uploadKey} updated`);
-                await loadSetting(uploadKey, imgId, containerId);
+                try {
+                    const res = await fetch(`${API_URL}/upload/gender`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${getToken()}` },
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Upload failed');
+                    await fetch(`${API_URL}/settings`, {
+                        method: 'POST',
+                        headers: getHeaders(),
+                        body: JSON.stringify({ key: uploadKey, value: data.url })
+                    });
+                    showToast(`✅ ${uploadKey} updated`);
+                    await loadSetting(uploadKey, imgId, containerId);
+                } catch (err) {
+                    showToast('⚠️ ' + err.message);
+                }
                 this.value = '';
             });
             removeBtn.addEventListener('click', async function() {
                 if (!confirm(`Remove ${uploadKey} image?`)) return;
-                await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ key: uploadKey, value: null }) });
+                await fetch(`${API_URL}/settings`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ key: uploadKey, value: null })
+                });
                 showToast(`✅ ${uploadKey} removed`);
                 await loadSetting(uploadKey, imgId, containerId);
             });
@@ -1557,7 +1580,7 @@
             document.getElementById('instagramLinkInput').value = '';
         });
 
-        // ===== DASHBOARD LOAD =====
+        // ===== LOAD DASHBOARD =====
         async function loadDashboard() {
             await loadDashboardData();
             renderChart('weekly');
@@ -1598,7 +1621,7 @@
             loadDashboard();
         }
 
-        // Close modals when clicking outside
+        // ===== CLOSE MODALS ON OUTSIDE CLICK =====
         document.getElementById('productFormModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
         document.getElementById('categoryFormModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
         document.getElementById('couponFormModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
