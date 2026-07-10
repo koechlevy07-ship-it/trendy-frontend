@@ -406,7 +406,6 @@
                     <h2>Products</h2>
                     <button class="btn-add" id="addProductBtn"><i class="fas fa-plus"></i> Add Product</button>
                 </div>
-                <!-- Instagram Importer -->
                 <div class="table-section" style="margin-bottom:20px;">
                     <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
                         <input type="text" id="instagramLinkInput" placeholder="Paste Instagram post link..." style="flex:1; min-width:300px; padding:10px 14px; border:1px solid var(--border-light); border-radius:4px; font-size:0.9rem; background:var(--bg-primary);">
@@ -678,11 +677,11 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT – WITH FULL IMAGE UPLOAD SUPPORT                  -->
+    <!-- JAVASCRIPT – FIXED loadHeroImages & IMAGE PERSISTENCE         -->
     <!-- ============================================================ -->
     <script>
         const API_URL = `https://trendy-backend-jq27.onrender.com/api`;
-        const IMAGE_BASE_URL = API_URL.replace('/api', '');
+        const IMAGE_BASE_URL = API_URL.replace('/api', ''); // Not used for Cloudinary
 
         function showToast(msg) {
             document.getElementById('toastMessage').textContent = msg;
@@ -924,7 +923,6 @@
         });
         document.getElementById('productFormCancel').addEventListener('click', () => document.getElementById('productFormModal').classList.remove('show'));
 
-        // ===== PRODUCT IMAGE UPLOAD =====
         document.getElementById('productImageInput').addEventListener('change', async function() {
             const files = this.files;
             if (!files.length) return;
@@ -1373,20 +1371,35 @@
             }
         });
 
-        // ===== IMAGE UPLOADS – HERO & GENDER =====
+        // ============================================================
+        // HERO IMAGES – FIXED loadHeroImages()
+        // ============================================================
         let heroImages = [];
+
+        // ✅ FIX: loadHeroImages now fetches from /api/settings/heroImages and expects an array
         async function loadHeroImages() {
             try {
                 const res = await fetch(`${API_URL}/settings/heroImages`);
-                heroImages = Array.isArray(await res.json()) ? await res.json() : [];
+                if (!res.ok) throw new Error('Failed to fetch hero images');
+                const data = await res.json();
+                // data should be an array of strings (URLs)
+                heroImages = Array.isArray(data) ? data : [];
                 renderHeroPreviews();
-            } catch (e) { heroImages = []; renderHeroPreviews(); }
+            } catch (e) {
+                console.error('Error loading hero images:', e);
+                heroImages = [];
+                renderHeroPreviews();
+            }
         }
 
+        // ✅ FIX: No IMAGE_BASE_URL prefix – URLs are already full
         function renderHeroPreviews() {
             const grid = document.getElementById('heroPreviewGrid');
             if (!grid) return;
-            if (!heroImages || heroImages.length === 0) { grid.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No hero images uploaded.</p>'; return; }
+            if (!heroImages || heroImages.length === 0) {
+                grid.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No hero images uploaded.</p>';
+                return;
+            }
             grid.innerHTML = heroImages.map((url, index) =>
                 `<div class="hero-preview-item"><img src="${url}" alt="Hero ${index+1}" /><button class="remove-hero" data-index="${index}">&times;</button></div>`
             ).join('');
@@ -1395,13 +1408,29 @@
                     const idx = parseInt(this.dataset.index);
                     if (!confirm('Remove this hero image?')) return;
                     heroImages.splice(idx, 1);
-                    await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ key: 'heroImages', value: heroImages }) });
+                    await saveHeroImages();
                     renderHeroPreviews();
                     showToast('✅ Hero image removed');
                 });
             });
         }
 
+        // ✅ FIX: saveHeroImages uses POST to /api/settings
+        async function saveHeroImages() {
+            try {
+                const res = await fetch(`${API_URL}/settings`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ key: 'heroImages', value: heroImages })
+                });
+                if (!res.ok) throw new Error('Failed to save hero images');
+                showToast('✅ Hero images updated');
+            } catch (err) {
+                showToast('⚠️ ' + err.message);
+            }
+        }
+
+        // Hero upload handler (now uses /api/upload/hero-multiple)
         document.getElementById('heroImageInput').addEventListener('change', async function() {
             const files = this.files;
             if (!files.length) return;
@@ -1419,7 +1448,7 @@
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Upload failed');
                 heroImages = [...heroImages, ...data.urls];
-                await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ key: 'heroImages', value: heroImages }) });
+                await saveHeroImages();
                 renderHeroPreviews();
                 showToast(`✅ ${files.length} hero images uploaded`);
             } catch (err) {
@@ -1431,22 +1460,35 @@
         document.getElementById('removeAllHeroBtn').addEventListener('click', async function() {
             if (!confirm('Remove all hero images?')) return;
             heroImages = [];
-            await fetch(`${API_URL}/settings`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ key: 'heroImages', value: heroImages }) });
+            await saveHeroImages();
             renderHeroPreviews();
             showToast('✅ All hero images removed');
         });
 
+        // ===== GENDER IMAGES – FIXED loadSetting (no IMAGE_BASE_URL) =====
         async function loadSetting(key, imgId, containerId) {
             try {
                 const res = await fetch(`${API_URL}/settings/${key}`);
                 const url = await res.json();
                 const img = document.getElementById(imgId);
                 const container = document.getElementById(containerId);
-                if (url && url !== null) { img.src = url; container.style.display = 'block'; } else { img.src = ''; container.style.display = 'none'; }
-            } catch (e) { console.error(`Error loading ${key}:`, e); }
+                if (url && typeof url === 'string' && url.trim() !== '') {
+                    img.src = url;
+                    container.style.display = 'block';
+                } else {
+                    img.src = '';
+                    container.style.display = 'none';
+                }
+            } catch (e) {
+                console.error(`Error loading ${key}:`, e);
+                const img = document.getElementById(imgId);
+                const container = document.getElementById(containerId);
+                if (img) img.src = '';
+                if (container) container.style.display = 'none';
+            }
         }
 
-        // GENDER IMAGE UPLOAD
+        // ===== GENDER IMAGE UPLOAD =====
         function setupImageUpload(inputId, uploadKey, imgId, containerId, removeBtnId) {
             const input = document.getElementById(inputId);
             const removeBtn = document.getElementById(removeBtnId);
