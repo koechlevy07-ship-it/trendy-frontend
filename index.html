@@ -44,11 +44,13 @@
             padding: 0 40px; 
         }
 
-        /* ===== HEADER – PREMIUM SPEC ===== */
+        /* ============================================================
+           HEADER – FINAL REFINED PROPORTIONS (85% scale)
+        ============================================================ */
         header {
             width: 100%;
             background: #FFFFFF;
-            padding: 35px 0 20px 0;
+            padding: 22px 0 16px 0;
             border-bottom: 1px solid var(--border-light);
             position: sticky;
             top: 0;
@@ -58,19 +60,18 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 80px;
+            gap: 60px;
             flex-wrap: wrap;
         }
-        /* Logo Group: Trendy_Wardrobe + TW circle + EST */
         .logo-group {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 18px;
             flex-shrink: 0;
         }
         .signature {
             font-family: 'Great Vibes', cursive;
-            font-size: 62px;
+            font-size: 50px;
             font-weight: 400;
             color: var(--text-primary);
             line-height: 1;
@@ -80,13 +81,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 64px;
-            height: 64px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             border: 3px solid var(--color-gold);
             font-family: 'Poppins', sans-serif;
             font-weight: 700;
-            font-size: 26px;
+            font-size: 22px;
             color: var(--color-gold);
             letter-spacing: 1px;
             flex-shrink: 0;
@@ -100,21 +101,20 @@
         .est {
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
-            font-size: 18px;
-            letter-spacing: 8px;
+            font-size: 15px;
+            letter-spacing: 6px;
             color: var(--text-secondary);
         }
 
-        /* Search Bar – 64px height per your recommendation */
         .search-wrapper {
             flex: 1;
             max-width: 835px;
-            height: 64px;
+            height: 58px;
             border: 1px solid #E6E6E6;
             background: #FFFFFF;
             display: flex;
             align-items: center;
-            padding: 0 28px;
+            padding: 0 24px;
             transition: 0.3s ease;
         }
         .search-wrapper:focus-within {
@@ -129,7 +129,7 @@
             background: transparent;
             font-family: 'Poppins', sans-serif;
             font-weight: 400;
-            font-size: 22px;
+            font-size: 18px;
             color: var(--text-primary);
             padding: 0 10px 0 0;
         }
@@ -140,22 +140,21 @@
         }
         .search-wrapper .search-icon {
             color: var(--text-secondary);
-            font-size: 38px;
+            font-size: 30px;
             cursor: pointer;
             flex-shrink: 0;
         }
 
-        /* Header Icons – 34px, 40px gap */
         .header-icons {
             display: flex;
             align-items: center;
-            gap: 40px;
+            gap: 32px;
             flex-shrink: 0;
         }
         .header-icons .icon-btn {
             position: relative;
             color: var(--text-secondary);
-            font-size: 34px;
+            font-size: 28px;
             cursor: pointer;
             transition: 0.3s ease;
             display: flex;
@@ -177,9 +176,9 @@
             color: #FFFFFF;
             font-family: 'Poppins', sans-serif;
             font-weight: 700;
-            font-size: 12px;
-            width: 24px;
-            height: 24px;
+            font-size: 11px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -190,25 +189,25 @@
             color: var(--wishlist-heart);
         }
 
-        /* ===== NAVIGATION – CENTERED, 38px gap ===== */
+        /* ===== NAVIGATION ===== */
         .nav-bar {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 38px;
-            padding-top: 35px;
+            gap: 30px;
+            padding-top: 22px;
             border-top: 1px solid var(--border-light);
-            margin-top: 35px;
+            margin-top: 22px;
             flex-wrap: wrap;
         }
         .nav-bar a {
             font-family: 'Poppins', sans-serif;
             font-weight: 700;
-            font-size: 18px;
+            font-size: 16px;
             letter-spacing: 0.5px;
             text-transform: uppercase;
             color: var(--text-secondary);
-            padding-bottom: 10px;
+            padding-bottom: 8px;
             border-bottom: 3px solid transparent;
             transition: 0.35s ease;
             position: relative;
@@ -220,10 +219,10 @@
         .nav-bar a.active {
             color: var(--text-primary);
             border-bottom-color: var(--color-gold);
-            padding-bottom: 10px;
+            padding-bottom: 8px;
         }
         .nav-bar a .plus-icon {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             margin-left: 4px;
             font-weight: 300;
             display: inline-block;
@@ -241,7 +240,7 @@
             left: 50%;
             transform: translateX(-50%);
             background: #FFFFFF;
-            min-width: 160px;
+            min-width: 150px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
             border: 1px solid var(--border-light);
             padding: 8px 0;
@@ -262,7 +261,7 @@
             padding: 10px 24px;
             font-family: 'Poppins', sans-serif;
             font-weight: 400;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             letter-spacing: 1px;
             text-transform: uppercase;
             color: var(--text-secondary);
@@ -294,62 +293,60 @@
         }
 
         /* ============================================================
-           MOBILE NAV OVERRIDES
+           MOBILE OVERRIDES (scaled)
         ============================================================ */
         @media (max-width: 1200px) {
             .header-top { gap: 40px; }
-            .signature { font-size: 48px; }
-            .monogram-circle { width: 54px; height: 54px; font-size: 22px; }
-            .est { font-size: 15px; letter-spacing: 5px; }
-            .search-wrapper { max-width: 500px; height: 56px; }
-            .search-wrapper input { font-size: 18px; }
-            .search-wrapper .search-icon { font-size: 30px; }
-            .header-icons { gap: 30px; }
-            .header-icons .icon-btn { font-size: 28px; }
-            .nav-bar { gap: 28px; }
-            .nav-bar a { font-size: 16px; }
+            .signature { font-size: 40px; }
+            .monogram-circle { width: 48px; height: 48px; font-size: 18px; }
+            .est { font-size: 13px; letter-spacing: 5px; }
+            .search-wrapper { max-width: 450px; height: 50px; }
+            .search-wrapper input { font-size: 16px; }
+            .search-wrapper .search-icon { font-size: 26px; }
+            .header-icons { gap: 26px; }
+            .header-icons .icon-btn { font-size: 24px; }
+            .nav-bar { gap: 24px; }
+            .nav-bar a { font-size: 14px; }
         }
         @media (max-width: 992px) {
             .header-top { gap: 30px; }
-            .signature { font-size: 38px; }
-            .monogram-circle { width: 46px; height: 46px; font-size: 18px; border-width: 2px; }
-            .est { font-size: 13px; letter-spacing: 4px; }
-            .search-wrapper { max-width: 350px; height: 50px; padding: 0 18px; }
-            .search-wrapper input { font-size: 16px; }
-            .search-wrapper .search-icon { font-size: 24px; }
-            .header-icons { gap: 24px; }
-            .header-icons .icon-btn { font-size: 24px; }
-            .header-icons .icon-btn .badge { width: 20px; height: 20px; font-size: 10px; }
-            .nav-bar { gap: 20px; }
-            .nav-bar a { font-size: 14px; }
-        }
-        @media (max-width: 768px) {
-            .container { padding: 0 20px; }
-            header { padding: 20px 0 15px 0; }
-            .header-top { flex-wrap: wrap; gap: 16px; }
-            .logo-group { gap: 12px; }
-            .signature { font-size: 28px; }
-            .monogram-circle { width: 40px; height: 40px; font-size: 16px; border-width: 2px; }
-            .est { font-size: 11px; letter-spacing: 3px; }
-            .search-wrapper { order: 3; flex: 1 1 100%; max-width: 100%; height: 48px; padding: 0 16px; }
-            .search-wrapper input { font-size: 15px; }
+            .signature { font-size: 34px; }
+            .monogram-circle { width: 42px; height: 42px; font-size: 16px; border-width: 2px; }
+            .est { font-size: 11px; letter-spacing: 4px; }
+            .search-wrapper { max-width: 300px; height: 44px; padding: 0 16px; }
+            .search-wrapper input { font-size: 14px; }
             .search-wrapper .search-icon { font-size: 22px; }
             .header-icons { gap: 20px; }
             .header-icons .icon-btn { font-size: 22px; }
-            .header-icons .icon-btn .badge { width: 18px; height: 18px; font-size: 9px; top: -4px; right: -6px; }
+            .header-icons .icon-btn .badge { width: 18px; height: 18px; font-size: 10px; }
+            .nav-bar { gap: 18px; }
+            .nav-bar a { font-size: 13px; }
+        }
+        @media (max-width: 768px) {
+            .container { padding: 0 20px; }
+            header { padding: 16px 0 12px 0; }
+            .header-top { flex-wrap: wrap; gap: 12px; }
+            .logo-group { gap: 10px; }
+            .signature { font-size: 28px; }
+            .monogram-circle { width: 38px; height: 38px; font-size: 14px; border-width: 2px; }
+            .est { font-size: 10px; letter-spacing: 3px; }
+            .search-wrapper { order: 3; flex: 1 1 100%; max-width: 100%; height: 44px; padding: 0 14px; }
+            .search-wrapper input { font-size: 14px; }
+            .search-wrapper .search-icon { font-size: 20px; }
+            .header-icons { gap: 16px; }
+            .header-icons .icon-btn { font-size: 20px; }
+            .header-icons .icon-btn .badge { width: 16px; height: 16px; font-size: 9px; top: -4px; right: -6px; }
             .hamburger { display: block; }
             .nav-bar { 
                 display: none; 
                 flex-direction: column; 
-                gap: 16px; 
-                padding: 20px 0; 
+                gap: 14px; 
+                padding: 16px 0; 
                 border-top: 1px solid var(--border-light);
-                margin-top: 16px;
+                margin-top: 14px;
             }
-            .nav-bar.mobile-open {
-                display: flex;
-            }
-            .nav-bar a { font-size: 16px; padding-bottom: 6px; }
+            .nav-bar.mobile-open { display: flex; }
+            .nav-bar a { font-size: 14px; padding-bottom: 6px; }
             .nav-bar.mobile-open .dropdown { width: 100%; text-align: center; }
             .nav-bar.mobile-open .dropdown-content {
                 position: static;
@@ -358,30 +355,30 @@
                 border: none;
                 border-top: 1px solid var(--border-light);
                 border-bottom: 1px solid var(--border-light);
-                margin-top: 8px;
-                margin-bottom: 8px;
-                padding: 8px 0;
+                margin-top: 6px;
+                margin-bottom: 6px;
+                padding: 6px 0;
                 display: none;
                 background: #FFFFFF;
                 min-width: 100%;
             }
             .nav-bar.mobile-open .dropdown-content.show { display: block; }
-            .nav-bar.mobile-open .dropdown-content a { padding: 8px 24px; font-size: 0.85rem; }
+            .nav-bar.mobile-open .dropdown-content a { padding: 6px 20px; font-size: 0.8rem; }
         }
         @media (max-width: 480px) {
             .signature { font-size: 22px; }
-            .monogram-circle { width: 34px; height: 34px; font-size: 14px; border-width: 1.5px; }
-            .est { font-size: 9px; letter-spacing: 2px; }
-            .header-icons { gap: 14px; }
-            .header-icons .icon-btn { font-size: 20px; }
-            .search-wrapper { height: 44px; padding: 0 14px; }
-            .search-wrapper input { font-size: 14px; }
+            .monogram-circle { width: 32px; height: 32px; font-size: 12px; border-width: 1.5px; }
+            .est { font-size: 8px; letter-spacing: 2px; }
+            .header-icons { gap: 12px; }
+            .header-icons .icon-btn { font-size: 18px; }
+            .search-wrapper { height: 40px; padding: 0 12px; }
+            .search-wrapper input { font-size: 13px; }
             .search-wrapper .search-icon { font-size: 18px; }
         }
 
         /* ============================================================
-           CATALOGUE, HERO, PRODUCT GRID, MODALS, FOOTER, ETC.
-           (all unchanged from previous working version – keeping full functionality)
+           CATALOGUE, HERO, PRODUCTS, MODALS, FOOTER – all unchanged
+           (same as previous full version – kept fully functional)
         ============================================================ */
         .catalog-section {
             background: #FFFFFF;
@@ -474,7 +471,6 @@
             .catalog-card .card-overlay .shop-btn { font-size: 16px; padding: 10px 28px; }
         }
 
-        /* ===== HERO ===== */
         .hero {
             min-height: 92vh;
             display: flex;
@@ -550,7 +546,6 @@
             .hero-content .hero-sub { font-size: 14px; letter-spacing: 3px; }
         }
 
-        /* ===== PRODUCT GRID ===== */
         .products-grid-section {
             background: #FFFFFF;
             padding: 80px 0;
@@ -751,10 +746,9 @@
         @media (max-width: 600px) { .products-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; } }
 
         /* ============================================================
-           CONTACT, AUTH, CART, WISHLIST, CHECKOUT, FOOTER, TOAST, ETC.
-           (all kept exactly as before – too long to re-paste but fully functional)
+           CONTACT, AUTH, CART, WISHLIST, CHECKOUT, FOOTER, TOAST, DETAILS
+           (fully functional – same as previous version)
         ============================================================ */
-        /* CONTACT PAGE */
         .contact-page {
             padding: 60px 0 80px;
             background: #FFFFFF;
@@ -889,7 +883,6 @@
             .contact-form-fields .btn-send { align-self: stretch; }
         }
 
-        /* ===== AUTH / ACCOUNT MODAL ===== */
         .auth-tabs {
             display: flex;
             gap: 0;
@@ -1044,7 +1037,6 @@
         .order-card .order-total { font-weight:700; font-size:1rem; color:var(--color-gold); }
         .order-card .order-items { font-size:0.8rem; color:var(--text-secondary); margin-top:6px; }
 
-        /* ===== MODALS ===== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -1301,7 +1293,6 @@
             display: block;
         }
 
-        /* ===== CHECKOUT MODAL ===== */
         #checkoutOverlay .modal-content { max-width: 600px; }
         #checkoutOverlay .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
         #checkoutOverlay .form-group { display: flex; flex-direction: column; gap: 4px; }
@@ -1374,7 +1365,6 @@
             color: var(--text-primary);
         }
 
-        /* ===== FOOTER ===== */
         footer {
             background: #111111;
             padding: 60px 0 30px 0;
@@ -1455,7 +1445,6 @@
         @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 30px; } }
         @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr; gap: 30px; } }
 
-        /* ===== TOAST ===== */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -1485,9 +1474,6 @@
         }
         .toast .toast-close:hover { opacity: 1; }
 
-        /* ============================================================
-           PRODUCT DETAIL / REVIEWS (minimal styles – kept from earlier)
-        ============================================================ */
         .product-detail-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1669,7 +1655,7 @@
 </head>
 <body>
 
-    <!-- ===== HEADER – UPDATED PREMIUM SPEC ===== -->
+    <!-- ===== HEADER – FINAL PROPORTIONS ===== -->
     <header>
         <div class="container">
             <div class="header-top">
@@ -1733,9 +1719,7 @@
 
     <!-- ============================================================
     HOME, CATALOGUE, PRODUCTS, CONTACT, MODALS, FOOTER, TOAST
-    (HTML structure unchanged from previous version – all functional)
     ============================================================ -->
-    <!-- ===== HOME SECTION ===== -->
     <div id="homeSection">
         <section class="hero" id="heroSection">
             <div class="hero-content">
@@ -1782,7 +1766,6 @@
         </section>
     </div>
 
-    <!-- ===== CONTACT SECTION ===== -->
     <div id="contactSection">
         <section class="contact-page">
             <div class="container">
@@ -1813,7 +1796,7 @@
         </section>
     </div>
 
-    <!-- ===== AUTH / ACCOUNT MODAL ===== -->
+    <!-- ===== AUTH MODAL ===== -->
     <div class="modal-overlay" id="authOverlay">
         <div class="modal-content" style="max-width: 750px;">
             <button class="close-btn" id="authCloseBtn">&times;</button>
@@ -3397,7 +3380,7 @@
         loadProducts();
         loadHeroImages();
         loadCatalogueImages();
-        console.log('✅ Frontend ready with Premium Header & image URL fix.');
+        console.log('✅ Frontend ready – refined proportions.');
         console.log('📡 API URL:', API_URL);
     </script>
 </body>
