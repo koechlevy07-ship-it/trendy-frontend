@@ -4,12 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trendy_Wardrobe — Luxury Fashion</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Oswald:wght@400;700&family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-
     <style>
         /* ===== LUXURY FASHION PALETTE ===== */
         :root {
@@ -479,7 +477,7 @@
             transform: translateX(0);
         }
 
-        /* ===== CATEGORIES FILTER BAR ===== */
+        /* ===== CATEGORIES FILTER ===== */
         .categories-filter {
             background: var(--bg-secondary);
             padding: 20px 0;
@@ -2255,14 +2253,14 @@
     </div>
 
     <!-- ============================================================
-    JAVASCRIPT – COMPLETE (with Dynamic Social Links & Categories)
+    JAVASCRIPT – COMPLETE (with Dynamic Social Links & Image Loading)
     ============================================================ -->
     <script>
         // ============================================================
         // CONFIGURATION
         // ============================================================
         const API_URL = `https://trendy-backend-jq27.onrender.com/api`;
-        const IMAGE_BASE_URL = API_URL.replace('/api', '');
+        const IMAGE_BASE_URL = API_URL.replace('/api', ''); // Not used for Cloudinary
 
         // ============================================================
         // DOM REFS
@@ -2385,7 +2383,7 @@
         function isLoggedIn() { return !!getToken(); }
 
         // ============================================================
-        // HERO CAROUSEL
+        // HERO CAROUSEL – FETCH FROM BACKEND
         // ============================================================
         let heroImages = [];
         let heroIndex = 0;
@@ -2394,6 +2392,7 @@
         async function loadHeroImages() {
             try {
                 const res = await fetch(`${API_URL}/settings/heroImages`);
+                if (!res.ok) throw new Error('Failed to fetch hero images');
                 const data = await res.json();
                 heroImages = Array.isArray(data) ? data : [];
                 if (heroImages.length > 0) {
@@ -2403,12 +2402,17 @@
                     document.getElementById('heroSection').style.background =
                         'radial-gradient(ellipse at 30% 50%, #1A1A1A 0%, #0A0A0A 100%)';
                 }
-            } catch (err) { console.error('Hero error:', err); }
+            } catch (err) {
+                console.error('Hero error:', err);
+                // Fallback to default gradient
+                document.getElementById('heroSection').style.background =
+                    'radial-gradient(ellipse at 30% 50%, #1A1A1A 0%, #0A0A0A 100%)';
+            }
         }
 
         function setHeroBackground(url) {
             const hero = document.getElementById('heroSection');
-            hero.style.backgroundImage = `url(${IMAGE_BASE_URL}${url})`;
+            hero.style.backgroundImage = `url(${url})`;
             hero.style.backgroundSize = 'cover';
             hero.style.backgroundPosition = 'center';
             hero.style.backgroundRepeat = 'no-repeat';
@@ -2424,7 +2428,7 @@
         }
 
         // ============================================================
-        // GENDER IMAGES
+        // GENDER IMAGES – FETCH FROM BACKEND
         // ============================================================
         async function loadGenderImages() {
             try {
@@ -2437,8 +2441,8 @@
                 for (const key of keys) {
                     const res = await fetch(`${API_URL}/settings/${key}`);
                     const url = await res.json();
-                    if (url && cards[key]) {
-                        cards[key].style.backgroundImage = `url(${IMAGE_BASE_URL}${url})`;
+                    if (url && typeof url === 'string' && url.trim() !== '') {
+                        cards[key].style.backgroundImage = `url(${url})`;
                         cards[key].style.backgroundSize = 'cover';
                         cards[key].style.backgroundPosition = 'center';
                     } else if (cards[key]) {
@@ -2446,7 +2450,9 @@
                         cards[key].style.backgroundColor = 'var(--bg-secondary)';
                     }
                 }
-            } catch (err) { console.error('Gender images error:', err); }
+            } catch (err) {
+                console.error('Gender images error:', err);
+            }
         }
 
         // ============================================================
@@ -2751,48 +2757,6 @@
         }
 
         // ============================================================
-        // CATEGORIES – FETCH & RENDER FILTER BUTTONS
-        // ============================================================
-        let allCategories = [];
-        let currentCategory = 'all';
-
-        async function loadCategories() {
-            try {
-                const res = await fetch(`${API_URL}/categories`);
-                if (!res.ok) throw new Error('Failed to fetch categories');
-                allCategories = await res.json();
-                renderCategoryFilters();
-            } catch (err) {
-                console.error('Error loading categories:', err);
-                // If categories fail, still show "All" button
-                renderCategoryFilters();
-            }
-        }
-
-        function renderCategoryFilters() {
-            // Keep the "All" button
-            categoriesFilter.innerHTML = `<button class="filter-btn active" data-category="all">All</button>`;
-            // Add category buttons
-            allCategories.forEach(cat => {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                btn.dataset.category = cat.slug;
-                btn.textContent = cat.name;
-                categoriesFilter.appendChild(btn);
-            });
-            // Add click listeners
-            categoriesFilter.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    categoriesFilter.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    currentCategory = this.dataset.category;
-                    // Reload products with the selected category filter
-                    loadProducts(currentCategory === 'all' ? 'all' : currentCategory, null, '');
-                });
-            });
-        }
-
-        // ============================================================
         // CART
         // ============================================================
         let cartItems = [];
@@ -3081,7 +3045,7 @@
             cartItems.forEach((item, index) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
-                const imgSrc = item.image ? IMAGE_BASE_URL + item.image : '';
+                const imgSrc = item.image ? item.image : '';
                 html += `
                     <div class="cart-item" data-index="${index}">
                         <div class="item-image">
@@ -3212,13 +3176,13 @@
                 const thumbnails = document.getElementById('detailThumbnails');
                 thumbnails.innerHTML = '';
                 if (p.images && p.images.length > 0) {
-                    mainImg.src = IMAGE_BASE_URL + p.images[0];
+                    mainImg.src = p.images[0];
                     mainImg.style.display = 'block';
                     p.images.forEach((img, idx) => {
                         const thumb = document.createElement('img');
-                        thumb.src = IMAGE_BASE_URL + img;
+                        thumb.src = img;
                         thumb.alt = `${p.name} ${idx+1}`;
-                        thumb.addEventListener('click', () => { mainImg.src = IMAGE_BASE_URL + img; });
+                        thumb.addEventListener('click', () => { mainImg.src = img; });
                         thumbnails.appendChild(thumb);
                     });
                 } else {
@@ -3462,7 +3426,7 @@
                 const wishlistIconHtml = inWishlist ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
                 const wishlistClass = inWishlist ? 'wishlist-btn-card liked' : 'wishlist-btn-card';
                 const hasImages = p.images && p.images.length > 0;
-                const imageUrl = hasImages ? IMAGE_BASE_URL + p.images[0] : '';
+                const imageUrl = hasImages ? p.images[0] : '';
                 const originalPrice = p.originalPrice ? p.originalPrice : null;
                 const inStock = (p.inStock !== undefined) ? p.inStock : (p.stock > 0);
                 const stockDisplay = p.stock !== undefined ? `${p.stock} left` : (p.inStock ? 'In Stock' : 'Out of Stock');
@@ -3568,7 +3532,6 @@
                 categoriesFilter.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 const allBtn = categoriesFilter.querySelector('[data-category="all"]');
                 if (allBtn) allBtn.classList.add('active');
-                currentCategory = 'all';
                 loadProducts('all', gender);
                 showToast(`🛍️ Showing ${gender.toUpperCase()} collection`);
                 document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
@@ -3614,7 +3577,6 @@
                 categoriesFilter.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 const catBtn = categoriesFilter.querySelector(`[data-category="${catSlug}"]`);
                 if (catBtn) catBtn.classList.add('active');
-                currentCategory = catSlug;
                 loadProducts(catSlug, gender);
                 showToast(`🛍️ Showing ${gender.toUpperCase()} ${category.replace('-', ' ')}`);
             });
@@ -3630,9 +3592,9 @@
                 if (window.innerWidth <= 768) {
                     document.querySelectorAll('.dropdown-content').forEach(c => c.classList.remove('show'));
                 }
-                currentCategory = filter === 'all' ? 'all' : filter;
+                const catSlug = filter === 'all' ? 'all' : filter;
                 categoriesFilter.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                const catBtn = categoriesFilter.querySelector(`[data-category="${currentCategory}"]`);
+                const catBtn = categoriesFilter.querySelector(`[data-category="${catSlug}"]`);
                 if (catBtn) catBtn.classList.add('active');
                 loadProducts(filter);
             });
@@ -3696,21 +3658,63 @@
         }
 
         // ============================================================
+        // CATEGORIES – FETCH & RENDER FILTER BUTTONS
+        // ============================================================
+        let allCategories = [];
+        let currentCategory = 'all';
+
+        async function loadCategories() {
+            try {
+                const res = await fetch(`${API_URL}/categories`);
+                if (!res.ok) throw new Error('Failed to fetch categories');
+                allCategories = await res.json();
+                renderCategoryFilters();
+            } catch (err) {
+                console.error('Error loading categories:', err);
+                // If categories fail, still show "All" button
+                renderCategoryFilters();
+            }
+        }
+
+        function renderCategoryFilters() {
+            // Keep the "All" button
+            categoriesFilter.innerHTML = `<button class="filter-btn active" data-category="all">All</button>`;
+            // Add category buttons
+            allCategories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.dataset.category = cat.slug;
+                btn.textContent = cat.name;
+                categoriesFilter.appendChild(btn);
+            });
+            // Add click listeners
+            categoriesFilter.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    categoriesFilter.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentCategory = this.dataset.category;
+                    // Reload products with the selected category filter
+                    loadProducts(currentCategory === 'all' ? 'all' : currentCategory, null, '');
+                });
+            });
+        }
+
+        // ============================================================
         // INIT
         // ============================================================
         updateAuthUI();
         showHomeSection();
         loadCart();
         loadWishlist();
-        loadHeroImages();
-        loadGenderImages();
+        loadHeroImages();          // ✅ Now fetches from backend
+        loadGenderImages();        // ✅ Now fetches from backend
         loadCategories();
         loadSocialLinks();
-        // Load products after categories are loaded – wait for categories to be ready
+        // Load products after categories are ready
         setTimeout(() => {
             loadProducts('all', null, '');
-        }, 200);
-        console.log('✅ Frontend ready with dynamic categories & social links.');
+        }, 300);
+        console.log('✅ Frontend ready with dynamic categories, social links, and images.');
         console.log('📡 API URL:', API_URL);
     </script>
 </body>
