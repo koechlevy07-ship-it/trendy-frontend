@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        /* ===== ROOT VARIABLES ===== */
         :root {
             --sidebar-width: 260px;
             --header-height: 70px;
@@ -37,7 +36,6 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
 
-        /* ===== LOGIN OVERLAY ===== */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(8px); }
         #loginOverlay.hidden { display: none; }
         .login-box { background: var(--bg-secondary); padding: 48px 40px; border-radius: var(--radius); max-width: 420px; width: 90%; border-top: 4px solid var(--gold); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
@@ -50,7 +48,6 @@
         .login-box button { width: 100%; padding: 14px; background: var(--text-primary); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.8rem; cursor: pointer; transition: var(--transition); }
         .login-box button:hover { background: var(--gold); color: var(--text-primary); }
 
-        /* ===== SIDEBAR ===== */
         .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh; background: var(--sidebar-bg); color: var(--text-muted); z-index: 100; display: flex; flex-direction: column; transition: transform 0.3s ease; overflow: hidden; }
         .sidebar-brand { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 12px; min-height: var(--header-height); }
         .sidebar-brand .brand-icon { font-size: 1.8rem; color: var(--gold); }
@@ -69,10 +66,8 @@
         .sidebar-footer a { display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.85rem; padding: 8px 12px; border-radius: var(--radius-sm); transition: var(--transition); cursor: pointer; }
         .sidebar-footer a:hover { background: var(--sidebar-hover); color: #fff; }
 
-        /* ===== MAIN CONTENT ===== */
         .main-content { margin-left: var(--sidebar-width); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* ===== HEADER ===== */
         .top-header { height: var(--header-height); background: var(--bg-secondary); border-bottom: 1px solid var(--border-light); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 16px; }
         .top-header .header-left { display: flex; align-items: center; gap: 16px; }
         .top-header .header-left .hamburger { display: none; font-size: 1.4rem; cursor: pointer; color: var(--text-secondary); background: none; border: none; padding: 4px; }
@@ -106,7 +101,6 @@
         .notification-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--border-light); }
         .notification-header .mark-all-btn { background: none; border: none; color: var(--gold); font-size: 0.75rem; cursor: pointer; text-decoration: underline; }
 
-        /* ===== DASHBOARD CONTENT ===== */
         .page-content { flex: 1; overflow-y: auto; padding: 24px 32px 40px; background: var(--bg-primary); }
 
         .dashboard-cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; margin-bottom: 28px; }
@@ -683,12 +677,12 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT – DIRECT CLOUDINARY UPLOAD (NO SERVER UPLOAD)     -->
+    <!-- JAVASCRIPT – DIRECT CLOUDINARY UPLOAD + PERSISTENT HERO     -->
     <!-- ============================================================ -->
     <script>
         // ===== CONFIGURATION =====
         const API_URL = `https://trendy-backend-jq27.onrender.com/api`;
-        const CLOUDINARY_CLOUD_NAME = `vbnlibtl`; // Your Cloudinary cloud name
+        const CLOUDINARY_CLOUD_NAME = `vbnlibtl`;
         const CLOUDINARY_UPLOAD_PRESET = `trendy-wardrobe`; // Must be created in Cloudinary as unsigned
 
         // ===== TOAST =====
@@ -959,7 +953,7 @@
         });
         document.getElementById('productFormCancel').addEventListener('click', () => document.getElementById('productFormModal').classList.remove('show'));
 
-        // ===== PRODUCT IMAGE UPLOAD (Direct to Cloudinary) =====
+        // ===== PRODUCT IMAGE UPLOAD (Direct Cloudinary) =====
         document.getElementById('productImageInput').addEventListener('change', async function() {
             const files = this.files;
             if (!files.length) return;
@@ -1421,10 +1415,11 @@
         });
 
         // ============================================================
-        // HERO IMAGES – DIRECT CLOUDINARY UPLOAD
+        // HERO IMAGES – PERSISTENT FIX (JSON string inside social)
         // ============================================================
         let heroImages = [];
 
+        // Load hero images – backend returns parsed array
         async function loadHeroImages() {
             try {
                 const res = await fetch(`${API_URL}/settings/heroImages`);
@@ -1461,6 +1456,7 @@
             });
         }
 
+        // Save hero images – backend will store as JSON string inside social
         async function saveHeroImages() {
             try {
                 const res = await fetch(`${API_URL}/settings`, {
@@ -1472,10 +1468,11 @@
                 showToast('✅ Hero images updated');
             } catch (err) {
                 showToast('⚠️ ' + err.message);
+                console.error('Save error:', err);
             }
         }
 
-        // Hero upload – direct to Cloudinary
+        // Hero upload – direct Cloudinary
         document.getElementById('heroImageInput').addEventListener('change', async function() {
             const files = this.files;
             if (!files.length) return;
@@ -1505,7 +1502,7 @@
         });
 
         // ============================================================
-        // GENDER IMAGES – DIRECT CLOUDINARY UPLOAD
+        // GENDER IMAGES – Direct Cloudinary (already working)
         // ============================================================
         async function loadSetting(key, imgId, containerId) {
             try {
@@ -1537,7 +1534,6 @@
                 if (!file) return;
                 try {
                     const url = await uploadToCloudinary(file, 'genders');
-                    // Save the URL to backend
                     const res = await fetch(`${API_URL}/settings`, {
                         method: 'POST',
                         headers: getHeaders(),
