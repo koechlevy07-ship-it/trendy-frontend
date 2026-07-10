@@ -677,7 +677,7 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT – DIRECT CLOUDINARY UPLOAD + PERSISTENT HERO     -->
+    <!-- JAVASCRIPT – DIRECT CLOUDINARY UPLOAD & PERSISTENT IMAGES   -->
     <!-- ============================================================ -->
     <script>
         // ===== CONFIGURATION =====
@@ -739,7 +739,7 @@
         });
 
         // ============================================================
-        // DIRECT CLOUDINARY UPLOAD HELPER (NO SERVER)
+        // DIRECT CLOUDINARY UPLOAD HELPER
         // ============================================================
         async function uploadToCloudinary(file, folder = 'general') {
             const formData = new FormData();
@@ -1415,11 +1415,10 @@
         });
 
         // ============================================================
-        // HERO IMAGES – PERSISTENT FIX (JSON string inside social)
+        // HERO IMAGES – TOP-LEVEL ARRAY (PERSISTENT)
         // ============================================================
         let heroImages = [];
 
-        // Load hero images – backend returns parsed array
         async function loadHeroImages() {
             try {
                 const res = await fetch(`${API_URL}/settings/heroImages`);
@@ -1456,7 +1455,6 @@
             });
         }
 
-        // Save hero images – backend will store as JSON string inside social
         async function saveHeroImages() {
             try {
                 const res = await fetch(`${API_URL}/settings`, {
@@ -1502,7 +1500,7 @@
         });
 
         // ============================================================
-        // GENDER IMAGES – Direct Cloudinary (already working)
+        // GENDER IMAGES – TOP-LEVEL STRINGS (PERSISTENT)
         // ============================================================
         async function loadSetting(key, imgId, containerId) {
             try {
