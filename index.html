@@ -45,16 +45,15 @@
         }
 
         /* ============================================================
-           HEADER – FINAL REFINED PROPORTIONS (85% scale)
+           STICKY HEADER – only logo, search, icons remain fixed
         ============================================================ */
-        header {
-            width: 100%;
-            background: #FFFFFF;
-            padding: 22px 0 16px 0;
-            border-bottom: 1px solid var(--border-light);
+        .sticky-header {
             position: sticky;
             top: 0;
             z-index: 1000;
+            background: #FFFFFF;
+            border-bottom: 1px solid var(--border-light);
+            padding: 22px 0 16px 0;
         }
         .header-top {
             display: flex;
@@ -189,15 +188,19 @@
             color: var(--wishlist-heart);
         }
 
-        /* ===== NAVIGATION ===== */
+        /* ============================================================
+           NAVIGATION – scrolls away, not sticky
+        ============================================================ */
+        .nav-container {
+            background: #FFFFFF;
+            border-bottom: 1px solid var(--border-light);
+        }
         .nav-bar {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 30px;
-            padding-top: 22px;
-            border-top: 1px solid var(--border-light);
-            margin-top: 22px;
+            padding: 22px 0 16px 0;
             flex-wrap: wrap;
         }
         .nav-bar a {
@@ -293,7 +296,7 @@
         }
 
         /* ============================================================
-           MOBILE OVERRIDES (scaled)
+           MOBILE OVERRIDES
         ============================================================ */
         @media (max-width: 1200px) {
             .header-top { gap: 40px; }
@@ -324,7 +327,7 @@
         }
         @media (max-width: 768px) {
             .container { padding: 0 20px; }
-            header { padding: 16px 0 12px 0; }
+            .sticky-header { padding: 16px 0 12px 0; }
             .header-top { flex-wrap: wrap; gap: 12px; }
             .logo-group { gap: 10px; }
             .signature { font-size: 28px; }
@@ -342,8 +345,6 @@
                 flex-direction: column; 
                 gap: 14px; 
                 padding: 16px 0; 
-                border-top: 1px solid var(--border-light);
-                margin-top: 14px;
             }
             .nav-bar.mobile-open { display: flex; }
             .nav-bar a { font-size: 14px; padding-bottom: 6px; }
@@ -377,8 +378,8 @@
         }
 
         /* ============================================================
-           CATALOGUE, HERO, PRODUCTS, MODALS, FOOTER – all unchanged
-           (same as previous full version – kept fully functional)
+           All other styles (catalogue, hero, products, modals, footer)
+           remain unchanged – kept fully functional.
         ============================================================ */
         .catalog-section {
             background: #FFFFFF;
@@ -1655,8 +1656,10 @@
 </head>
 <body>
 
-    <!-- ===== HEADER – FINAL PROPORTIONS ===== -->
-    <header>
+    <!-- ============================================================
+    STICKY HEADER – stays fixed on scroll
+    ============================================================ -->
+    <div class="sticky-header">
         <div class="container">
             <div class="header-top">
                 <div class="logo-group">
@@ -1686,6 +1689,14 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    NAVIGATION – scrolls away
+    ============================================================ -->
+    <div class="nav-container">
+        <div class="container">
             <nav class="nav-bar" id="mainNav">
                 <a href="#" class="active" data-page="home" id="homeNav">HOME</a>
                 <div class="dropdown" data-category="trench-coat">
@@ -1715,10 +1726,11 @@
                 <a href="#" data-page="contact" id="contactNav">CONTACT US</a>
             </nav>
         </div>
-    </header>
+    </div>
 
     <!-- ============================================================
     HOME, CATALOGUE, PRODUCTS, CONTACT, MODALS, FOOTER, TOAST
+    (unchanged HTML – kept fully functional)
     ============================================================ -->
     <div id="homeSection">
         <section class="hero" id="heroSection">
@@ -2040,7 +2052,7 @@
     </div>
 
     <!-- ============================================================
-    JAVASCRIPT – FULL FUNCTIONALITY (with getImageUrl fix)
+    JAVASCRIPT – FULL FUNCTIONALITY
     ============================================================ -->
     <script>
         // ============================================================
@@ -3380,7 +3392,7 @@
         loadProducts();
         loadHeroImages();
         loadCatalogueImages();
-        console.log('✅ Frontend ready – refined proportions.');
+        console.log('✅ Frontend ready with sticky header & refined proportions.');
         console.log('📡 API URL:', API_URL);
     </script>
 </body>
