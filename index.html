@@ -41,7 +41,7 @@
         img { display: block; max-width: 100%; height: auto; }
 
         /* ============================================================
-           STICKY SHRINKING HEADER (unchanged)
+           STICKY SHRINKING HEADER
         ============================================================ */
         .sticky-header {
             position: fixed;
@@ -229,7 +229,10 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        .search-overlay.open { display: flex; opacity: 1; }
+        .search-overlay.open {
+            display: flex;
+            opacity: 1;
+        }
         .search-overlay .search-close {
             position: absolute;
             top: 18px;
@@ -283,7 +286,10 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        .drawer-overlay.open { display: block; opacity: 1; }
+        .drawer-overlay.open {
+            display: block;
+            opacity: 1;
+        }
         .drawer {
             position: fixed;
             top: 0;
@@ -389,7 +395,7 @@
         }
 
         /* ============================================================
-           DESKTOP NAVIGATION (unchanged)
+           DESKTOP NAVIGATION
         ============================================================ */
         .nav-container {
             background: #FFFFFF;
@@ -666,7 +672,7 @@
         }
 
         /* ============================================================
-           PRODUCT SECTION (unchanged)
+           PRODUCT SECTION
         ============================================================ */
         .products-section {
             padding: 60px 0 80px;
@@ -836,7 +842,7 @@
         .product-card .product-info .add-to-cart:disabled { background: #ccc; cursor: not-allowed; color: #888; }
 
         /* ============================================================
-           MINI CART (slide from right)
+           MINI CART
         ============================================================ */
         .mini-cart-overlay {
             position: fixed;
@@ -934,18 +940,9 @@
             transition: 0.3s;
             min-width: 80px;
         }
-        .mini-cart .cart-actions .btn-checkout {
-            background: var(--text-primary);
-            color: #fff;
-        }
-        .mini-cart .cart-actions .btn-checkout:hover {
-            background: var(--color-gold);
-            color: var(--text-primary);
-        }
-        .mini-cart .cart-actions .btn-continue {
-            background: var(--bg-primary);
-            color: var(--text-secondary);
-        }
+        .mini-cart .cart-actions .btn-checkout { background: var(--text-primary); color: #fff; }
+        .mini-cart .cart-actions .btn-checkout:hover { background: var(--color-gold); color: var(--text-primary); }
+        .mini-cart .cart-actions .btn-continue { background: var(--bg-primary); color: var(--text-secondary); }
         .mini-cart .cart-actions .btn-continue:hover { background: #e5e0d8; }
         .mini-cart .empty-cart { text-align: center; padding: 40px 0; color: var(--text-secondary); }
         .mini-cart .empty-cart i { font-size: 2.5rem; opacity: 0.3; display: block; margin-bottom: 12px; }
@@ -1175,7 +1172,7 @@
         .quick-view-modal .qv-info .qv-add:disabled { background: #ccc; cursor: not-allowed; color: #888; }
 
         /* ============================================================
-           CUSTOMER DASHBOARD (inside auth modal)
+           CUSTOMER DASHBOARD
         ============================================================ */
         .dashboard-tabs {
             display: flex;
@@ -1237,7 +1234,7 @@
         .dashboard-content .order-item .order-items { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; }
 
         /* ============================================================
-           CONTACT PAGE (replaces placeholder)
+           CONTACT PAGE
         ============================================================ */
         .contact-page {
             padding: 60px 0 80px;
@@ -1350,7 +1347,7 @@
         .contact-page .whatsapp-btn:hover { transform: scale(1.03); box-shadow: 0 8px 25px rgba(37, 211, 102, 0.3); }
 
         /* ============================================================
-           FOOTER (updated with WhatsApp)
+           FOOTER
         ============================================================ */
         footer {
             background: #111111;
@@ -1414,7 +1411,7 @@
         }
 
         /* ============================================================
-           TOAST NOTIFICATIONS
+           TOAST
         ============================================================ */
         .toast {
             position: fixed;
@@ -1441,7 +1438,7 @@
         .toast.info { border-left-color: #3B82F6; }
 
         /* ============================================================
-           RESPONSIVE BREAKPOINTS (unchanged)
+           RESPONSIVE BREAKPOINTS
         ============================================================ */
         @media (min-width: 1441px) { .products-grid { grid-template-columns: repeat(5, 1fr); } }
         @media (max-width: 1440px) {
@@ -1768,7 +1765,7 @@
     </section>
 
     <!-- ============================================================
-    CONTACT PAGE (replaces placeholder)
+    CONTACT PAGE (full implementation)
     ============================================================ -->
     <section class="contact-page" id="contactPage">
         <div class="container">
@@ -2156,6 +2153,35 @@
         const contactMessage = document.getElementById('contactMessage');
         const contactWhatsAppBtn = document.getElementById('contactWhatsAppBtn');
 
+        // SECTION: Home & Contact (fixed null checks)
+        const homeSection = document.getElementById('homeSection');
+        const contactPage = document.getElementById('contactPage');
+        const homeNav = document.getElementById('homeNav');
+        const contactNav = document.getElementById('contactNav');
+
+        // ============================================================
+        // SECTION SWITCHING (safe)
+        // ============================================================
+        function showHomeSection() {
+            if (homeSection) homeSection.style.display = 'block';
+            if (contactPage) contactPage.classList.remove('active');
+            if (homeNav) homeNav.classList.add('active');
+            if (contactNav) contactNav.classList.remove('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showContactSection() {
+            if (homeSection) homeSection.style.display = 'none';
+            if (contactPage) contactPage.classList.add('active');
+            if (homeNav) homeNav.classList.remove('active');
+            if (contactNav) contactNav.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Event listeners (safe)
+        if (homeNav) homeNav.addEventListener('click', (e) => { e.preventDefault(); showHomeSection(); });
+        if (contactNav) contactNav.addEventListener('click', (e) => { e.preventDefault(); showContactSection(); });
+
         // ============================================================
         // TOAST
         // ============================================================
@@ -2200,9 +2226,7 @@
                 userIcon.className = 'far fa-user';
                 if (authOverlay.style.display === 'flex') showAuthForms();
             }
-            // Update wishlist icon
             updateWishlistIcon();
-            // Update cart badge
             updateCartBadge();
         }
 
@@ -2233,7 +2257,6 @@
             authForms.style.display = 'block';
             authLoggedIn.style.display = 'none';
             authModalTitle.textContent = 'Account';
-            // Reset tabs
             document.querySelectorAll('.auth-tabs button').forEach(b => b.classList.remove('active'));
             document.querySelector('[data-tab="login"]').classList.add('active');
             loginForm.style.display = 'flex';
@@ -2254,10 +2277,8 @@
             profilePassword.value = '';
             profileConfirm.value = '';
             profileUpdateMsg.style.display = 'none';
-            // Load orders and wishlist
             loadOrders();
             loadWishlistDashboard();
-            // Switch to dashboard tab
             switchDashboardTab('dashboard');
         }
 
@@ -2302,7 +2323,6 @@
                 setAuth(data.user, data.token);
                 showToast(`✅ Welcome back, ${data.user.name}!`, 'success');
                 closeAuthModal();
-                // refresh products/wishlist
                 loadProducts();
                 loadWishlist();
             } catch (err) {
@@ -2506,7 +2526,6 @@
                 });
                 html += '</div>';
                 wishlistDashboardContainer.innerHTML = html;
-                // Add remove listeners
                 document.querySelectorAll('.remove-wishlist-item').forEach(btn => {
                     btn.addEventListener('click', async function() {
                         const id = this.dataset.id;
@@ -2518,8 +2537,8 @@
                             if (!res.ok) throw new Error('Failed');
                             showToast('💔 Removed from wishlist', 'info');
                             loadWishlistDashboard();
-                            loadWishlist(); // update header icon
-                            renderProducts(); // refresh product cards
+                            loadWishlist();
+                            renderProducts();
                         } catch (err) {
                             showToast('⚠️ Could not remove item', 'error');
                         }
@@ -2551,7 +2570,6 @@
                 const data = await res.json();
                 wishlistItems = data.items || data || [];
                 updateWishlistIcon();
-                // Update product cards (if rendered)
                 renderProducts();
             } catch (err) {
                 wishlistItems = [];
@@ -2562,7 +2580,6 @@
         function updateWishlistIcon() {
             const count = wishlistItems.length;
             wishlistIcon.classList.toggle('liked', count > 0);
-            // Optionally show count as badge? Not required.
         }
 
         function isInWishlist(productId) {
@@ -2582,7 +2599,6 @@
             try {
                 let res;
                 if (inWish) {
-                    // Remove
                     const item = wishlistItems.find(item => {
                         const id = item.productId ? item.productId._id || item.productId : item._id;
                         return id === product._id;
@@ -2604,7 +2620,7 @@
                     showToast(`❤️ ${product.name} added to wishlist`, 'success');
                 }
                 await loadWishlist();
-                renderProducts(); // update hearts
+                renderProducts();
             } catch (err) {
                 showToast('⚠️ Could not update wishlist', 'error');
             }
@@ -2726,18 +2742,15 @@
         });
 
         function openCheckout() {
-            // Calculate subtotal
             const subtotal = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-            const delivery = subtotal > 0 ? 150 : 0; // flat delivery fee
+            const delivery = subtotal > 0 ? 150 : 0;
             const total = subtotal + delivery;
             checkoutSubtotal.textContent = `Ksh ${subtotal.toLocaleString()}`;
             checkoutDelivery.textContent = `Ksh ${delivery.toLocaleString()}`;
             checkoutTotal.textContent = `Ksh ${total.toLocaleString()}`;
-            // Pre-fill user info if logged in
             const user = getUser();
             if (user) {
                 checkoutName.value = user.name || '';
-                // phone/address not stored in user profile yet
             }
             checkoutOverlay.classList.add('show');
             document.body.classList.add('no-scroll');
@@ -2753,7 +2766,6 @@
             document.body.classList.remove('no-scroll');
         }
 
-        // Place Order
         checkoutForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = checkoutName.value.trim();
@@ -2764,9 +2776,7 @@
                 showToast('⚠️ Please fill all fields', 'error');
                 return;
             }
-            // Validate stock with backend
             try {
-                // Check stock for each item
                 for (const item of cartItems) {
                     const res = await fetch(`${API_URL}/products/${item.id}`);
                     const product = await res.json();
@@ -2803,12 +2813,10 @@
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Order failed');
-                // Empty cart
                 cartItems = [];
                 saveCart();
                 renderMiniCart();
                 closeCheckout();
-                // Show success
                 orderNumberDisplay.textContent = `#${data.order.orderNumber || data.order._id.toString().slice(-8).toUpperCase()}`;
                 orderSuccessOverlay.classList.add('show');
                 document.body.classList.add('no-scroll');
@@ -2925,7 +2933,6 @@
                     `;
             }).join('');
 
-            // Event listeners
             document.querySelectorAll('.product-card').forEach(card => {
                 card.addEventListener('click', e => {
                     if (e.target.closest('button')) return;
@@ -3115,36 +3122,9 @@
             showContactSection(); });
 
         // ============================================================
-        // SECTION SWITCHING (Home / Contact)
+        // FOOTER LINKS
         // ============================================================
-        const homeSection = document.getElementById('homeSection');
-        const contactPage = document.getElementById('contactPage');
-        const homeNav = document.getElementById('homeNav');
-        const contactNav = document.getElementById('contactNav');
         const footerLinks = document.querySelectorAll('.footer-link');
-
-        function showHomeSection() {
-            homeSection.style.display = 'block';
-            contactPage.classList.remove('active');
-            document.querySelectorAll('.nav-bar > a, .dropdown > a').forEach(a => a.classList.remove('active'));
-            homeNav.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function showContactSection() {
-            homeSection.style.display = 'none';
-            contactPage.classList.add('active');
-            document.querySelectorAll('.nav-bar > a, .dropdown > a').forEach(a => a.classList.remove('active'));
-            contactNav.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            // Load Google Map if needed (already in HTML)
-        }
-
-        homeNav.addEventListener('click', (e) => { e.preventDefault();
-            showHomeSection(); });
-        contactNav.addEventListener('click', (e) => { e.preventDefault();
-            showContactSection(); });
-
         footerLinks.forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -3189,7 +3169,6 @@
             }
         });
 
-        // WhatsApp button on contact page
         contactWhatsAppBtn.addEventListener('click', function() {
             window.open('https://wa.me/254728985417', '_blank');
         });
