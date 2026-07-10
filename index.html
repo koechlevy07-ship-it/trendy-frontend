@@ -1,16 +1,13 @@
-
-<!-- FORCE DEPLOY: 2026-07-10 --><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trendy_Wardrobe — Luxury Fashion</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Oswald:wght@400;700&family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-
     <style>
         /* ===== LUXURY FASHION PALETTE ===== */
         :root {
@@ -21,6 +18,7 @@
             --text-secondary: #6B7280;
             --border-light: #E5E7EB;
             --shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --wishlist-heart: #D81B60;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -33,11 +31,11 @@
         .debug-panel {
             background: #1a1a2e;
             color: #00ff88;
-            padding: 12px 20px;
+            padding: 8px 16px;
             font-family: 'Courier New', monospace;
             font-size: 0.7rem;
-            border-bottom: 3px solid var(--color-gold);
-            max-height: 180px;
+            border-bottom: 2px solid var(--color-gold);
+            max-height: 140px;
             overflow-y: auto;
             white-space: pre-wrap;
             word-break: break-all;
@@ -49,7 +47,6 @@
         .debug-panel .error { color: #ff6b6b; }
         .debug-panel .success { color: #51cf66; }
         .debug-panel .warn { color: #ffd93d; }
-        .debug-panel .info { color: #74c0fc; }
 
         /* ===== HEADER ===== */
         header {
@@ -542,11 +539,11 @@
             z-index: 2;
         }
         .product-card .product-image .wishlist-btn-card:hover {
-            background: #D81B60;
+            background: var(--wishlist-heart);
             color: #fff;
         }
         .product-card .product-image .wishlist-btn-card.liked {
-            background: #D81B60;
+            background: var(--wishlist-heart);
             color: #fff;
         }
         .product-card .product-info {
@@ -935,7 +932,7 @@
                 <div>
                     <h4>Connect</h4>
                     <div class="social-icons">
-                        <!-- DYNAMIC SOCIAL ICONS -->
+                        <!-- ===== DYNAMIC SOCIAL ICONS ===== -->
                         <a id="instagram-link" href="#" target="_blank" style="display:none;"><i class="fab fa-instagram"></i></a>
                         <a id="facebook-link" href="#" target="_blank" style="display:none;"><i class="fab fa-facebook-f"></i></a>
                         <a id="twitter-link" href="#" target="_blank" style="display:none;"><i class="fab fa-twitter"></i></a>
@@ -957,7 +954,7 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT – NO IMAGE_BASE_URL, RAW URLs ONLY                -->
+    <!-- JAVASCRIPT – NO IMAGE_BASE_URL, RAW CLOUDINARY URLS          -->
     <!-- ============================================================ -->
     <script>
         // ============================================================
@@ -1186,7 +1183,7 @@
         });
 
         // ============================================================
-        // SIMPLIFIED CART (kept minimal)
+        // SIMPLIFIED CART
         // ============================================================
         let cartItems = [];
 
@@ -1219,14 +1216,14 @@
             showToast(`🛒 ${product.name} added to cart!`);
         }
 
-        // Simple cart modal (just for demo – can be expanded)
+        // Cart modal (basic)
         document.getElementById('cartBtn').addEventListener('click', () => {
             const total = cartItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
             showToast(`🛒 Cart has ${cartItems.length} items, total Ksh ${total.toLocaleString()}`);
         });
 
         // ============================================================
-        // PRODUCT DETAIL (simple)
+        // PRODUCT DETAIL (basic)
         // ============================================================
         async function openProductDetail(id) {
             try {
