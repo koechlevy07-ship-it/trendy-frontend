@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trendy_Wardrobe — Luxury Fashion</title>
 
+    <!-- Google Fonts: added Bebas Neue for catalogue titles -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Oswald:wght@400;700&family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Great+Vibes&family=Oswald:wght@400;700&family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
     <style>
@@ -313,9 +314,96 @@
             .nav-bar.mobile-open .dropdown { width: 100%; text-align: center; }
         }
 
-        /* ===== HOME / CONTACT SECTIONS ===== */
-        #homeSection { display: block; }
-        #contactSection { display: none; }
+        /* ============================================================
+           NEW: PREMIUM CATALOGUE SECTION (replaces old gender cards)
+        ============================================================ */
+        .catalog-section {
+            background: var(--bg-primary);
+            padding: 40px 0 80px;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .catalog-container {
+            max-width: 1600px;
+            width: 90%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            justify-content: center;
+        }
+        .catalog-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: 0.45s ease;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            aspect-ratio: 3 / 5.6; /* 3:5.6 ratio */
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+        }
+        .catalog-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: 0.45s ease;
+            display: block;
+        }
+        .catalog-card:hover img {
+            transform: scale(1.05);
+        }
+        /* Overlay (fade-in on hover) */
+        .catalog-card .card-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0);
+            transition: 0.45s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none; /* allows click to pass through to card */
+        }
+        .catalog-card:hover .card-overlay {
+            background: rgba(0, 0, 0, 0.12);
+            opacity: 1;
+        }
+        .catalog-card .card-overlay h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 60px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #111111;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.6);
+            line-height: 1;
+            transform: translateY(10px);
+            transition: 0.45s ease;
+        }
+        .catalog-card:hover .card-overlay h3 {
+            transform: translateY(0);
+        }
+        .catalog-card .card-overlay .shop-btn {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            color: #111;
+            background: #FFFFFF;
+            padding: 12px 32px;
+            border-radius: 50px;
+            transform: translateY(20px);
+            transition: 0.45s ease;
+            opacity: 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            pointer-events: auto; /* make button clickable if needed */
+        }
+        .catalog-card:hover .card-overlay .shop-btn {
+            transform: translateY(0);
+            opacity: 1;
+        }
 
         /* ===== HERO ===== */
         .hero {
@@ -383,103 +471,9 @@
             text-shadow: 0 2px 20px rgba(0,0,0,0.4);
         }
 
-        /* ===== GENDER SECTION ===== */
-        .gender-section {
-            padding: 80px 0 60px 0;
-            background: var(--bg-primary);
-            border-top: 1px solid var(--border-light);
-            border-bottom: 1px solid var(--border-light);
-        }
-        .gender-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-        }
-        .gender-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-light);
-            padding: 50px 30px;
-            text-align: center;
-            transition: 0.4s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 20px var(--shadow-color);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            min-height: 260px;
-        }
-        .gender-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.35);
-            z-index: 0;
-            transition: 0.4s ease;
-        }
-        .gender-card:hover::before {
-            background: rgba(0,0,0,0.15);
-        }
-        .gender-card:hover {
-            border-color: var(--color-gold);
-            box-shadow: 0 12px 40px rgba(200, 169, 106, 0.15);
-            transform: translateY(-6px);
-        }
-        .gender-card .gender-icon,
-        .gender-card h3,
-        .gender-card .gender-sub,
-        .gender-card .gold-underline,
-        .gender-card .arrow {
-            position: relative;
-            z-index: 1;
-            color: #FFFFFF;
-        }
-        .gender-card .gender-icon {
-            font-size: 4rem;
-            color: var(--color-gold);
-            margin-bottom: 20px;
-            opacity: 0.9;
-        }
-        .gender-card h3 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            font-size: 1.8rem;
-            color: #FFFFFF;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 12px rgba(0,0,0,0.4);
-        }
-        .gender-card .gender-sub {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 300;
-            font-size: 0.85rem;
-            color: #FFFFFF;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        .gender-card .gold-underline {
-            display: block;
-            width: 40px;
-            height: 2px;
-            background: var(--color-gold);
-            margin: 12px auto 0;
-        }
-        .gender-card .arrow {
-            display: inline-block;
-            margin-top: 16px;
-            font-size: 1.2rem;
-            color: #FFFFFF;
-            opacity: 0.6;
-            transition: 0.3s ease;
-            transform: translateX(-10px);
-        }
-        .gender-card:hover .arrow {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        /* ===== PRODUCT GRID ===== */
+        /* ============================================================
+           PRODUCT GRID
+        ============================================================ */
         .products-grid-section {
             background: var(--bg-primary);
             padding: 80px 0;
@@ -679,7 +673,7 @@
         }
 
         /* ============================================================
-           PRODUCT DETAIL MODAL (with Reviews)
+           PRODUCT DETAIL MODAL (unchanged)
         ============================================================ */
         .product-detail-grid {
             display: grid;
@@ -787,7 +781,7 @@
         }
 
         /* ============================================================
-           REVIEWS SECTION inside Product Detail
+           REVIEWS SECTION (unchanged)
         ============================================================ */
         .reviews-section {
             grid-column: 1 / -1;
@@ -899,10 +893,31 @@
             .products-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
+            .catalog-container {
+                gap: 30px;
+            }
         }
         @media (max-width: 992px) {
             .products-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            .catalog-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 30px;
+            }
+        }
+        @media (max-width: 768px) {
+            .catalog-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                width: 95%;
+            }
+            .catalog-card .card-overlay h3 {
+                font-size: 40px;
+            }
+            .catalog-card .card-overlay .shop-btn {
+                font-size: 14px;
+                padding: 8px 24px;
             }
         }
         @media (max-width: 600px) {
@@ -922,6 +937,19 @@
             .product-card .product-info .add-to-cart-btn {
                 padding: 8px 12px;
                 font-size: 0.6rem;
+            }
+            .catalog-container {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                width: 100%;
+                padding: 0 16px;
+            }
+            .catalog-card .card-overlay h3 {
+                font-size: 48px;
+            }
+            .catalog-card .card-overlay .shop-btn {
+                font-size: 16px;
+                padding: 10px 28px;
             }
         }
         @media (max-width: 400px) {
@@ -1236,7 +1264,7 @@
         .order-card .order-items { font-size:0.8rem; color:var(--text-secondary); margin-top:6px; }
 
         /* ============================================================
-           MODALS (Cart, Wishlist, Auth, Product Detail, Checkout)
+           MODALS
         ============================================================ */
         .modal-overlay {
             display: none;
@@ -1697,7 +1725,7 @@
         .toast .toast-close:hover { opacity: 1; }
 
         /* ============================================================
-           RESPONSIVE
+           RESPONSIVE (additional overrides)
         ============================================================ */
         @media (max-width: 1024px) {
             .header-top { gap: 20px; }
@@ -1707,7 +1735,6 @@
             .est { font-size: 0.65rem; letter-spacing: 3px; }
             .hero-content h1 { font-size: 68px; }
             .hero { padding-top: 18vh; }
-            .gender-grid { grid-template-columns: repeat(2, 1fr); }
             .nav-bar { gap: 20px; }
             .nav-bar a { font-size: 0.7rem; }
             .dropdown-content { min-width: 120px; }
@@ -1721,7 +1748,6 @@
             .footer-grid { grid-template-columns: 1fr 1fr; gap: 30px; }
             .nav-bar { gap: 14px; flex-wrap: wrap; }
             .nav-bar a { font-size: 0.6rem; letter-spacing: 0.3px; }
-            .gender-grid { grid-template-columns: 1fr 1fr; }
             .dropdown-content { min-width: 100px; }
             #checkoutOverlay .form-grid { grid-template-columns: 1fr; }
         }
@@ -1768,10 +1794,6 @@
             .hero-content .gold-line { width: 40px; height: 2px; margin-bottom: 18px; }
             .products-grid-section .section-head h2 { font-size: 2rem; }
             .footer-grid { grid-template-columns: 1fr; gap: 30px; }
-            .gender-grid { grid-template-columns: 1fr; }
-            .gender-card { padding: 30px 20px; min-height: 200px; }
-            .gender-card .gender-icon { font-size: 3rem; }
-            .gender-card h3 { font-size: 1.5rem; }
             .modal-content { padding: 20px; }
             .cart-item .item-image,
             .wishlist-item .item-image { width: 50px; height: 50px; font-size: 1.4rem; }
@@ -1804,8 +1826,6 @@
             .hero { padding-top: 12vh; min-height: 80vh; }
             .hero-content h1 { font-size: 36px; line-height: 0.9; }
             .hero-content .hero-sub { font-size: 14px; letter-spacing: 3px; margin-top: 12px; }
-            .gender-card .gender-icon { font-size: 2.5rem; }
-            .gender-card h3 { font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -1883,29 +1903,33 @@
             </div>
         </section>
 
-        <section class="gender-section" id="genderSection">
-            <div class="container">
-                <div class="gender-grid">
-                    <div class="gender-card" data-gender="men" id="menCard">
-                        <div class="gender-icon"><i class="fas fa-male"></i></div>
+        <!-- ============================================================
+        NEW: PREMIUM CATALOGUE (replaces old gender-section)
+        ============================================================ -->
+        <section class="catalog-section" id="catalogSection">
+            <div class="catalog-container" id="catalogGrid">
+                <!-- MEN -->
+                <div class="catalog-card" data-gender="men" id="menCard">
+                    <img src="" alt="Men's Collection" id="catalogMenImg" />
+                    <div class="card-overlay">
                         <h3>MEN</h3>
-                        <p class="gender-sub">Executive Style &amp; Refined Tailoring</p>
-                        <span class="gold-underline"></span>
-                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                        <span class="shop-btn">Shop Now →</span>
                     </div>
-                    <div class="gender-card" data-gender="women" id="womenCard">
-                        <div class="gender-icon"><i class="fas fa-female"></i></div>
+                </div>
+                <!-- WOMEN -->
+                <div class="catalog-card" data-gender="women" id="womenCard">
+                    <img src="" alt="Women's Collection" id="catalogWomenImg" />
+                    <div class="card-overlay">
                         <h3>WOMEN</h3>
-                        <p class="gender-sub">Elegance &amp; Modern Sophistication</p>
-                        <span class="gold-underline"></span>
-                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                        <span class="shop-btn">Shop Now →</span>
                     </div>
-                    <div class="gender-card" data-gender="kids" id="kidsCard">
-                        <div class="gender-icon"><i class="fas fa-child"></i></div>
+                </div>
+                <!-- KIDS -->
+                <div class="catalog-card" data-gender="kids" id="kidsCard">
+                    <img src="" alt="Kids' Collection" id="catalogKidsImg" />
+                    <div class="card-overlay">
                         <h3>KIDS</h3>
-                        <p class="gender-sub">Stylish &amp; Comfortable Miniatures</p>
-                        <span class="gold-underline"></span>
-                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                        <span class="shop-btn">Shop Now →</span>
                     </div>
                 </div>
             </div>
@@ -1958,7 +1982,6 @@
         <div class="modal-content" style="max-width: 750px;">
             <button class="close-btn" id="authCloseBtn">&times;</button>
             <h2 id="authModalTitle">Account</h2>
-
             <div id="authForms">
                 <div class="auth-tabs">
                     <button class="active" data-tab="login">Login</button>
@@ -1979,7 +2002,6 @@
                     <button type="submit" class="btn-submit">Create Account</button>
                 </form>
             </div>
-
             <div id="authLoggedIn" style="display:none;">
                 <div style="display:flex; gap:8px; border-bottom:1px solid var(--border-light); margin-bottom:20px;">
                     <button class="account-tab-btn active" data-tab="profile" style="background:none;border:none;padding:10px 18px;font-family:'Poppins',sans-serif;font-weight:600;font-size:0.8rem;text-transform:uppercase;color:var(--text-secondary);cursor:pointer;border-bottom:3px solid transparent;transition:0.3s;">
@@ -1989,7 +2011,6 @@
                         <i class="fas fa-receipt" style="margin-right:6px;"></i> Orders
                     </button>
                 </div>
-
                 <div id="accountProfileTab">
                     <div class="auth-logged-in">
                         <div class="user-avatar" id="userAvatar">U</div>
@@ -2008,7 +2029,6 @@
                         <div id="profileUpdateMsg" style="font-size:0.85rem;display:none;"></div>
                     </form>
                 </div>
-
                 <div id="accountOrdersTab" style="display:none;">
                     <div id="ordersListContainer">
                         <p style="color:var(--text-secondary);font-size:0.85rem;padding:12px 0;">Loading your orders...</p>
@@ -2087,14 +2107,11 @@
                             <i class="fas fa-shopping-bag" style="margin-right:10px;"></i> Add to Cart
                         </button>
                     </div>
-
-                    <!-- ===== REVIEWS SECTION ===== -->
                     <div class="reviews-section">
                         <h4>Customer Reviews</h4>
                         <div id="reviewsContainer">
                             <p style="color: var(--text-muted); font-size: 0.85rem;">Loading reviews...</p>
                         </div>
-                        <!-- Review Form -->
                         <div class="review-form-container" id="reviewFormContainer">
                             <form id="reviewForm">
                                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
@@ -2206,7 +2223,7 @@
     </div>
 
     <!-- ============================================================
-    JAVASCRIPT – COMPLETE (with Reviews & Gender Images)
+    JAVASCRIPT
     ============================================================ -->
     <script>
         // ============================================================
@@ -2237,7 +2254,7 @@
         const footerHome = document.getElementById('footerHome');
         const footerContact = document.getElementById('footerContact');
 
-        // Auth / Account
+        // Auth
         const authOverlay = document.getElementById('authOverlay');
         const authCloseBtn = document.getElementById('authCloseBtn');
         const authLoggedIn = document.getElementById('authLoggedIn');
@@ -2321,7 +2338,7 @@
         toastClose.addEventListener('click', () => toast.classList.remove('show'));
 
         // ============================================================
-        // AUTH / USER HELPERS
+        // AUTH HELPERS
         // ============================================================
         function getToken() { return localStorage.getItem('token'); }
         function getUser() {
@@ -2370,29 +2387,29 @@
         }
 
         // ============================================================
-        // GENDER IMAGES (UPDATED)
+        // NEW: LOAD CATALOGUE IMAGES (Men/Women/Kids)
         // ============================================================
-        async function loadGenderImages() {
+        async function loadCatalogueImages() {
             try {
                 const keys = ['menImage', 'womenImage', 'kidsImage'];
-                const cards = {
-                    menImage: document.getElementById('menCard'),
-                    womenImage: document.getElementById('womenCard'),
-                    kidsImage: document.getElementById('kidsCard')
+                const imgIds = {
+                    menImage: 'catalogMenImg',
+                    womenImage: 'catalogWomenImg',
+                    kidsImage: 'catalogKidsImg'
                 };
                 for (const key of keys) {
                     const res = await fetch(`${API_URL}/settings/${key}`);
                     const url = await res.json();
-                    if (url && cards[key]) {
-                        cards[key].style.backgroundImage = `url(${IMAGE_BASE_URL}${url})`;
-                        cards[key].style.backgroundSize = 'cover';
-                        cards[key].style.backgroundPosition = 'center';
-                    } else if (cards[key]) {
-                        cards[key].style.backgroundImage = '';
-                        cards[key].style.backgroundColor = 'var(--bg-secondary)';
+                    const imgEl = document.getElementById(imgIds[key]);
+                    if (imgEl && url) {
+                        imgEl.src = IMAGE_BASE_URL + url;
+                        imgEl.alt = key.replace('Image', '').toUpperCase() + ' Collection';
                     }
                 }
-            } catch (err) { console.error('Gender images error:', err); }
+            } catch (err) {
+                console.error('Catalogue images error:', err);
+                // Fallback placeholders (optional)
+            }
         }
 
         // ============================================================
@@ -2467,7 +2484,6 @@
             registerForm.reset();
         }
 
-        // Account tab switching
         document.querySelectorAll('.account-tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 switchAccountTab(this.dataset.tab);
@@ -2639,7 +2655,7 @@
         });
 
         // ============================================================
-        // ORDERS (My Orders)
+        // ORDERS
         // ============================================================
         async function loadAccountOrders() {
             const container = document.getElementById('ordersListContainer');
@@ -3147,8 +3163,6 @@
 
                 productDetailOverlay.classList.add('show');
                 document.body.style.overflow = 'hidden';
-
-                // ===== LOAD REVIEWS =====
                 loadReviews(p._id);
 
             } catch (err) {
@@ -3247,7 +3261,6 @@
             }
         }
 
-        // Star rating UI
         document.querySelectorAll('.star-rating span').forEach(star => {
             star.addEventListener('click', function() {
                 const value = parseInt(this.dataset.value);
@@ -3323,11 +3336,9 @@
                 if (gender) params.append('gender', gender);
                 if (search) params.append('search', search);
                 const url = `${API_URL}/products?${params.toString()}`;
-                console.log('🔍 Fetching products from:', url);
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch products');
                 const products = await res.json();
-                console.log('📦 Products fetched:', products.length);
                 return products;
             } catch (error) {
                 console.error('❌ Fetch error:', error);
@@ -3337,13 +3348,7 @@
         }
 
         function renderProducts(products) {
-            console.log('🖼️ Rendering products:', products.length);
-
-            if (!Array.isArray(products)) {
-                console.error('Products is not an array!', products);
-                products = [];
-            }
-
+            if (!Array.isArray(products)) products = [];
             if (products.length === 0) {
                 productsGrid.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
@@ -3405,7 +3410,6 @@
                 `;
             }).join('');
 
-            // Attach event listeners
             document.querySelectorAll('.product-card').forEach(card => {
                 card.addEventListener('click', function(e) {
                     if (e.target.closest('button')) return;
@@ -3442,7 +3446,6 @@
 
         async function loadProducts(filter = 'all', gender = null, search = '') {
             const products = await fetchProducts(filter, gender, search);
-            console.log('📦 Final products array:', products);
             renderProducts(products);
         }
 
@@ -3461,13 +3464,11 @@
         });
 
         // ============================================================
-        // GENDER CARDS
+        // CATALOGUE CARD CLICKS (filter by gender)
         // ============================================================
-        document.querySelectorAll('.gender-card').forEach(card => {
+        document.querySelectorAll('.catalog-card').forEach(card => {
             card.addEventListener('click', function() {
                 const gender = this.dataset.gender;
-                document.querySelectorAll('.gender-card').forEach(c => c.style.borderColor = '');
-                this.style.borderColor = 'var(--color-gold)';
                 loadProducts('all', gender);
                 showToast(`🛍️ Showing ${gender.toUpperCase()} collection`);
                 document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
@@ -3551,8 +3552,8 @@
         loadWishlist();
         loadProducts();
         loadHeroImages();
-        loadGenderImages(); // <-- This loads Men/Women/Kids images
-        console.log('✅ Frontend ready with Checkout, Stock, Coupons & Reviews.');
+        loadCatalogueImages(); // NEW: loads Men/Women/Kids images
+        console.log('✅ Frontend ready with Premium Catalogue & all features.');
         console.log('📡 API URL:', API_URL);
     </script>
 </body>
