@@ -4,10 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trendy_Wardrobe — Luxury Fashion</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Oswald:wght@400;700&family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
     <style>
         /* ===== LUXURY FASHION PALETTE ===== */
         :root {
@@ -477,7 +479,7 @@
             transform: translateX(0);
         }
 
-        /* ===== CATEGORIES FILTER ===== */
+        /* ===== CATEGORIES FILTER BAR ===== */
         .categories-filter {
             background: var(--bg-secondary);
             padding: 20px 0;
@@ -2252,15 +2254,15 @@
         <span class="toast-close" id="toastClose">&times;</span>
     </div>
 
-    <!-- ============================================================
-    JAVASCRIPT – COMPLETE (with Dynamic Social Links & Image Loading)
-    ============================================================ -->
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT – COMPLETE (with Dynamic Social Links & Images)   -->
+    <!-- ============================================================ -->
     <script>
         // ============================================================
         // CONFIGURATION
         // ============================================================
         const API_URL = `https://trendy-backend-jq27.onrender.com/api`;
-        const IMAGE_BASE_URL = API_URL.replace('/api', ''); // Not used for Cloudinary
+        const IMAGE_BASE_URL = API_URL.replace('/api', '');
 
         // ============================================================
         // DOM REFS
@@ -2395,6 +2397,7 @@
                 if (!res.ok) throw new Error('Failed to fetch hero images');
                 const data = await res.json();
                 heroImages = Array.isArray(data) ? data : [];
+                console.log('✅ Hero images loaded:', heroImages);
                 if (heroImages.length > 0) {
                     setHeroBackground(heroImages[0]);
                     startHeroCarousel();
@@ -2403,8 +2406,7 @@
                         'radial-gradient(ellipse at 30% 50%, #1A1A1A 0%, #0A0A0A 100%)';
                 }
             } catch (err) {
-                console.error('Hero error:', err);
-                // Fallback to default gradient
+                console.error('❌ Hero error:', err);
                 document.getElementById('heroSection').style.background =
                     'radial-gradient(ellipse at 30% 50%, #1A1A1A 0%, #0A0A0A 100%)';
             }
@@ -2441,17 +2443,18 @@
                 for (const key of keys) {
                     const res = await fetch(`${API_URL}/settings/${key}`);
                     const url = await res.json();
+                    console.log(`✅ ${key}:`, url);
                     if (url && typeof url === 'string' && url.trim() !== '') {
                         cards[key].style.backgroundImage = `url(${url})`;
                         cards[key].style.backgroundSize = 'cover';
                         cards[key].style.backgroundPosition = 'center';
-                    } else if (cards[key]) {
+                    } else {
                         cards[key].style.backgroundImage = '';
                         cards[key].style.backgroundColor = 'var(--bg-secondary)';
                     }
                 }
             } catch (err) {
-                console.error('Gender images error:', err);
+                console.error('❌ Gender images error:', err);
             }
         }
 
@@ -3045,7 +3048,7 @@
             cartItems.forEach((item, index) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
-                const imgSrc = item.image ? item.image : '';
+                const imgSrc = item.image ? IMAGE_BASE_URL + item.image : '';
                 html += `
                     <div class="cart-item" data-index="${index}">
                         <div class="item-image">
@@ -3176,13 +3179,13 @@
                 const thumbnails = document.getElementById('detailThumbnails');
                 thumbnails.innerHTML = '';
                 if (p.images && p.images.length > 0) {
-                    mainImg.src = p.images[0];
+                    mainImg.src = IMAGE_BASE_URL + p.images[0];
                     mainImg.style.display = 'block';
                     p.images.forEach((img, idx) => {
                         const thumb = document.createElement('img');
-                        thumb.src = img;
+                        thumb.src = IMAGE_BASE_URL + img;
                         thumb.alt = `${p.name} ${idx+1}`;
-                        thumb.addEventListener('click', () => { mainImg.src = img; });
+                        thumb.addEventListener('click', () => { mainImg.src = IMAGE_BASE_URL + img; });
                         thumbnails.appendChild(thumb);
                     });
                 } else {
@@ -3426,7 +3429,7 @@
                 const wishlistIconHtml = inWishlist ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
                 const wishlistClass = inWishlist ? 'wishlist-btn-card liked' : 'wishlist-btn-card';
                 const hasImages = p.images && p.images.length > 0;
-                const imageUrl = hasImages ? p.images[0] : '';
+                const imageUrl = hasImages ? IMAGE_BASE_URL + p.images[0] : '';
                 const originalPrice = p.originalPrice ? p.originalPrice : null;
                 const inStock = (p.inStock !== undefined) ? p.inStock : (p.stock > 0);
                 const stockDisplay = p.stock !== undefined ? `${p.stock} left` : (p.inStock ? 'In Stock' : 'Out of Stock');
@@ -3706,8 +3709,8 @@
         showHomeSection();
         loadCart();
         loadWishlist();
-        loadHeroImages();          // ✅ Now fetches from backend
-        loadGenderImages();        // ✅ Now fetches from backend
+        loadHeroImages();
+        loadGenderImages();
         loadCategories();
         loadSocialLinks();
         // Load products after categories are ready
