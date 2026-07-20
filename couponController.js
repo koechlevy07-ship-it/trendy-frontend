@@ -1,116 +1,105 @@
-const { User } = require('../models/User');
-const {
-  signAccessToken,
-  signRefreshToken,
-  verifyRefreshToken,
-  hashToken,
-} = require('../services/tokenService');
+const { User, ROLES } = require('../models/User');
 const { ApiError } = require('../utils/ApiError');
 const { sendSuccess } = require('../utils/apiResponse');
-const { env } = require('../config/env');
+const { QueryFeatures } = require('../utils/queryFeatures');
+const { recordAudit } = require('../models/AuditLog');
 
-const REFRESH_COOKIE_NAME = 'tw_refresh_token';
-
-function refreshCookieOptions() {
-  return {
-    httpOnly: true,
-    secure: env.nodeEnv === 'production',
-    sameSite: 'lax',
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    path: '/api/auth',
-  };
-}
-
-async function issueSession(res, user) {
-  const accessToken = signAccessToken(user);
-  const refreshToken = signRefreshToken(user);
-
-  user.refreshTokenHash = hashToken(refreshToken);
-  user.lastLoginAt = new Date();
-  await user.save({ validateBeforeSave: false });
-
-  res.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
-  return accessToken;
-}
-
-async function register(req, res, next) {
+async function listUsers(req, res, next) {
   try {
-    const { firstName, lastName, email, phone, password } = req.body;
+    let query = User.find({});
+    const features = new QueryFeatures(query, req.query);
+    features.filter().search(['firstName', 'lastName', 'email']).sort().paginate();
 
-    const existing = await User.findOne({ email: email.toLowerCase() });
-    if (existing) {
-      throw new ApiError(409, 'An account with this email already exists');
-    }
+    const [users, total] = await Promise.all([features.mongooseQuery, User.countDocuments()]);
 
-    const user = await User.create({ firstName, lastName, email, phone, password });
-    const accessToken = await issueSession(res, user);
-
-    return sendSuccess(res, 201, { user: user.toSafeJSON(), accessToken });
+    return sendSuccess(res, 200, { users: users.map((u) => u.toSafeJSON()) }, {
+      page: features.pagination.page,
+      limit: features.pagination.limit,
+      total,
+      totalPages: Math.ceil(total / features.pagination.limit),
+    });
   } catch (err) {
     next(err);
   }
 }
 
-async function login(req, res, next) {
+async function getUser(req, res, next) {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      throw new ApiError(400, 'Email and password are required');
-    }
-
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
-    if (!user || !(await user.comparePassword(password))) {
-      throw new ApiError(401, 'Invalid email or password');
-    }
-
-    if (!user.isActive) {
-      throw new ApiError(403, 'This account has been deactivated');
-    }
-
-    const accessToken = await issueSession(res, user);
-    return sendSuccess(res, 200, { user: user.toSafeJSON(), accessToken });
+    const user = await User.findById(req.params.id);
+    if (!user) throw new ApiError(404, 'User not found');
+    return sendSuccess(res, 200, { user: user.toSafeJSON() });
   } catch (err) {
     next(err);
   }
 }
 
-async function refresh(req, res, next) {
+/**
+ * Changes a user's role. Only super_admin can grant/revoke admin or super_admin —
+ * a regular admin cannot escalate themselves or anyone else to admin.
+ */
+async function updateUserRole(req, res, next) {
   try {
-    const token = req.cookies?.[REFRESH_COOKIE_NAME];
-    if (!token) throw new ApiError(401, 'No refresh token provided');
+    const { role } = req.body;
+    if (!ROLES.includes(role)) throw new ApiError(400, 'Invalid role');
 
-    const payload = verifyRefreshToken(token);
-    const user = await User.findById(payload.sub).select('+refreshTokenHash');
-
-    if (!user || !user.isActive || user.refreshTokenHash !== hashToken(token)) {
-      throw new ApiError(401, 'Invalid refresh token');
+    if (role !== 'customer' && req.user.role !== 'super_admin') {
+      throw new ApiError(403, 'Only a super_admin can grant admin privileges');
     }
 
-    const accessToken = signAccessToken(user);
-    return sendSuccess(res, 200, { accessToken });
+    if (req.params.id === req.user._id.toString()) {
+      throw new ApiError(400, 'You cannot change your own role');
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) throw new ApiError(404, 'User not found');
+
+    const previousRole = user.role;
+    user.role = role;
+    await user.save({ validateBeforeSave: false });
+
+    recordAudit({
+      actorId: req.user._id,
+      action: 'user.role_changed',
+      targetType: 'User',
+      targetId: user._id,
+      metadata: { from: previousRole, to: role },
+      ip: req.ip,
+    });
+
+    return sendSuccess(res, 200, { user: user.toSafeJSON() });
   } catch (err) {
-    if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
-      return next(new ApiError(401, 'Invalid or expired refresh token'));
-    }
     next(err);
   }
 }
 
-async function logout(req, res, next) {
+async function setActiveStatus(req, res, next) {
   try {
-    if (req.user) {
-      req.user.refreshTokenHash = undefined;
-      await req.user.save({ validateBeforeSave: false });
+    const { isActive } = req.body;
+    if (typeof isActive !== 'boolean') throw new ApiError(400, 'isActive must be a boolean');
+
+    if (req.params.id === req.user._id.toString()) {
+      throw new ApiError(400, 'You cannot deactivate your own account');
     }
-    res.clearCookie(REFRESH_COOKIE_NAME, { path: '/api/auth' });
-    return sendSuccess(res, 200, { message: 'Logged out successfully' });
+
+    const user = await User.findById(req.params.id);
+    if (!user) throw new ApiError(404, 'User not found');
+
+    user.isActive = isActive;
+    if (!isActive) user.refreshTokenHash = undefined; // force logout everywhere
+    await user.save({ validateBeforeSave: false });
+
+    recordAudit({
+      actorId: req.user._id,
+      action: isActive ? 'user.activated' : 'user.deactivated',
+      targetType: 'User',
+      targetId: user._id,
+      ip: req.ip,
+    });
+
+    return sendSuccess(res, 200, { user: user.toSafeJSON() });
   } catch (err) {
     next(err);
   }
 }
 
-async function me(req, res) {
-  return sendSuccess(res, 200, { user: req.user.toSafeJSON() });
-}
-
-module.exports = { register, login, refresh, logout, me };
+module.exports = { listUsers, getUser, updateUserRole, setActiveStatus };

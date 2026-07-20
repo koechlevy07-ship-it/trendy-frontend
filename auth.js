@@ -1,47 +1,49 @@
 const { Order } = require('../models/Order');
-const { Product } = require('../models/Product');
-const { User } = require('../models/User');
+const { Payment } = require('../models/Payment');
+const mpesaService = require('../services/mpesaService');
+const notificationService = require('../services/notificationService');
+const { ApiError } = require('../utils/ApiError');
 const { sendSuccess } = require('../utils/apiResponse');
 
-function parseDateRange(query) {
-  const to = query.to ? new Date(query.to) : new Date();
-  const from = query.from ? new Date(query.from) : new Date(to.getTime() - 30 * 24 * 60 * 60 * 1000);
-  return { from, to };
-}
-
 /**
- * Revenue, order count, and average order value over a date range —
- * excludes cancelled/refunded orders from revenue figures.
+ * Customer-initiated: triggers the M-Pesa STK push for a pending order they own.
  */
-async function salesSummary(req, res, next) {
+async function initiateMpesaPayment(req, res, next) {
   try {
-    const { from, to } = parseDateRange(req.query);
-    const revenueStatuses = ['paid', 'processing', 'fulfilled', 'delivered'];
+    const { orderId, phone } = req.body;
+    if (!phone) throw new ApiError(400, 'Phone number is required');
 
-    const [summary] = await Order.aggregate([
-      { $match: { createdAt: { $gte: from, $lte: to }, status: { $in: revenueStatuses } } },
-      {
-        $group: {
-          _id: null,
-          totalRevenue: { $sum: '$total' },
-          orderCount: { $sum: 1 },
-          avgOrderValue: { $avg: '$total' },
-        },
-      },
-    ]);
+    const order = await Order.findOne({ _id: orderId, customer: req.user._id });
+    if (!order) throw new ApiError(404, 'Order not found');
+    if (order.status !== 'pending') {
+      throw new ApiError(409, `Order is already "${order.status}" and cannot be paid again`);
+    }
 
-    const statusCounts = await Order.aggregate([
-      { $match: { createdAt: { $gte: from, $lte: to } } },
-      { $group: { _id: '$status', count: { $sum: 1 } } },
-    ]);
+    const stkResponse = await mpesaService.initiateStkPush({
+      phone,
+      amount: order.total,
+      orderNumber: order.orderNumber,
+    });
 
-    return sendSuccess(res, 200, {
-      range: { from, to },
-      totalRevenue: summary?.totalRevenue || 0,
-      orderCount: summary?.orderCount || 0,
-      avgOrderValue: Math.round(summary?.avgOrderValue || 0),
-      currency: 'KES',
-      statusBreakdown: statusCounts.reduce((acc, s) => ({ ...acc, [s._id]: s.count }), {}),
+    if (stkResponse.ResponseCode !== '0') {
+      throw new ApiError(502, stkResponse.ResponseDescription || 'Failed to initiate M-Pesa payment');
+    }
+
+    const payment = await Payment.create({
+      order: order._id,
+      method: 'mpesa',
+      amount: order.total,
+      currency: order.currency,
+      status: 'pending',
+      mpesaCheckoutRequestId: stkResponse.CheckoutRequestID,
+      mpesaMerchantRequestId: stkResponse.MerchantRequestID,
+      phone,
+    });
+
+    return sendSuccess(res, 202, {
+      message: 'Payment prompt sent to your phone. Enter your M-Pesa PIN to complete payment.',
+      paymentId: payment._id,
+      checkoutRequestId: stkResponse.CheckoutRequestID,
     });
   } catch (err) {
     next(err);
@@ -49,102 +51,85 @@ async function salesSummary(req, res, next) {
 }
 
 /**
- * Daily revenue series for charting.
+ * Safaricom calls this asynchronously once the customer completes (or cancels)
+ * the STK push on their phone. This endpoint must be publicly reachable (no auth) —
+ * it's on the internet-facing side of M-Pesa's infrastructure, not the customer's.
+ * Always respond 200 to Safaricom regardless of outcome, or they'll retry indefinitely.
  */
-async function revenueTimeSeries(req, res, next) {
+async function mpesaCallback(req, res) {
   try {
-    const { from, to } = parseDateRange(req.query);
-    const revenueStatuses = ['paid', 'processing', 'fulfilled', 'delivered'];
+    const callback = req.body?.Body?.stkCallback;
+    if (!callback) {
+      return res.status(200).json({ ResultCode: 0, ResultDesc: 'Ignored: no callback body' });
+    }
 
-    const series = await Order.aggregate([
-      { $match: { createdAt: { $gte: from, $lte: to }, status: { $in: revenueStatuses } } },
-      {
-        $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-          revenue: { $sum: '$total' },
-          orders: { $sum: 1 },
-        },
-      },
-      { $sort: { _id: 1 } },
-    ]);
+    const payment = await Payment.findOne({ mpesaCheckoutRequestId: callback.CheckoutRequestID });
+    if (!payment) {
+      return res.status(200).json({ ResultCode: 0, ResultDesc: 'Ignored: unknown payment reference' });
+    }
 
-    return sendSuccess(res, 200, { series });
+    payment.rawCallbackPayload = callback;
+
+    if (callback.ResultCode === 0) {
+      const metadata = callback.CallbackMetadata?.Item || [];
+      const receipt = metadata.find((i) => i.Name === 'MpesaReceiptNumber')?.Value;
+
+      payment.status = 'succeeded';
+      payment.mpesaReceiptNumber = receipt;
+      await payment.save();
+
+      const order = await Order.findById(payment.order);
+      if (order && order.status === 'pending') {
+        order.pushStatus('paid', undefined, `M-Pesa receipt ${receipt}`);
+        order.paymentReference = receipt;
+        order.paidAt = new Date();
+        await order.save();
+
+        notificationService.notifyOrderPaid(order).catch(() => null);
+      }
+    } else {
+      payment.status = callback.ResultCode === 1032 ? 'cancelled' : 'failed';
+      payment.failureReason = callback.ResultDesc;
+      await payment.save();
+    }
+
+    return res.status(200).json({ ResultCode: 0, ResultDesc: 'Received' });
   } catch (err) {
-    next(err);
+    // Still acknowledge receipt to Safaricom even if our internal processing errored,
+    // to avoid endless retries; the error is logged for investigation.
+    // eslint-disable-next-line no-console
+    console.error('[mpesa-callback] processing error:', err);
+    return res.status(200).json({ ResultCode: 0, ResultDesc: 'Received with internal error' });
   }
 }
 
 /**
- * Best-selling products by units sold within the date range.
+ * Fallback for when the callback is delayed: customer/frontend can poll this
+ * to check whether payment succeeded.
  */
-async function topProducts(req, res, next) {
+async function getPaymentStatus(req, res, next) {
   try {
-    const { from, to } = parseDateRange(req.query);
-    const limit = Math.min(Number(req.query.limit) || 10, 50);
+    const payment = await Payment.findById(req.params.id).populate('order', 'orderNumber status customer');
+    if (!payment || payment.order.customer.toString() !== req.user._id.toString()) {
+      throw new ApiError(404, 'Payment not found');
+    }
 
-    const results = await Order.aggregate([
-      { $match: { createdAt: { $gte: from, $lte: to }, status: { $ne: 'cancelled' } } },
-      { $unwind: '$items' },
-      {
-        $group: {
-          _id: '$items.product',
-          name: { $first: '$items.name' },
-          unitsSold: { $sum: '$items.quantity' },
-          revenue: { $sum: '$items.lineTotal' },
-        },
-      },
-      { $sort: { unitsSold: -1 } },
-      { $limit: limit },
-    ]);
+    if (payment.status === 'pending' && payment.mpesaCheckoutRequestId) {
+      try {
+        const queryResult = await mpesaService.queryStkStatus(payment.mpesaCheckoutRequestId);
+        if (queryResult.ResultCode === '0') {
+          payment.status = 'succeeded';
+          await payment.save();
+        }
+      } catch {
+        // Query can fail if Safaricom hasn't processed it yet — not a hard error, just keep polling.
+      }
+    }
 
-    return sendSuccess(res, 200, { products: results });
+    return sendSuccess(res, 200, { payment });
   } catch (err) {
     next(err);
   }
 }
 
-async function inventoryAlerts(req, res, next) {
-  try {
-    const products = await Product.find({ status: 'published' }).select('name slug variants');
-
-    const lowStock = [];
-    const outOfStock = [];
-
-    products.forEach((product) => {
-      product.variants.forEach((variant) => {
-        const entry = {
-          productId: product._id,
-          productName: product.name,
-          slug: product.slug,
-          sku: variant.sku,
-          size: variant.size,
-          color: variant.color,
-          stockQuantity: variant.stockQuantity,
-        };
-        if (variant.stockQuantity === 0) outOfStock.push(entry);
-        else if (variant.stockQuantity <= variant.lowStockThreshold) lowStock.push(entry);
-      });
-    });
-
-    return sendSuccess(res, 200, { lowStock, outOfStock });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function customerSummary(req, res, next) {
-  try {
-    const { from, to } = parseDateRange(req.query);
-
-    const [totalCustomers, newCustomers] = await Promise.all([
-      User.countDocuments({ role: 'customer' }),
-      User.countDocuments({ role: 'customer', createdAt: { $gte: from, $lte: to } }),
-    ]);
-
-    return sendSuccess(res, 200, { totalCustomers, newCustomers, range: { from, to } });
-  } catch (err) {
-    next(err);
-  }
-}
-
-module.exports = { salesSummary, revenueTimeSeries, topProducts, inventoryAlerts, customerSummary };
+module.exports = { initiateMpesaPayment, mpesaCallback, getPaymentStatus };

@@ -1,77 +1,150 @@
-const { ShippingZone } = require('../models/ShippingZone');
-const { calculateShipping } = require('../services/shippingService');
-const { ApiError } = require('../utils/ApiError');
+const { Order } = require('../models/Order');
+const { Product } = require('../models/Product');
+const { User } = require('../models/User');
 const { sendSuccess } = require('../utils/apiResponse');
 
+function parseDateRange(query) {
+  const to = query.to ? new Date(query.to) : new Date();
+  const from = query.from ? new Date(query.from) : new Date(to.getTime() - 30 * 24 * 60 * 60 * 1000);
+  return { from, to };
+}
+
 /**
- * Public: lets the storefront show the delivery fee/estimate at cart/checkout
- * time, before the order is actually placed.
+ * Revenue, order count, and average order value over a date range —
+ * excludes cancelled/refunded orders from revenue figures.
  */
-async function getQuote(req, res, next) {
+async function salesSummary(req, res, next) {
   try {
-    const { county, subtotal } = req.query;
-    if (!county) throw new ApiError(400, 'county is required');
+    const { from, to } = parseDateRange(req.query);
+    const revenueStatuses = ['paid', 'processing', 'fulfilled', 'delivered'];
 
-    const quote = await calculateShipping({ county, subtotal: Number(subtotal) || 0 });
-    return sendSuccess(res, 200, { quote });
+    const [summary] = await Order.aggregate([
+      { $match: { createdAt: { $gte: from, $lte: to }, status: { $in: revenueStatuses } } },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$total' },
+          orderCount: { $sum: 1 },
+          avgOrderValue: { $avg: '$total' },
+        },
+      },
+    ]);
+
+    const statusCounts = await Order.aggregate([
+      { $match: { createdAt: { $gte: from, $lte: to } } },
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ]);
+
+    return sendSuccess(res, 200, {
+      range: { from, to },
+      totalRevenue: summary?.totalRevenue || 0,
+      orderCount: summary?.orderCount || 0,
+      avgOrderValue: Math.round(summary?.avgOrderValue || 0),
+      currency: 'KES',
+      statusBreakdown: statusCounts.reduce((acc, s) => ({ ...acc, [s._id]: s.count }), {}),
+    });
   } catch (err) {
     next(err);
   }
 }
 
-async function listZones(req, res, next) {
+/**
+ * Daily revenue series for charting.
+ */
+async function revenueTimeSeries(req, res, next) {
   try {
-    const filter = req.query.includeInactive === 'true' ? {} : { isActive: true };
-    const zones = await ShippingZone.find(filter).sort('name');
-    return sendSuccess(res, 200, { zones });
+    const { from, to } = parseDateRange(req.query);
+    const revenueStatuses = ['paid', 'processing', 'fulfilled', 'delivered'];
+
+    const series = await Order.aggregate([
+      { $match: { createdAt: { $gte: from, $lte: to }, status: { $in: revenueStatuses } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          revenue: { $sum: '$total' },
+          orders: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    return sendSuccess(res, 200, { series });
   } catch (err) {
     next(err);
   }
 }
 
-async function createZone(req, res, next) {
+/**
+ * Best-selling products by units sold within the date range.
+ */
+async function topProducts(req, res, next) {
   try {
-    const zone = await ShippingZone.create(req.body);
-    return sendSuccess(res, 201, { zone });
+    const { from, to } = parseDateRange(req.query);
+    const limit = Math.min(Number(req.query.limit) || 10, 50);
+
+    const results = await Order.aggregate([
+      { $match: { createdAt: { $gte: from, $lte: to }, status: { $ne: 'cancelled' } } },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.product',
+          name: { $first: '$items.name' },
+          unitsSold: { $sum: '$items.quantity' },
+          revenue: { $sum: '$items.lineTotal' },
+        },
+      },
+      { $sort: { unitsSold: -1 } },
+      { $limit: limit },
+    ]);
+
+    return sendSuccess(res, 200, { products: results });
   } catch (err) {
     next(err);
   }
 }
 
-async function updateZone(req, res, next) {
+async function inventoryAlerts(req, res, next) {
   try {
-    const zone = await ShippingZone.findById(req.params.id);
-    if (!zone) throw new ApiError(404, 'Shipping zone not found');
+    const products = await Product.find({ status: 'published' }).select('name slug variants');
 
-    const updatable = [
-      'name',
-      'counties',
-      'baseFee',
-      'estimatedDaysMin',
-      'estimatedDaysMax',
-      'freeShippingThreshold',
-      'isActive',
-    ];
-    updatable.forEach((field) => {
-      if (req.body[field] !== undefined) zone[field] = req.body[field];
+    const lowStock = [];
+    const outOfStock = [];
+
+    products.forEach((product) => {
+      product.variants.forEach((variant) => {
+        const entry = {
+          productId: product._id,
+          productName: product.name,
+          slug: product.slug,
+          sku: variant.sku,
+          size: variant.size,
+          color: variant.color,
+          stockQuantity: variant.stockQuantity,
+        };
+        if (variant.stockQuantity === 0) outOfStock.push(entry);
+        else if (variant.stockQuantity <= variant.lowStockThreshold) lowStock.push(entry);
+      });
     });
 
-    await zone.save();
-    return sendSuccess(res, 200, { zone });
+    return sendSuccess(res, 200, { lowStock, outOfStock });
   } catch (err) {
     next(err);
   }
 }
 
-async function deleteZone(req, res, next) {
+async function customerSummary(req, res, next) {
   try {
-    const zone = await ShippingZone.findById(req.params.id);
-    if (!zone) throw new ApiError(404, 'Shipping zone not found');
-    await zone.deleteOne();
-    return sendSuccess(res, 200, { message: 'Shipping zone deleted' });
+    const { from, to } = parseDateRange(req.query);
+
+    const [totalCustomers, newCustomers] = await Promise.all([
+      User.countDocuments({ role: 'customer' }),
+      User.countDocuments({ role: 'customer', createdAt: { $gte: from, $lte: to } }),
+    ]);
+
+    return sendSuccess(res, 200, { totalCustomers, newCustomers, range: { from, to } });
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { getQuote, listZones, createZone, updateZone, deleteZone };
+module.exports = { salesSummary, revenueTimeSeries, topProducts, inventoryAlerts, customerSummary };

@@ -1,106 +1,124 @@
-const { Coupon } = require('../models/Coupon');
-const { Order } = require('../models/Order');
-const { Cart } = require('../models/Cart');
+const { Category } = require('../models/Category');
+const { Product } = require('../models/Product');
+const cloudinary = require('../config/cloudinary');
 const { ApiError } = require('../utils/ApiError');
 const { sendSuccess } = require('../utils/apiResponse');
 
-/**
- * Customer: checks whether a coupon code is usable right now, against their
- * own current cart subtotal and their own past usage. Does not consume it —
- * consumption happens at checkout.
- */
-async function validateCoupon(req, res, next) {
+async function listCategories(req, res, next) {
   try {
-    const { code } = req.params;
-    const coupon = await Coupon.findOne({ code: code.toUpperCase() });
-    if (!coupon || !coupon.isCurrentlyValid()) {
-      throw new ApiError(404, 'This coupon is invalid or has expired');
+    const filter = req.query.includeInactive === 'true' ? {} : { isActive: true };
+    if (req.query.parent === 'null') {
+      filter.parent = null;
+    } else if (req.query.parent) {
+      filter.parent = req.query.parent;
     }
 
-    const cart = await Cart.findOne({ user: req.user._id });
-    const subtotal = cart ? cart.subtotal : 0;
+    const categories = await Category.find(filter).sort('displayOrder name');
+    return sendSuccess(res, 200, { categories });
+  } catch (err) {
+    next(err);
+  }
+}
 
-    const priorUses = await Order.countDocuments({
-      customer: req.user._id,
-      couponCode: coupon.code,
-      status: { $nin: ['cancelled'] },
+async function getCategory(req, res, next) {
+  try {
+    const category = await Category.findOne({ slug: req.params.slug });
+    if (!category) throw new ApiError(404, 'Category not found');
+    return sendSuccess(res, 200, { category });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function createCategory(req, res, next) {
+  try {
+    const { name, description, parent, displayOrder, seo } = req.body;
+
+    if (parent) {
+      const parentExists = await Category.findById(parent);
+      if (!parentExists) throw new ApiError(400, 'Parent category does not exist');
+    }
+
+    let imageUrl = null;
+    let imagePublicId = null;
+    if (req.file) {
+      imageUrl = req.file.path;
+      imagePublicId = req.file.filename;
+    }
+
+    const category = await Category.create({
+      name,
+      description,
+      parent: parent || null,
+      displayOrder,
+      seo,
+      imageUrl,
+      imagePublicId,
     });
-    if (priorUses >= coupon.usageLimitPerCustomer) {
-      throw new ApiError(409, "You've already used this coupon the maximum number of times");
-    }
 
-    if (subtotal < coupon.minOrderValue) {
-      throw new ApiError(
-        409,
-        `This coupon requires a minimum order of KSh ${coupon.minOrderValue.toLocaleString('en-KE')}`
-      );
-    }
-
-    const discount = coupon.calculateDiscount(subtotal);
-    return sendSuccess(res, 200, { code: coupon.code, discount, discountType: coupon.discountType });
+    return sendSuccess(res, 201, { category });
   } catch (err) {
     next(err);
   }
 }
 
-// --- Admin ---
-
-async function listCoupons(req, res, next) {
+async function updateCategory(req, res, next) {
   try {
-    const coupons = await Coupon.find({}).sort('-createdAt');
-    return sendSuccess(res, 200, { coupons });
-  } catch (err) {
-    next(err);
-  }
-}
+    const category = await Category.findById(req.params.id);
+    if (!category) throw new ApiError(404, 'Category not found');
 
-async function createCoupon(req, res, next) {
-  try {
-    const coupon = await Coupon.create({ ...req.body, createdBy: req.user._id });
-    return sendSuccess(res, 201, { coupon });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function updateCoupon(req, res, next) {
-  try {
-    const coupon = await Coupon.findById(req.params.id);
-    if (!coupon) throw new ApiError(404, 'Coupon not found');
-
-    const updatable = [
-      'description',
-      'discountType',
-      'discountValue',
-      'minOrderValue',
-      'maxDiscountAmount',
-      'usageLimit',
-      'usageLimitPerCustomer',
-      'applicableCategories',
-      'startsAt',
-      'expiresAt',
-      'isActive',
-    ];
+    const updatable = ['name', 'description', 'parent', 'displayOrder', 'isActive', 'seo'];
     updatable.forEach((field) => {
-      if (req.body[field] !== undefined) coupon[field] = req.body[field];
+      if (req.body[field] !== undefined) category[field] = req.body[field];
     });
 
-    await coupon.save();
-    return sendSuccess(res, 200, { coupon });
+    if (req.file) {
+      if (category.imagePublicId) {
+        await cloudinary.uploader.destroy(category.imagePublicId).catch(() => null);
+      }
+      category.imageUrl = req.file.path;
+      category.imagePublicId = req.file.filename;
+    }
+
+    await category.save();
+    return sendSuccess(res, 200, { category });
   } catch (err) {
     next(err);
   }
 }
 
-async function deleteCoupon(req, res, next) {
+async function deleteCategory(req, res, next) {
   try {
-    const coupon = await Coupon.findById(req.params.id);
-    if (!coupon) throw new ApiError(404, 'Coupon not found');
-    await coupon.deleteOne();
-    return sendSuccess(res, 200, { message: 'Coupon deleted' });
+    const category = await Category.findById(req.params.id);
+    if (!category) throw new ApiError(404, 'Category not found');
+
+    const [childCount, productCount] = await Promise.all([
+      Category.countDocuments({ parent: category._id }),
+      Product.countDocuments({ category: category._id }),
+    ]);
+
+    if (childCount > 0) {
+      throw new ApiError(409, 'Cannot delete a category that has subcategories');
+    }
+    if (productCount > 0) {
+      throw new ApiError(409, 'Cannot delete a category that has products assigned to it');
+    }
+
+    if (category.imagePublicId) {
+      await cloudinary.uploader.destroy(category.imagePublicId).catch(() => null);
+    }
+
+    await category.deleteOne();
+    return sendSuccess(res, 200, { message: 'Category deleted' });
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { validateCoupon, listCoupons, createCoupon, updateCoupon, deleteCoupon };
+module.exports = {
+  listCategories,
+  getCategory,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+};

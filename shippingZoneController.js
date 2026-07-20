@@ -1,135 +1,106 @@
+const { Coupon } = require('../models/Coupon');
 const { Order } = require('../models/Order');
-const { Payment } = require('../models/Payment');
-const mpesaService = require('../services/mpesaService');
-const notificationService = require('../services/notificationService');
+const { Cart } = require('../models/Cart');
 const { ApiError } = require('../utils/ApiError');
 const { sendSuccess } = require('../utils/apiResponse');
 
 /**
- * Customer-initiated: triggers the M-Pesa STK push for a pending order they own.
+ * Customer: checks whether a coupon code is usable right now, against their
+ * own current cart subtotal and their own past usage. Does not consume it —
+ * consumption happens at checkout.
  */
-async function initiateMpesaPayment(req, res, next) {
+async function validateCoupon(req, res, next) {
   try {
-    const { orderId, phone } = req.body;
-    if (!phone) throw new ApiError(400, 'Phone number is required');
-
-    const order = await Order.findOne({ _id: orderId, customer: req.user._id });
-    if (!order) throw new ApiError(404, 'Order not found');
-    if (order.status !== 'pending') {
-      throw new ApiError(409, `Order is already "${order.status}" and cannot be paid again`);
+    const { code } = req.params;
+    const coupon = await Coupon.findOne({ code: code.toUpperCase() });
+    if (!coupon || !coupon.isCurrentlyValid()) {
+      throw new ApiError(404, 'This coupon is invalid or has expired');
     }
 
-    const stkResponse = await mpesaService.initiateStkPush({
-      phone,
-      amount: order.total,
-      orderNumber: order.orderNumber,
-    });
+    const cart = await Cart.findOne({ user: req.user._id });
+    const subtotal = cart ? cart.subtotal : 0;
 
-    if (stkResponse.ResponseCode !== '0') {
-      throw new ApiError(502, stkResponse.ResponseDescription || 'Failed to initiate M-Pesa payment');
+    const priorUses = await Order.countDocuments({
+      customer: req.user._id,
+      couponCode: coupon.code,
+      status: { $nin: ['cancelled'] },
+    });
+    if (priorUses >= coupon.usageLimitPerCustomer) {
+      throw new ApiError(409, "You've already used this coupon the maximum number of times");
     }
 
-    const payment = await Payment.create({
-      order: order._id,
-      method: 'mpesa',
-      amount: order.total,
-      currency: order.currency,
-      status: 'pending',
-      mpesaCheckoutRequestId: stkResponse.CheckoutRequestID,
-      mpesaMerchantRequestId: stkResponse.MerchantRequestID,
-      phone,
-    });
+    if (subtotal < coupon.minOrderValue) {
+      throw new ApiError(
+        409,
+        `This coupon requires a minimum order of KSh ${coupon.minOrderValue.toLocaleString('en-KE')}`
+      );
+    }
 
-    return sendSuccess(res, 202, {
-      message: 'Payment prompt sent to your phone. Enter your M-Pesa PIN to complete payment.',
-      paymentId: payment._id,
-      checkoutRequestId: stkResponse.CheckoutRequestID,
-    });
+    const discount = coupon.calculateDiscount(subtotal);
+    return sendSuccess(res, 200, { code: coupon.code, discount, discountType: coupon.discountType });
   } catch (err) {
     next(err);
   }
 }
 
-/**
- * Safaricom calls this asynchronously once the customer completes (or cancels)
- * the STK push on their phone. This endpoint must be publicly reachable (no auth) —
- * it's on the internet-facing side of M-Pesa's infrastructure, not the customer's.
- * Always respond 200 to Safaricom regardless of outcome, or they'll retry indefinitely.
- */
-async function mpesaCallback(req, res) {
+// --- Admin ---
+
+async function listCoupons(req, res, next) {
   try {
-    const callback = req.body?.Body?.stkCallback;
-    if (!callback) {
-      return res.status(200).json({ ResultCode: 0, ResultDesc: 'Ignored: no callback body' });
-    }
-
-    const payment = await Payment.findOne({ mpesaCheckoutRequestId: callback.CheckoutRequestID });
-    if (!payment) {
-      return res.status(200).json({ ResultCode: 0, ResultDesc: 'Ignored: unknown payment reference' });
-    }
-
-    payment.rawCallbackPayload = callback;
-
-    if (callback.ResultCode === 0) {
-      const metadata = callback.CallbackMetadata?.Item || [];
-      const receipt = metadata.find((i) => i.Name === 'MpesaReceiptNumber')?.Value;
-
-      payment.status = 'succeeded';
-      payment.mpesaReceiptNumber = receipt;
-      await payment.save();
-
-      const order = await Order.findById(payment.order);
-      if (order && order.status === 'pending') {
-        order.pushStatus('paid', undefined, `M-Pesa receipt ${receipt}`);
-        order.paymentReference = receipt;
-        order.paidAt = new Date();
-        await order.save();
-
-        notificationService.notifyOrderPaid(order).catch(() => null);
-      }
-    } else {
-      payment.status = callback.ResultCode === 1032 ? 'cancelled' : 'failed';
-      payment.failureReason = callback.ResultDesc;
-      await payment.save();
-    }
-
-    return res.status(200).json({ ResultCode: 0, ResultDesc: 'Received' });
-  } catch (err) {
-    // Still acknowledge receipt to Safaricom even if our internal processing errored,
-    // to avoid endless retries; the error is logged for investigation.
-    // eslint-disable-next-line no-console
-    console.error('[mpesa-callback] processing error:', err);
-    return res.status(200).json({ ResultCode: 0, ResultDesc: 'Received with internal error' });
-  }
-}
-
-/**
- * Fallback for when the callback is delayed: customer/frontend can poll this
- * to check whether payment succeeded.
- */
-async function getPaymentStatus(req, res, next) {
-  try {
-    const payment = await Payment.findById(req.params.id).populate('order', 'orderNumber status customer');
-    if (!payment || payment.order.customer.toString() !== req.user._id.toString()) {
-      throw new ApiError(404, 'Payment not found');
-    }
-
-    if (payment.status === 'pending' && payment.mpesaCheckoutRequestId) {
-      try {
-        const queryResult = await mpesaService.queryStkStatus(payment.mpesaCheckoutRequestId);
-        if (queryResult.ResultCode === '0') {
-          payment.status = 'succeeded';
-          await payment.save();
-        }
-      } catch {
-        // Query can fail if Safaricom hasn't processed it yet — not a hard error, just keep polling.
-      }
-    }
-
-    return sendSuccess(res, 200, { payment });
+    const coupons = await Coupon.find({}).sort('-createdAt');
+    return sendSuccess(res, 200, { coupons });
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { initiateMpesaPayment, mpesaCallback, getPaymentStatus };
+async function createCoupon(req, res, next) {
+  try {
+    const coupon = await Coupon.create({ ...req.body, createdBy: req.user._id });
+    return sendSuccess(res, 201, { coupon });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function updateCoupon(req, res, next) {
+  try {
+    const coupon = await Coupon.findById(req.params.id);
+    if (!coupon) throw new ApiError(404, 'Coupon not found');
+
+    const updatable = [
+      'description',
+      'discountType',
+      'discountValue',
+      'minOrderValue',
+      'maxDiscountAmount',
+      'usageLimit',
+      'usageLimitPerCustomer',
+      'applicableCategories',
+      'startsAt',
+      'expiresAt',
+      'isActive',
+    ];
+    updatable.forEach((field) => {
+      if (req.body[field] !== undefined) coupon[field] = req.body[field];
+    });
+
+    await coupon.save();
+    return sendSuccess(res, 200, { coupon });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function deleteCoupon(req, res, next) {
+  try {
+    const coupon = await Coupon.findById(req.params.id);
+    if (!coupon) throw new ApiError(404, 'Coupon not found');
+    await coupon.deleteOne();
+    return sendSuccess(res, 200, { message: 'Coupon deleted' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { validateCoupon, listCoupons, createCoupon, updateCoupon, deleteCoupon };

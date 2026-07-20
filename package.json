@@ -1,49 +1,26 @@
-# Server
-NODE_ENV=development
-PORT=5000
+# --- Build stage ---
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Database
-MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/trendy-wardrobe?retryWrites=true&w=majority
+# --- Production stage ---
+FROM node:20-alpine AS production
+WORKDIR /app
 
-# Auth
-JWT_SECRET=replace-with-a-long-random-secret
-JWT_EXPIRES_IN=7d
-JWT_REFRESH_SECRET=replace-with-a-different-long-random-secret
-JWT_REFRESH_EXPIRES_IN=30d
+# Run as a non-root user for defense in depth
+RUN addgroup -g 1001 -S nodejs && adduser -S trendywardrobe -u 1001
 
-# Cloudinary
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+COPY --from=builder /app/node_modules ./node_modules
+COPY package*.json ./
+COPY src ./src
 
-# M-Pesa Daraja API (Safaricom) — get from https://developer.safaricom.co.ke
-MPESA_ENV=sandbox
-MPESA_CONSUMER_KEY=
-MPESA_CONSUMER_SECRET=
-MPESA_SHORTCODE=
-MPESA_PASSKEY=
-MPESA_CALLBACK_URL=https://your-backend.onrender.com/api/payments/mpesa/callback
+USER trendywardrobe
 
-# Email (SMTP)
-SMTP_HOST=
-SMTP_PORT=587
-SMTP_USER=
-SMTP_PASS=
-EMAIL_FROM=no-reply@trendywardrobe.co.ke
-EMAIL_FROM_NAME=Trendy Wardrobe
+ENV NODE_ENV=production
+EXPOSE 5000
 
-# SMS (Africa's Talking)
-SMS_PROVIDER=africastalking
-AT_API_KEY=
-AT_USERNAME=
-AT_SENDER_ID=
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:5000/api/health', res => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
 
-# WhatsApp (Meta Cloud API)
-WHATSAPP_PHONE_NUMBER_ID=
-WHATSAPP_ACCESS_TOKEN=
-
-# CORS
-FRONTEND_URL=http://localhost:3000
-
-# Currency
-DEFAULT_CURRENCY=KES
+CMD ["node", "src/server.js"]

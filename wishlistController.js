@@ -1,288 +1,300 @@
+const mongoose = require('mongoose');
+const { Cart } = require('../models/Cart');
 const { Product } = require('../models/Product');
-const { Category } = require('../models/Category');
-const cloudinary = require('../config/cloudinary');
+const { Order } = require('../models/Order');
+const { Coupon } = require('../models/Coupon');
 const { ApiError } = require('../utils/ApiError');
 const { sendSuccess } = require('../utils/apiResponse');
 const { QueryFeatures } = require('../utils/queryFeatures');
+const { calculateShipping } = require('../services/shippingService');
+const notificationService = require('../services/notificationService');
+const { recordAudit } = require('../models/AuditLog');
 
 /**
- * Public: list products. Customers only ever see status: 'published'.
- * Supports ?search=, ?category=, ?minPrice=, ?maxPrice=, ?sort=, ?page=, ?limit=
+ * Checkout: converts the customer's cart into an Order, decrementing variant
+ * stock atomically so two customers can't oversell the last unit. Runs inside
+ * a MongoDB transaction — requires the Atlas cluster to be a replica set
+ * (standard on Atlas, including the free tier).
  */
-async function listProducts(req, res, next) {
+async function checkout(req, res, next) {
+  const session = await mongoose.startSession();
   try {
-    const baseFilter = { status: 'published' };
+    const { shippingAddress, paymentMethod, customerNote, couponCode } = req.body;
 
-    if (req.query.category) baseFilter.category = req.query.category;
-    if (req.query.isFeatured === 'true') baseFilter.isFeatured = true;
+    if (!shippingAddress) throw new ApiError(400, 'Shipping address is required');
+    if (!paymentMethod) throw new ApiError(400, 'Payment method is required');
 
-    if (req.query.minPrice || req.query.maxPrice) {
-      baseFilter.basePrice = {};
-      if (req.query.minPrice) baseFilter.basePrice.$gte = Number(req.query.minPrice);
-      if (req.query.maxPrice) baseFilter.basePrice.$lte = Number(req.query.maxPrice);
-    }
+    let createdOrder;
 
-    let query = Product.find(baseFilter).populate('category', 'name slug');
-
-    const features = new QueryFeatures(query, req.query);
-    features.search(['name', 'shortDescription', 'tags']).sort().paginate();
-
-    const [products, total] = await Promise.all([
-      features.mongooseQuery,
-      Product.countDocuments(baseFilter),
-    ]);
-
-    return sendSuccess(res, 200, { products }, {
-      page: features.pagination.page,
-      limit: features.pagination.limit,
-      total,
-      totalPages: Math.ceil(total / features.pagination.limit),
-    });
-  } catch (err) {
-    next(err);
-  }
-}
-
-/**
- * Admin: list all products regardless of status, for the dashboard.
- */
-async function listProductsAdmin(req, res, next) {
-  try {
-    let query = Product.find({}).populate('category', 'name slug');
-    const features = new QueryFeatures(query, req.query);
-    features.filter().search(['name', 'shortDescription', 'tags']).sort().paginate();
-
-    const [products, total] = await Promise.all([
-      features.mongooseQuery,
-      Product.countDocuments(),
-    ]);
-
-    return sendSuccess(res, 200, { products }, {
-      page: features.pagination.page,
-      limit: features.pagination.limit,
-      total,
-      totalPages: Math.ceil(total / features.pagination.limit),
-    });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function getProduct(req, res, next) {
-  try {
-    const product = await Product.findOne({ slug: req.params.slug, status: 'published' }).populate(
-      'category',
-      'name slug'
-    );
-    if (!product) throw new ApiError(404, 'Product not found');
-    return sendSuccess(res, 200, { product });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function getProductAdmin(req, res, next) {
-  try {
-    const product = await Product.findById(req.params.id).populate('category', 'name slug');
-    if (!product) throw new ApiError(404, 'Product not found');
-    return sendSuccess(res, 200, { product });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function createProduct(req, res, next) {
-  try {
-    const category = await Category.findById(req.body.category);
-    if (!category) throw new ApiError(400, 'Category does not exist');
-
-    let variants = req.body.variants;
-    if (typeof variants === 'string') variants = JSON.parse(variants);
-    if (!Array.isArray(variants) || variants.length === 0) {
-      throw new ApiError(400, 'At least one product variant is required');
-    }
-
-    const images = (req.files || []).map((file, index) => ({
-      url: file.path,
-      publicId: file.filename,
-      isPrimary: index === 0,
-      displayOrder: index,
-    }));
-    if (images.length === 0) {
-      throw new ApiError(400, 'At least one product image is required');
-    }
-
-    const product = await Product.create({
-      name: req.body.name,
-      brand: req.body.brand,
-      description: req.body.description,
-      shortDescription: req.body.shortDescription,
-      category: req.body.category,
-      tags: req.body.tags ? String(req.body.tags).split(',').map((t) => t.trim().toLowerCase()) : [],
-      basePrice: req.body.basePrice,
-      compareAtPrice: req.body.compareAtPrice || null,
-      images,
-      variants,
-      material: req.body.material,
-      careInstructions: req.body.careInstructions,
-      status: req.body.status || 'draft',
-      isFeatured: req.body.isFeatured === 'true' || req.body.isFeatured === true,
-      seo: req.body.seo,
-      createdBy: req.user._id,
-    });
-
-    return sendSuccess(res, 201, { product });
-  } catch (err) {
-    next(err);
-  }
-}
-
-async function updateProduct(req, res, next) {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) throw new ApiError(404, 'Product not found');
-
-    if (req.body.category) {
-      const category = await Category.findById(req.body.category);
-      if (!category) throw new ApiError(400, 'Category does not exist');
-    }
-
-    const updatable = [
-      'name',
-      'brand',
-      'description',
-      'shortDescription',
-      'category',
-      'basePrice',
-      'compareAtPrice',
-      'material',
-      'careInstructions',
-      'status',
-      'isFeatured',
-      'seo',
-    ];
-    updatable.forEach((field) => {
-      if (req.body[field] !== undefined) product[field] = req.body[field];
-    });
-
-    if (req.body.tags !== undefined) {
-      product.tags = String(req.body.tags)
-        .split(',')
-        .map((t) => t.trim().toLowerCase())
-        .filter(Boolean);
-    }
-
-    if (req.body.variants !== undefined) {
-      const variants = typeof req.body.variants === 'string' ? JSON.parse(req.body.variants) : req.body.variants;
-      if (!Array.isArray(variants) || variants.length === 0) {
-        throw new ApiError(400, 'At least one product variant is required');
+    await session.withTransaction(async () => {
+      const cart = await Cart.findOne({ user: req.user._id }).session(session);
+      if (!cart || cart.items.length === 0) {
+        throw new ApiError(400, 'Your cart is empty');
       }
-      product.variants = variants;
-    }
 
-    // Newly uploaded files are appended; removing individual images is a separate endpoint
-    if (req.files && req.files.length > 0) {
-      const startOrder = product.images.length;
-      const newImages = req.files.map((file, index) => ({
-        url: file.path,
-        publicId: file.filename,
-        isPrimary: product.images.length === 0 && index === 0,
-        displayOrder: startOrder + index,
-      }));
-      product.images.push(...newImages);
-    }
+      const orderItems = [];
 
-    await product.save();
-    return sendSuccess(res, 200, { product });
+      for (const cartItem of cart.items) {
+        const product = await Product.findOne({ _id: cartItem.product, status: 'published' }).session(session);
+        if (!product) {
+          throw new ApiError(409, `"${cartItem.name}" is no longer available`);
+        }
+
+        const variant = product.variants.id(cartItem.variantId);
+        if (!variant || !variant.isActive) {
+          throw new ApiError(409, `"${cartItem.name}" (${cartItem.size}/${cartItem.color}) is no longer available`);
+        }
+        if (variant.stockQuantity < cartItem.quantity) {
+          throw new ApiError(
+            409,
+            `Only ${variant.stockQuantity} unit(s) of "${cartItem.name}" (${cartItem.size}/${cartItem.color}) left in stock`
+          );
+        }
+
+        variant.stockQuantity -= cartItem.quantity;
+        product.soldCount += cartItem.quantity;
+        await product.save({ session });
+
+        const unitPrice = variant.priceOverride != null ? variant.priceOverride : product.basePrice;
+        orderItems.push({
+          product: product._id,
+          variantId: variant._id,
+          sku: variant.sku,
+          name: product.name,
+          size: variant.size,
+          color: variant.color,
+          imageUrl: cartItem.imageUrl,
+          unitPrice,
+          quantity: cartItem.quantity,
+          lineTotal: unitPrice * cartItem.quantity,
+        });
+      }
+
+      const subtotal = orderItems.reduce((sum, item) => sum + item.lineTotal, 0);
+      const shippingQuote = await calculateShipping({ county: shippingAddress.county, subtotal });
+      const shippingFee = shippingQuote.fee;
+
+      let discount = 0;
+      let appliedCouponCode = null;
+
+      if (couponCode) {
+        const coupon = await Coupon.findOne({ code: String(couponCode).toUpperCase() }).session(session);
+        if (!coupon || !coupon.isCurrentlyValid()) {
+          throw new ApiError(404, 'This coupon is invalid or has expired');
+        }
+        if (subtotal < coupon.minOrderValue) {
+          throw new ApiError(
+            409,
+            `This coupon requires a minimum order of KSh ${coupon.minOrderValue.toLocaleString('en-KE')}`
+          );
+        }
+
+        const priorUses = await Order.countDocuments({
+          customer: req.user._id,
+          couponCode: coupon.code,
+          status: { $nin: ['cancelled'] },
+        }).session(session);
+        if (priorUses >= coupon.usageLimitPerCustomer) {
+          throw new ApiError(409, "You've already used this coupon the maximum number of times");
+        }
+
+        discount = coupon.calculateDiscount(subtotal);
+        appliedCouponCode = coupon.code;
+
+        coupon.usedCount += 1;
+        await coupon.save({ session });
+      }
+
+      const total = subtotal + shippingFee - discount;
+
+      const [order] = await Order.create(
+        [
+          {
+            customer: req.user._id,
+            items: orderItems,
+            subtotal,
+            shippingFee,
+            discount,
+            couponCode: appliedCouponCode,
+            total,
+            shippingAddress,
+            paymentMethod,
+            customerNote,
+            status: 'pending',
+            statusHistory: [{ status: 'pending', changedBy: req.user._id, changedAt: new Date() }],
+          },
+        ],
+        { session }
+      );
+
+      cart.items = [];
+      await cart.save({ session });
+
+      createdOrder = order;
+    });
+
+    notifyAfterCommit(createdOrder, req.user).catch(() => null);
+
+    return sendSuccess(res, 201, { order: createdOrder });
+  } catch (err) {
+    next(err);
+  } finally {
+    session.endSession();
+  }
+}
+
+// Fire-and-forget: notification failures should never block the checkout response
+async function notifyAfterCommit(order, customer) {
+  await notificationService.notifyOrderPlaced(order, customer);
+}
+
+async function listMyOrders(req, res, next) {
+  try {
+    let query = Order.find({ customer: req.user._id });
+    const features = new QueryFeatures(query, req.query);
+    features.sort().paginate();
+
+    const [orders, total] = await Promise.all([
+      features.mongooseQuery,
+      Order.countDocuments({ customer: req.user._id }),
+    ]);
+
+    return sendSuccess(res, 200, { orders }, {
+      page: features.pagination.page,
+      limit: features.pagination.limit,
+      total,
+      totalPages: Math.ceil(total / features.pagination.limit),
+    });
   } catch (err) {
     next(err);
   }
 }
 
-async function removeProductImage(req, res, next) {
+async function getMyOrder(req, res, next) {
   try {
-    const product = await Product.findById(req.params.id);
-    if (!product) throw new ApiError(404, 'Product not found');
-
-    const image = product.images.id(req.params.imageId);
-    if (!image) throw new ApiError(404, 'Image not found on this product');
-
-    if (product.images.length <= 1) {
-      throw new ApiError(409, 'Cannot remove the last remaining image; at least one is required');
-    }
-
-    await cloudinary.uploader.destroy(image.publicId).catch(() => null);
-    const wasPrimary = image.isPrimary;
-    image.deleteOne();
-
-    if (wasPrimary && product.images.length > 0) {
-      product.images[0].isPrimary = true;
-    }
-
-    await product.save();
-    return sendSuccess(res, 200, { product });
+    const order = await Order.findOne({ _id: req.params.id, customer: req.user._id });
+    if (!order) throw new ApiError(404, 'Order not found');
+    return sendSuccess(res, 200, { order });
   } catch (err) {
     next(err);
   }
 }
 
-async function deleteProduct(req, res, next) {
+async function cancelMyOrder(req, res, next) {
+  const session = await mongoose.startSession();
   try {
-    const product = await Product.findById(req.params.id);
-    if (!product) throw new ApiError(404, 'Product not found');
+    await session.withTransaction(async () => {
+      const order = await Order.findOne({ _id: req.params.id, customer: req.user._id }).session(session);
+      if (!order) throw new ApiError(404, 'Order not found');
 
-    await Promise.all(
-      product.images.map((img) => cloudinary.uploader.destroy(img.publicId).catch(() => null))
-    );
+      if (!['pending', 'paid'].includes(order.status)) {
+        throw new ApiError(409, `Order cannot be cancelled once it is ${order.status}`);
+      }
 
-    await product.deleteOne();
-    return sendSuccess(res, 200, { message: 'Product deleted' });
+      // Restock
+      for (const item of order.items) {
+        const product = await Product.findById(item.product).session(session);
+        if (product) {
+          const variant = product.variants.id(item.variantId);
+          if (variant) {
+            variant.stockQuantity += item.quantity;
+            product.soldCount = Math.max(0, product.soldCount - item.quantity);
+            await product.save({ session });
+          }
+        }
+      }
+
+      order.pushStatus('cancelled', req.user._id, 'Cancelled by customer');
+      await order.save({ session });
+    });
+
+    const order = await Order.findById(req.params.id);
+    return sendSuccess(res, 200, { order });
+  } catch (err) {
+    next(err);
+  } finally {
+    session.endSession();
+  }
+}
+
+// --- Admin ---
+
+async function listAllOrders(req, res, next) {
+  try {
+    let query = Order.find({}).populate('customer', 'firstName lastName email');
+    const features = new QueryFeatures(query, req.query);
+    features.filter().sort().paginate();
+
+    const [orders, total] = await Promise.all([features.mongooseQuery, Order.countDocuments()]);
+
+    return sendSuccess(res, 200, { orders }, {
+      page: features.pagination.page,
+      limit: features.pagination.limit,
+      total,
+      totalPages: Math.ceil(total / features.pagination.limit),
+    });
   } catch (err) {
     next(err);
   }
 }
 
-/**
- * Adjust stock for a single variant. Used by inventory management and,
- * later, order placement/cancellation/restocking.
- */
-async function adjustVariantStock(req, res, next) {
+async function getOrderAdmin(req, res, next) {
   try {
-    const { id, variantId } = req.params;
-    const { delta } = req.body; // positive to add stock, negative to deduct
+    const order = await Order.findById(req.params.id).populate('customer', 'firstName lastName email phone');
+    if (!order) throw new ApiError(404, 'Order not found');
+    return sendSuccess(res, 200, { order });
+  } catch (err) {
+    next(err);
+  }
+}
 
-    if (typeof delta !== 'number' || !Number.isFinite(delta)) {
-      throw new ApiError(400, 'delta must be a number');
+const VALID_TRANSITIONS = {
+  pending: ['paid', 'cancelled'],
+  paid: ['processing', 'cancelled', 'refunded'],
+  processing: ['fulfilled', 'cancelled'],
+  fulfilled: ['delivered'],
+  delivered: ['refunded'],
+  cancelled: [],
+  refunded: [],
+};
+
+async function updateOrderStatus(req, res, next) {
+  try {
+    const { status, note } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) throw new ApiError(404, 'Order not found');
+
+    const allowedNext = VALID_TRANSITIONS[order.status] || [];
+    if (!allowedNext.includes(status)) {
+      throw new ApiError(409, `Cannot transition order from "${order.status}" to "${status}"`);
     }
 
-    const product = await Product.findById(id);
-    if (!product) throw new ApiError(404, 'Product not found');
+    const previousStatus = order.status;
+    order.pushStatus(status, req.user._id, note);
+    if (status === 'paid') order.paidAt = new Date();
 
-    const variant = product.variants.id(variantId);
-    if (!variant) throw new ApiError(404, 'Variant not found on this product');
-
-    const newQuantity = variant.stockQuantity + delta;
-    if (newQuantity < 0) {
-      throw new ApiError(409, 'Insufficient stock for this adjustment');
-    }
-
-    variant.stockQuantity = newQuantity;
-    await product.save();
-
-    return sendSuccess(res, 200, { variant });
+    await order.save();
+    notificationService.notifyOrderStatusChanged(order).catch(() => null);
+    recordAudit({
+      actorId: req.user._id,
+      action: 'order.status_changed',
+      targetType: 'Order',
+      targetId: order._id,
+      metadata: { from: previousStatus, to: status, note },
+      ip: req.ip,
+    });
+    return sendSuccess(res, 200, { order });
   } catch (err) {
     next(err);
   }
 }
 
 module.exports = {
-  listProducts,
-  listProductsAdmin,
-  getProduct,
-  getProductAdmin,
-  createProduct,
-  updateProduct,
-  removeProductImage,
-  deleteProduct,
-  adjustVariantStock,
+  checkout,
+  listMyOrders,
+  getMyOrder,
+  cancelMyOrder,
+  listAllOrders,
+  getOrderAdmin,
+  updateOrderStatus,
 };

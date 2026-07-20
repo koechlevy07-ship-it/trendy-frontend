@@ -1,51 +1,60 @@
-const { User } = require('../models/User');
-const { Product } = require('../models/Product');
-const { ApiError } = require('../utils/ApiError');
+const { getSettings } = require('../models/Settings');
 const { sendSuccess } = require('../utils/apiResponse');
 
-async function getWishlist(req, res, next) {
+async function getPublicSettings(req, res, next) {
   try {
-    const user = await User.findById(req.user._id).populate({
-      path: 'wishlist',
-      match: { status: 'published' },
-      select: 'name slug basePrice compareAtPrice images ratingAverage',
+    const settings = await getSettings();
+    // Only expose fields the storefront actually needs — not an admin dump
+    return sendSuccess(res, 200, {
+      settings: {
+        storeName: settings.storeName,
+        supportEmail: settings.supportEmail,
+        supportPhone: settings.supportPhone,
+        currency: settings.currency,
+        socialLinks: settings.socialLinks,
+        maintenanceMode: settings.maintenanceMode,
+        maintenanceMessage: settings.maintenanceMode ? settings.maintenanceMessage : undefined,
+        homepageAnnouncementBar: settings.homepageAnnouncementBar,
+      },
     });
-    return sendSuccess(res, 200, { wishlist: user.wishlist });
   } catch (err) {
     next(err);
   }
 }
 
-async function addToWishlist(req, res, next) {
+async function getAdminSettings(req, res, next) {
   try {
-    const { productId } = req.params;
-    const product = await Product.findOne({ _id: productId, status: 'published' });
-    if (!product) throw new ApiError(404, 'Product not found');
-
-    const user = await User.findById(req.user._id);
-    const alreadySaved = user.wishlist.some((id) => id.toString() === productId);
-
-    if (!alreadySaved) {
-      user.wishlist.push(productId);
-      await user.save({ validateBeforeSave: false });
-    }
-
-    return sendSuccess(res, 200, { wishlist: user.wishlist });
+    const settings = await getSettings();
+    return sendSuccess(res, 200, { settings });
   } catch (err) {
     next(err);
   }
 }
 
-async function removeFromWishlist(req, res, next) {
+async function updateSettings(req, res, next) {
   try {
-    const { productId } = req.params;
-    const user = await User.findById(req.user._id);
-    user.wishlist = user.wishlist.filter((id) => id.toString() !== productId);
-    await user.save({ validateBeforeSave: false });
-    return sendSuccess(res, 200, { wishlist: user.wishlist });
+    const settings = await getSettings();
+
+    const updatable = [
+      'storeName',
+      'supportEmail',
+      'supportPhone',
+      'taxRatePercent',
+      'socialLinks',
+      'maintenanceMode',
+      'maintenanceMessage',
+      'homepageAnnouncementBar',
+    ];
+    updatable.forEach((field) => {
+      if (req.body[field] !== undefined) settings[field] = req.body[field];
+    });
+    settings.updatedBy = req.user._id;
+
+    await settings.save();
+    return sendSuccess(res, 200, { settings });
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { getWishlist, addToWishlist, removeFromWishlist };
+module.exports = { getPublicSettings, getAdminSettings, updateSettings };
