@@ -108,6 +108,10 @@ const routesPath = path.join(__dirname, 'routes');
 if (fs.existsSync(routesPath)) {
   const routeFiles = fs.readdirSync(routesPath).filter(f => f.endsWith('.js'));
   console.log(`[INFO] Mounting ${routeFiles.length} route files...`);
+
+  const pluralAliases = { category: 'categories' };
+  const mounted = {};
+
   routeFiles.forEach(file => {
     try {
       const routeModule = require(path.join(routesPath, file));
@@ -125,11 +129,13 @@ if (fs.existsSync(routesPath)) {
         }
       };
       mount(routeModule, basePath);
-      const plural = basePath + 's';
-      if (basePath !== plural) {
+      mounted[basePath] = true;
+      const plural = pluralAliases[basePath] || (basePath + 's');
+      if (!mounted[plural]) {
         try { mount(routeModule, plural); } catch (e) { /* ignore */ }
+        mounted[plural] = true;
       }
-      console.log(`  ✓ /api/${basePath} (+plural) <- ${file}`);
+      console.log(`  ✓ /api/${basePath} (+/${plural}) <- ${file}`);
     } catch (err) {
       console.error(`  ✗ Failed to mount ${file}:`, err.message);
     }
