@@ -4,6 +4,7 @@
 
 // ---- CONFIG ----
 const API_URL = 'https://trendy-backend-jq27.onrender.com/api';
+const IMAGE_BASE = API_URL.replace('/api', '');
 
 // ---- XSS ----
 function escHtml(str) {
@@ -14,13 +15,13 @@ function escHtml(str) {
 // ---- Image Helper ----
 function getImageUrl(path, width) {
     if (!path) return '';
-    let url = path.startsWith('http') ? path : path;
+    let url = path.startsWith('http://') || path.startsWith('https://') ? path : IMAGE_BASE + path;
     if (url.includes('res.cloudinary.com') && !url.includes('/upload/')) return url;
     if (url.includes('res.cloudinary.com')) {
         const parts = url.split('/upload/');
         if (parts.length === 2) {
             const w = width || 800;
-            url = parts[0] + '/upload/f_webp,q_auto,w_' + w + '/' + parts[1];
+            url = parts[0] + '/upload/f_auto,q_85,w_' + w + '/' + parts[1];
         }
     }
     return url;
@@ -262,7 +263,7 @@ function trackRecentlyViewed(product) {
 
 // ---- Render product card (for related/recently) ----
 function renderMiniProductCard(product) {
-    const img = product.images && product.images[0] ? getImageUrl(product.images[0], 400) : 'https://placehold.co/300x400/FAF9F6/C8A35A?text=Product';
+    const img = product.images && product.images[0] ? getImageUrl(product.images[0], 600) : 'https://placehold.co/300x400/FAF9F6/C8A35A?text=Product';
     const discount = product.originalPrice && product.originalPrice > product.price
         ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
     const stars = Array.from({length: 5}, (_, i) => `<i class="fas fa-star ${i < Math.round(product.rating || 0) ? '' : 'empty'}"></i>`).join('');

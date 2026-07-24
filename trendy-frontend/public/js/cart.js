@@ -3,6 +3,7 @@
 // ============================================================
 
 const API_URL = 'https://trendy-backend-jq27.onrender.com/api';
+const IMAGE_BASE = API_URL.replace('/api', '');
 
 // ---- Helpers ----
 function escHtml(str) {
@@ -14,13 +15,13 @@ function $(id) { return document.getElementById(id); }
 
 function getImageUrl(path, width) {
     if (!path) return '';
-    let url = path.startsWith('http') ? path : path;
+    let url = path.startsWith('http://') || path.startsWith('https://') ? path : IMAGE_BASE + path;
     if (url.includes('res.cloudinary.com') && !url.includes('/upload/')) return url;
     if (url.includes('res.cloudinary.com')) {
         const parts = url.split('/upload/');
         if (parts.length === 2) {
-            const w = width || 400;
-            url = parts[0] + '/upload/f_webp,q_auto,w_' + w + '/' + parts[1];
+            const w = width || 800;
+            url = parts[0] + '/upload/f_auto,q_85,w_' + w + '/' + parts[1];
         }
     }
     return url;
@@ -292,7 +293,7 @@ function renderCartItem(item, idx) {
     const p = item.productId || item;
     const pId = p._id || item._id || item.id || '';
     const img = item.image || (p.images && p.images[0]) || '';
-    const imgUrl = getImageUrl(img, 400);
+    const imgUrl = getImageUrl(img, 600);
     const name = item.name || p.name || 'Product';
     const brand = item.brand || p.brand || '';
     const category = item.category || p.category || '';
@@ -766,7 +767,7 @@ async function loadRelatedProducts() {
 }
 
 function renderProductCard(p) {
-    const img = p.images?.[0] ? getImageUrl(p.images[0], 400) : 'https://placehold.co/300x400/FAF9F6/C8A35A?text=Product';
+    const img = p.images?.[0] ? getImageUrl(p.images[0], 600) : 'https://placehold.co/300x400/FAF9F6/C8A35A?text=Product';
     const discount = p.originalPrice && p.originalPrice > p.price ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
     const stars = Array.from({length: 5}, (_, i) => `<i class="fas fa-star ${i < Math.round(p.rating||0) ? '' : 'empty'}"></i>`).join('');
     return `

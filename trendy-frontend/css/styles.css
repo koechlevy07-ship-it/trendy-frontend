@@ -2336,7 +2336,7 @@
         }
         .product-card:focus-within { outline: none; }
 
-        /* Card image — 1:1 square */
+        /* Card image — 4:3 landscape */
         .product-card .product-image {
             aspect-ratio: 4 / 3;
             height: auto;
@@ -2344,8 +2344,8 @@
             background: #fafafa;
         }
         .product-card .product-image .carousel-slide img {
-            padding: 4px;
-            object-fit: contain;
+            padding: 0;
+            object-fit: cover;
             transition: none;
         }
         .product-card:hover .product-image .carousel-slide.active img { transform: none; }

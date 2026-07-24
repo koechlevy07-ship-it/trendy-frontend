@@ -44,8 +44,8 @@ function getImageUrl(path, width) {
     if (url.includes('res.cloudinary.com')) {
         const parts = url.split('/upload/');
         if (parts.length === 2) {
-            const w = width || 400;
-            url = parts[0] + '/upload/f_webp,q_auto,w_' + w + '/' + parts[1];
+            const w = width || 800;
+            url = parts[0] + '/upload/f_auto,q_85,w_' + w + '/' + parts[1];
         }
     }
     return url;
@@ -247,7 +247,7 @@ function renderWishlistItems() {
 function renderWishlistCard(item, isGuest) {
     const p = item.productId || item;
     if (!p) return '';
-    const img = (p.images && p.images[0]) ? getImageUrl(p.images[0], 400) : (p.thumbnail ? getImageUrl(p.thumbnail) : 'https://placehold.co/300x400/FAF9F6/C8A35A?text=Product');
+    const img = (p.images && p.images[0]) ? getImageUrl(p.images[0], 600) : (p.thumbnail ? getImageUrl(p.thumbnail) : 'https://placehold.co/300x400/FAF9F6/C8A35A?text=Product');
     const discount = p.originalPrice && p.originalPrice > p.price ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
     const outOfStock = !isProductAvailable(p);
     const rating = p.rating || 0;
