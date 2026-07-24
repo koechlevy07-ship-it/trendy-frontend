@@ -3031,7 +3031,7 @@
         ============================================================ */
         .mobile-bottom-nav button.active,
         .mobile-bottom-nav button:focus-visible {
-            color: var(--color-gold);
+            color: var(--color-gold) !important;
         }
         .mobile-bottom-nav button.active::after {
             content: '';

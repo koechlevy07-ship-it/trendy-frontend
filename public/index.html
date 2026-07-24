@@ -909,25 +909,25 @@
     ============================================================ -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border-light);z-index:9999;padding:6px 0 env(safe-area-inset-bottom, 6px);box-shadow:0 -2px 8px rgba(0,0,0,0.08);" aria-label="Mobile navigation">
         <div style="display:flex;justify-content:space-evenly;align-items:center;width:100%;">
-            <button onclick="closeAllOverlays();document.getElementById('heroSection')?.scrollIntoView({behavior:'smooth'})" aria-label="Home" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
+            <button data-nav="home" onclick="closeAllOverlays();document.getElementById('heroSection')?.scrollIntoView({behavior:'smooth'})" aria-label="Home" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
                 <i class="fas fa-home" style="font-size:1.15rem;"></i>
                 <span>Home</span>
             </button>
-            <button id="bottomNavSearchBtn" aria-label="Search" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
+            <button data-nav="search" id="bottomNavSearchBtn" aria-label="Search" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
                 <i class="fas fa-search" style="font-size:1.15rem;"></i>
                 <span>Search</span>
             </button>
-            <button onclick="toggleAuthRequiredAction('wishlist')" aria-label="Wishlist" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
+            <button data-nav="wishlist" onclick="toggleAuthRequiredAction('wishlist')" aria-label="Wishlist" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
                 <i class="fas fa-heart" style="font-size:1.15rem;"></i>
                 <span id="mobileWishlistBadge" style="position:absolute;top:4px;right:calc(50% - 18px);background:#D81B60;color:#fff;font-size:0.55rem;min-width:14px;height:14px;border-radius:50%;display:none;align-items:center;justify-content:center;font-weight:700;"></span>
                 <span>Wishlist</span>
             </button>
-            <button onclick="openCartModal()" aria-label="Cart" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
+            <button data-nav="cart" onclick="openCartModal()" aria-label="Cart" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
                 <i class="fas fa-shopping-bag" style="font-size:1.15rem;"></i>
                 <span class="badge" id="mobileCartBadge" style="position:absolute;top:4px;right:calc(50% - 18px);display:none;"></span>
                 <span>Cart</span>
             </button>
-            <button onclick="toggleAuthRequiredAction('profile')" aria-label="Account" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
+            <button data-nav="account" onclick="toggleAuthRequiredAction('profile')" aria-label="Account" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
                 <i class="fas fa-user" style="font-size:1.15rem;"></i>
                 <span>Account</span>
             </button>
