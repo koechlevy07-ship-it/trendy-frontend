@@ -913,7 +913,6 @@
         }
 
     @media (max-width: 480px) {
-        .hero { min-height: 95vh; min-height: 95dvh; }
         .hero-content { padding: 0 20px; }
         .hero-content .gold-line { width: 45px; margin-bottom: 16px; }
     }
