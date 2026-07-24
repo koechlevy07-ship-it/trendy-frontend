@@ -3174,17 +3174,11 @@ Sitemap: https://trendywardrobe.com/sitemap.xml</textarea>
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', preset);
-            // Optional: add transformation at upload time
-            if (CLOUDINARY_CONFIG.transforms[transformKey]) {
-                formData.append('transformation', CLOUDINARY_CONFIG.transforms[transformKey]);
-            }
             const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`;
             const res = await fetch(url, { method: 'POST', body: formData });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error?.message || 'Cloudinary upload failed');
-            // Return optimized URL with transformation
-            const transform = CLOUDINARY_CONFIG.transforms[transformKey] || '';
-            return `${CLOUDINARY_CONFIG.baseUrl}/${transform}/${data.public_id}.${data.format}`;
+            return data.secure_url;
         }
         const loginOverlay = document.getElementById('loginOverlay');
         const loginError = document.getElementById('loginError');
@@ -7808,6 +7802,136 @@ function loadAbandonedCarts() {
             }
         }).catch(() => {});
 }
+
+// ============================================================
+// HERO BANNERS
+// ============================================================
+let heroSlidesData = [];
+
+function showHeroSlideForm(slide) {
+    const modal = document.getElementById('heroSlideFormModal');
+    const title = document.getElementById('heroSlideFormTitle');
+    document.getElementById('heroSlideId').value = slide ? slide._id : '';
+    document.getElementById('heroSlideHeading').value = slide ? slide.heading : '';
+    document.getElementById('heroSlideSubheading').value = slide ? slide.subheading : '';
+    document.getElementById('heroSlideBtnText').value = slide ? (slide.buttonText || 'Shop Now') : 'Shop Now';
+    document.getElementById('heroSlideBtnLink').value = slide ? (slide.buttonLink || '/products') : '/products';
+    document.getElementById('heroSlideOrder').value = slide ? (slide.displayOrder || 0) : 0;
+    document.getElementById('heroSlideActive').checked = slide ? slide.active !== false : true;
+    document.getElementById('heroDesktopImageUrl').value = slide ? (slide.desktopImage || '') : '';
+    document.getElementById('heroMobileImageUrl').value = slide ? (slide.mobileImage || '') : '';
+    document.getElementById('heroDesktopPreview').innerHTML = slide && slide.desktopImage ? '<img src="' + slide.desktopImage + '" style="max-height:100px;border-radius:6px;" />' : '';
+    document.getElementById('heroMobilePreview').innerHTML = slide && slide.mobileImage ? '<img src="' + slide.mobileImage + '" style="max-height:80px;border-radius:6px;" />' : '';
+    title.textContent = slide ? 'Edit Hero Slide' : 'Add Hero Slide';
+    modal.classList.add('show');
+}
+
+async function loadHeroSlides() {
+    const list = document.getElementById('heroSlidesList');
+    if (!list) return;
+    try {
+        const res = await fetch(`${API_URL}/homepage`, { headers: getHeaders() });
+        if (!res.ok) throw new Error('Failed to load');
+        const d = await res.json();
+        heroSlidesData = (d.data && d.data.heroSlides) || [];
+        if (!heroSlidesData.length) {
+            list.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px;">No hero slides yet. Click "Add Slide" to create one.</p>';
+            return;
+        }
+        list.innerHTML = heroSlidesData.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)).map(s => `
+            <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:16px;">
+                <div style="width:120px;height:70px;border-radius:6px;overflow:hidden;background:var(--bg-tertiary);flex-shrink:0;">
+                    ${s.desktopImage ? '<img src="' + escHtml(s.desktopImage) + '" style="width:100%;height:100%;object-fit:cover;" />' : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.7rem;">No image</div>'}
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:600;">${escHtml(s.heading || 'Untitled')}</div>
+                    <div style="font-size:0.8rem;color:var(--text-muted);">${escHtml(s.subheading || '')}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:4px;">Order: ${s.displayOrder || 0} | ${s.active !== false ? '<span style="color:#16a34a;">Active</span>' : '<span style="color:#dc2626;">Inactive</span>'}</div>
+                </div>
+                <div style="display:flex;gap:6px;flex-shrink:0;">
+                    <button onclick='showHeroSlideForm(${JSON.stringify(s).replace(/'/g, "&#39;")})' style="background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:4px;padding:6px 10px;cursor:pointer;font-size:0.75rem;"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteHeroSlide('${s._id}')" style="background:#fee2e2;border:1px solid #fca5a5;border-radius:4px;padding:6px 10px;cursor:pointer;color:#dc2626;font-size:0.75rem;"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) { list.innerHTML = '<p style="text-align:center;color:#dc2626;padding:20px;">Failed to load hero slides.</p>'; }
+}
+
+async function deleteHeroSlide(id) {
+    if (!confirm('Delete this hero slide?')) return;
+    try {
+        const slide = heroSlidesData.find(s => s._id === id);
+        heroSlidesData = heroSlidesData.filter(s => s._id !== id);
+        const res = await fetch(`${API_URL}/homepage`, { method: 'PUT', headers: { ...getHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ heroSlides: heroSlidesData }) });
+        if (!res.ok) throw new Error('Failed');
+        showToast('Slide deleted');
+        loadHeroSlides();
+    } catch (e) { showToast('Delete failed'); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const addBtn = document.getElementById('addHeroSlideBtn');
+    if (addBtn) addBtn.addEventListener('click', () => showHeroSlideForm(null));
+    const cancelBtn = document.getElementById('heroSlideFormCancel');
+    if (cancelBtn) cancelBtn.addEventListener('click', () => document.getElementById('heroSlideFormModal').classList.remove('show'));
+
+    const desktopInput = document.getElementById('heroDesktopImageInput');
+    if (desktopInput) desktopInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        try {
+            showToast('Uploading desktop image...');
+            const url = await uploadToCloudinary(file, 'hero');
+            document.getElementById('heroDesktopImageUrl').value = url;
+            document.getElementById('heroDesktopPreview').innerHTML = '<img src="' + url + '" style="max-height:100px;border-radius:6px;" />';
+            showToast('Desktop image uploaded');
+        } catch (err) { showToast('Upload failed: ' + err.message); }
+    });
+
+    const mobileInput = document.getElementById('heroMobileImageInput');
+    if (mobileInput) mobileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        try {
+            showToast('Uploading mobile image...');
+            const url = await uploadToCloudinary(file, 'hero');
+            document.getElementById('heroMobileImageUrl').value = url;
+            document.getElementById('heroMobilePreview').innerHTML = '<img src="' + url + '" style="max-height:80px;border-radius:6px;" />';
+            showToast('Mobile image uploaded');
+        } catch (err) { showToast('Upload failed: ' + err.message); }
+    });
+
+    const heroForm = document.getElementById('heroSlideForm');
+    if (heroForm) heroForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('heroSlideId').value;
+        const desktopUrl = document.getElementById('heroDesktopImageUrl').value;
+        if (!desktopUrl) { showToast('Desktop image is required'); return; }
+        const heading = document.getElementById('heroSlideHeading').value.trim();
+        if (!heading) { showToast('Heading is required'); return; }
+        const slideData = {
+            desktopImage: desktopUrl,
+            mobileImage: document.getElementById('heroMobileImageUrl').value || '',
+            heading,
+            subheading: document.getElementById('heroSlideSubheading').value || '',
+            buttonText: document.getElementById('heroSlideBtnText').value || 'Shop Now',
+            buttonLink: document.getElementById('heroSlideBtnLink').value || '/products',
+            displayOrder: parseInt(document.getElementById('heroSlideOrder').value) || 0,
+            active: document.getElementById('heroSlideActive').checked
+        };
+        try {
+            let slides = [...heroSlidesData];
+            if (id) {
+                slides = slides.map(s => s._id === id ? { ...s, ...slideData } : s);
+            } else {
+                slides.push(slideData);
+            }
+            const res = await fetch(`${API_URL}/homepage`, { method: 'PUT', headers: { ...getHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ heroSlides: slides }) });
+            if (!res.ok) throw new Error('Failed to save');
+            showToast(id ? 'Slide updated' : 'Slide added');
+            document.getElementById('heroSlideFormModal').classList.remove('show');
+            loadHeroSlides();
+        } catch (err) { showToast('Save failed: ' + err.message); }
+    });
+});
 
 // ============================================================
 // MISSING LOADER FUNCTIONS
