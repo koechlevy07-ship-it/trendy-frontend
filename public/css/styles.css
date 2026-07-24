@@ -2313,6 +2313,7 @@
             gap: 12px;
             padding: 0;
             max-width: 100%;
+            width: 100%;
         }
 
         /* === MOBILE PRODUCT CARD — Premium Fashion Layout === */
@@ -3132,8 +3133,10 @@
            PERFORMANCE: Reduce layout thrashing on mobile
         ============================================================ */
         @media (max-width: 768px) {
-            .product-card {
-                contain: style;
+            .products-grid .product-card {
+                width: 100%;
+                min-width: 0;
+                max-width: none;
             }
         }
 
