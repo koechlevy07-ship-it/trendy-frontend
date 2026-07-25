@@ -3134,7 +3134,6 @@
         ============================================================ */
         @media (max-width: 768px) {
             .products-grid .product-card {
-                width: 100%;
                 min-width: 0;
                 max-width: none;
             }
