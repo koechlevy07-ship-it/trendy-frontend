@@ -428,6 +428,10 @@ function renderProduct(p) {
     }
     $('pdPrice').innerHTML = priceHtml;
 
+    // Mobile bar price
+    const mobilePrice = document.getElementById('pdMobilePrice');
+    if (mobilePrice) mobilePrice.textContent = `Ksh ${(p.price || 0).toLocaleString()}`;
+
     // Flash sale timer
     if (p.flashSale && p.flashSaleEnd && new Date(p.flashSaleEnd) > new Date()) {
         const timer = $('pdFlashTimer');

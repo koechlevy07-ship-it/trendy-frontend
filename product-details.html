@@ -39,19 +39,16 @@
         body { overflow-x: hidden !important; }
         @media (max-width: 768px) {
             html, body { overflow-x: hidden !important; }
-            .pd-related-grid {
+            .pd-grid {
                 display: grid !important;
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 12px !important;
-            }
-            .products-grid {
-                display: grid !important;
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 12px !important;
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+                padding: 0 0 24px !important;
+                overflow-x: hidden !important;
             }
             .pd-gallery {
+                position: static !important;
                 width: 100% !important;
-                margin: 0 !important;
             }
             .pd-main-image-wrap {
                 border-radius: 0 !important;
@@ -70,10 +67,9 @@
             }
             .pd-zoom-lens, .pd-zoom-result { display: none !important; }
             .pd-gallery-btn { display: none !important; }
-            .pd-gallery-indicator { display: none !important; }
-            .pd-grid { overflow-x: hidden !important; padding: 0 !important; }
+            .pd-gallery-indicator { display: flex !important; }
             .pd-tabs-content { overflow-x: hidden !important; }
-            .pd-tabs-section { overflow-x: hidden !important; }
+            .pd-tabs-section { overflow-x: hidden !important; max-width: 100% !important; }
             .pd-desc-content, .pd-static-content, .pd-size-guide-content {
                 max-width: 100% !important;
                 overflow-wrap: break-word !important;
@@ -81,11 +77,49 @@
             }
             .pd-specs-table, .pd-size-table { max-width: 100% !important; }
             .pd-main-image-wrap { cursor: pointer !important; -webkit-tap-highlight-color: transparent; }
+            .pd-btn-add-cart, .pd-btn-buy-now { width: 100% !important; }
+            .pd-actions { flex-direction: column !important; }
+            .pd-mobile-bar {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 999 !important;
+                background: #fff !important;
+                border-top: 1px solid #e8e8e8 !important;
+                box-shadow: 0 -2px 12px rgba(0,0,0,0.08) !important;
+                padding: 10px 16px !important;
+                padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+                gap: 12px !important;
+            }
+            .pd-mobile-bar .pd-mobile-bar-price {
+                font-size: 1.2rem !important;
+                font-weight: 700 !important;
+                color: #C8A35A !important;
+                white-space: nowrap !important;
+            }
+            .pd-mobile-bar .pd-mobile-bar-btn {
+                flex: 1 !important;
+                padding: 12px 20px !important;
+                background: #C8A35A !important;
+                color: #fff !important;
+                border: none !important;
+                border-radius: 8px !important;
+                font-size: 0.85rem !important;
+                font-weight: 700 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                cursor: pointer !important;
+                font-family: inherit !important;
+                text-align: center !important;
+            }
+            .pd-main { padding-bottom: 80px !important; }
         }
         @media (max-width: 480px) {
-            .pd-main-image {
-                max-height: 75vh !important;
-            }
+            .pd-main-image { max-height: 75vh !important; }
         }
     </style>
 </head>
@@ -885,6 +919,14 @@
         <div class="pd-lightbox-track" id="pdLightboxTrack"></div>
         <button class="pd-lightbox-prev" id="pdLightboxPrev" aria-label="Previous image"><i class="fas fa-chevron-left"></i></button>
         <button class="pd-lightbox-next" id="pdLightboxNext" aria-label="Next image"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <!-- STICKY MOBILE BOTTOM BAR (Jumia-style) -->
+    <div class="pd-mobile-bar" id="pdMobileBar">
+        <div class="pd-mobile-bar-price" id="pdMobilePrice"></div>
+        <button class="pd-mobile-bar-btn" id="pdMobileAddToCart" onclick="document.getElementById('pdAddToCart').click()">
+            <i class="fas fa-shopping-bag"></i> Add to Cart
+        </button>
     </div>
 
     <script src="/js/product-details.js"></script>

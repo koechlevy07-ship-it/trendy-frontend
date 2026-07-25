@@ -1,5 +1,5 @@
 /* ============================================================
-   PRODUCT DETAILS PAGE — Trendy Wardrobe
+   PRODUCT DETAILS PAGE — Trendy Wardrobe (Jumia-Style)
    Extends main styles.css
    ============================================================ */
 
@@ -8,6 +8,8 @@
     --pd-gap: 40px;
     --pd-radius: 12px;
     --pd-transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --pd-gold: #C8A35A;
+    --pd-gold-hover: #B8943A;
 }
 
 /* --- Main layout --- */
@@ -29,7 +31,7 @@
 }
 .pd-loading-spinner {
     font-size: 2.5rem;
-    color: var(--color-gold);
+    color: var(--pd-gold);
     margin-bottom: 16px;
 }
 .pd-loading p {
@@ -48,7 +50,7 @@
 }
 .pd-error-icon {
     font-size: 3rem;
-    color: var(--color-gold);
+    color: var(--pd-gold);
     margin-bottom: 16px;
 }
 .pd-error h2 {
@@ -66,17 +68,16 @@
     padding: 12px 32px;
     background: var(--text-primary);
     color: #fff;
-    border-radius: 50px;
+    border-radius: 6px;
     font-size: 0.85rem;
     font-weight: 600;
     text-decoration: none;
     transition: var(--pd-transition);
 }
 .pd-error-btn:hover {
-    background: var(--color-gold);
+    background: var(--pd-gold);
 }
 
-/* --- Breadcrumb --- */
 /* --- Back Link --- */
 .pd-back-link {
     display: inline-flex;
@@ -91,12 +92,13 @@
     transition: color 0.2s;
 }
 .pd-back-link:hover {
-    color: var(--color-gold);
+    color: var(--pd-gold);
 }
 .pd-back-link i {
     font-size: 0.75rem;
 }
 
+/* --- Breadcrumb --- */
 .pd-breadcrumb-wrap {
     padding-top: 24px;
     padding-bottom: 8px;
@@ -116,11 +118,11 @@
     transition: color 0.2s;
 }
 .pd-breadcrumb a:hover {
-    color: var(--color-gold);
+    color: var(--pd-gold);
 }
 .pd-breadcrumb-sep {
     font-size: 0.6rem;
-    color: var(--color-gold);
+    color: var(--pd-gold);
 }
 .pd-breadcrumb-current {
     color: var(--text-primary);
@@ -131,15 +133,21 @@
     white-space: nowrap;
 }
 
-/* --- Product Grid --- */
+/* ============================================================
+   PRODUCT GRID — Jumia 2-column
+   ============================================================ */
 .pd-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 3fr;
     gap: var(--pd-gap);
     padding: 16px 0 40px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-/* --- Gallery --- */
+/* ============================================================
+   GALLERY
+   ============================================================ */
 .pd-gallery {
     position: sticky;
     top: 100px;
@@ -152,9 +160,8 @@
     border-radius: var(--pd-radius);
     overflow: hidden;
     cursor: crosshair;
-    aspect-ratio: 4 / 5;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    border: 1px solid var(--border-light);
+    aspect-ratio: 3 / 4;
+    border: 1px solid #e8e8e8;
 }
 .pd-main-image {
     width: 100%;
@@ -167,7 +174,7 @@
 /* Zoom lens */
 .pd-zoom-lens {
     position: absolute;
-    border: 2px solid var(--color-gold);
+    border: 2px solid var(--pd-gold);
     width: 160px;
     height: 160px;
     background: rgba(255,255,255,0.2);
@@ -181,10 +188,10 @@
     left: calc(100% + 16px);
     width: min(400px, calc(100vw - 100% - 80px));
     height: 500px;
-    border: 2px solid var(--border-light);
+    border: 2px solid #e8e8e8;
     border-radius: 8px;
     background-repeat: no-repeat;
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     z-index: 10;
     display: none;
     background-color: #fff;
@@ -196,13 +203,13 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.9);
-    border: 1px solid var(--border-light);
-    color: var(--text-primary);
-    font-size: 0.9rem;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid #e8e8e8;
+    color: #333;
+    font-size: 0.8rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -216,16 +223,16 @@
 }
 .pd-gallery-btn:hover {
     background: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
-.pd-gallery-prev { left: 12px; }
-.pd-gallery-next { right: 12px; }
+.pd-gallery-prev { left: 10px; }
+.pd-gallery-next { right: 10px; }
 .pd-gallery-indicator {
     position: absolute;
     bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
-    display: flex;
+    display: none;
     gap: 6px;
     z-index: 6;
 }
@@ -233,12 +240,12 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.5);
+    background: rgba(0,0,0,0.2);
     transition: var(--pd-transition);
     cursor: pointer;
 }
 .pd-gallery-indicator span.active {
-    background: var(--color-gold);
+    background: var(--pd-gold);
     width: 24px;
     border-radius: 4px;
 }
@@ -246,41 +253,43 @@
 /* Thumbnails */
 .pd-thumbnails {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     margin-top: 12px;
     overflow-x: auto;
     padding-bottom: 4px;
     scrollbar-width: thin;
-    scrollbar-color: var(--color-gold) var(--border-light);
+    scrollbar-color: var(--pd-gold) #e8e8e8;
 }
 .pd-thumbnails::-webkit-scrollbar {
-    height: 4px;
+    height: 3px;
 }
 .pd-thumbnails::-webkit-scrollbar-thumb {
-    background: var(--color-gold);
-    border-radius: 4px;
+    background: var(--pd-gold);
+    border-radius: 3px;
 }
 .pd-thumbnails img {
-    width: 72px;
-    height: 90px;
+    width: 60px;
+    height: 75px;
     object-fit: cover;
     border-radius: 6px;
     cursor: pointer;
     border: 2px solid transparent;
     transition: var(--pd-transition);
     flex-shrink: 0;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 .pd-thumbnails img:hover {
-    opacity: 0.9;
-    border-color: var(--border-light);
+    opacity: 0.85;
+    border-color: #ccc;
 }
 .pd-thumbnails img.active {
-    border-color: var(--color-gold);
+    border-color: var(--pd-gold);
     opacity: 1;
 }
 
-/* --- Product Info --- */
+/* ============================================================
+   PRODUCT INFO — Jumia Style
+   ============================================================ */
 .pd-info {
     display: flex;
     flex-direction: column;
@@ -312,18 +321,18 @@
 .pd-badge.installment { background: #F0FDF4; color: #059669; }
 
 .pd-brand {
-    font-size: 0.8rem;
-    color: var(--color-gold);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: 600;
+    letter-spacing: 1.5px;
+    font-weight: 500;
 }
 
 .pd-name {
     font-size: 1.6rem;
     font-weight: 600;
-    line-height: 1.3;
-    color: var(--text-primary);
+    line-height: 1.35;
+    color: #000;
     margin: 0;
 }
 
@@ -358,10 +367,11 @@
 .pd-price {
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--color-gold);
+    color: var(--pd-gold);
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-wrap: wrap;
 }
 .pd-price .pd-original {
     font-size: 1rem;
@@ -371,10 +381,10 @@
 }
 .pd-price .pd-discount {
     display: inline-block;
-    padding: 2px 10px;
-    background: #FEF2F2;
-    color: #DC2626;
-    font-size: 0.75rem;
+    padding: 3px 10px;
+    background: #DC2626;
+    color: #fff;
+    font-size: 0.7rem;
     font-weight: 700;
     border-radius: 4px;
 }
@@ -383,10 +393,10 @@
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    background: #FEF2F2;
+    background: #DC2626;
     border-radius: 8px;
     font-size: 0.8rem;
-    color: #DC2626;
+    color: #fff;
     font-weight: 600;
 }
 .pd-flash-timer .pd-timer {
@@ -395,7 +405,7 @@
     font-size: 0.9rem;
 }
 .pd-flash-timer .pd-timer span {
-    background: #DC2626;
+    background: rgba(255,255,255,0.2);
     color: #fff;
     padding: 2px 6px;
     border-radius: 4px;
@@ -441,7 +451,7 @@
 .pd-size-guide-btn {
     background: none;
     border: none;
-    color: var(--color-gold);
+    color: var(--pd-gold);
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
@@ -452,7 +462,7 @@
     transition: color 0.2s;
 }
 .pd-size-guide-btn:hover {
-    color: #B8943A;
+    color: var(--pd-gold-hover);
 }
 
 .pd-color-chips,
@@ -462,10 +472,10 @@
     gap: 8px;
 }
 .pd-color-chip {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    border: 2px solid var(--border-light);
+    border: 2px solid #e0e0e0;
     cursor: pointer;
     transition: var(--pd-transition);
     position: relative;
@@ -475,25 +485,25 @@
 }
 .pd-color-chip:hover {
     transform: scale(1.1);
-    border-color: var(--text-secondary);
+    border-color: #999;
 }
 .pd-color-chip.active {
-    border-color: var(--color-gold);
-    box-shadow: 0 0 0 2px var(--color-gold);
+    border-color: var(--pd-gold);
+    box-shadow: 0 0 0 2px var(--pd-gold);
     transform: scale(1.1);
 }
 .pd-color-chip.active::after {
     content: '\f00c';
     font-family: 'Font Awesome 6 Free';
     font-weight: 900;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: #fff;
     text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
 .pd-size-chip {
     padding: 8px 18px;
-    border: 1.5px solid var(--border-light);
+    border: 1.5px solid #e0e0e0;
     border-radius: 6px;
     background: #fff;
     font-size: 0.85rem;
@@ -504,11 +514,11 @@
     font-family: inherit;
 }
 .pd-size-chip:hover {
-    border-color: var(--text-secondary);
+    border-color: #999;
 }
 .pd-size-chip.active {
-    border-color: var(--text-primary);
-    background: var(--text-primary);
+    border-color: #000;
+    background: #000;
     color: #fff;
 }
 
@@ -521,7 +531,7 @@
 .pd-qty-selector {
     display: inline-flex;
     align-items: center;
-    border: 1.5px solid var(--border-light);
+    border: 1.5px solid #e0e0e0;
     border-radius: 8px;
     overflow: hidden;
     width: fit-content;
@@ -530,7 +540,7 @@
     width: 40px;
     height: 42px;
     border: none;
-    background: var(--bg-primary);
+    background: #fafafa;
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
@@ -542,19 +552,20 @@
     font-family: inherit;
 }
 .pd-qty-btn:hover {
-    background: var(--border-light);
+    background: #f0f0f0;
 }
 .pd-qty-input {
     width: 56px;
     height: 42px;
     border: none;
-    border-left: 1.5px solid var(--border-light);
-    border-right: 1.5px solid var(--border-light);
+    border-left: 1.5px solid #e0e0e0;
+    border-right: 1.5px solid #e0e0e0;
     text-align: center;
     font-size: 0.95rem;
     font-weight: 600;
     font-family: inherit;
     color: var(--text-primary);
+    background: #fff;
     -moz-appearance: textfield;
 }
 .pd-qty-input::-webkit-inner-spin-button,
@@ -568,10 +579,10 @@
 
 /* Stock */
 .pd-stock {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    padding: 8px 14px;
-    border-radius: 6px;
+    padding: 6px 12px;
+    border-radius: 4px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -590,10 +601,12 @@
     background: #FEF2F2;
 }
 
-/* Action Buttons */
+/* ============================================================
+   ACTION BUTTONS — Jumia CTA Style
+   ============================================================ */
 .pd-actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 10px;
     margin-top: 4px;
 }
@@ -614,15 +627,20 @@
     white-space: nowrap;
 }
 .pd-btn-add-cart {
-    flex: 1;
-    min-width: 180px;
-    background: var(--text-primary);
+    width: 100%;
+    min-width: unset;
+    background: var(--pd-gold);
     color: #fff;
-    border-color: var(--text-primary);
+    border-color: var(--pd-gold);
+    padding: 16px 28px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 .pd-btn-add-cart:hover {
-    background: var(--color-gold);
-    border-color: var(--color-gold);
+    background: var(--pd-gold-hover);
+    border-color: var(--pd-gold-hover);
 }
 .pd-btn-add-cart:disabled {
     opacity: 0.5;
@@ -631,15 +649,19 @@
     border-color: #9CA3AF;
 }
 .pd-btn-buy-now {
-    flex: 1;
-    min-width: 140px;
-    background: var(--color-gold);
-    color: #fff;
-    border-color: var(--color-gold);
+    width: 100%;
+    min-width: unset;
+    background: #fff;
+    color: var(--pd-gold);
+    border-color: var(--pd-gold);
+    padding: 14px 28px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 .pd-btn-buy-now:hover {
-    background: #B8943A;
-    border-color: #B8943A;
+    background: #fdf8ef;
 }
 .pd-btn-buy-now:disabled {
     opacity: 0.5;
@@ -652,16 +674,16 @@
     height: 48px;
     padding: 0;
     border-radius: 50%;
-    background: var(--bg-primary);
+    background: #fff;
     color: var(--text-secondary);
-    border-color: var(--border-light);
+    border-color: #e0e0e0;
     font-size: 1rem;
     flex-shrink: 0;
 }
 .pd-btn-wishlist:hover,
 .pd-btn-share:hover,
 .pd-btn-compare:hover {
-    background: #fff;
+    background: #fafafa;
     border-color: var(--text-secondary);
 }
 .pd-btn-wishlist.liked {
@@ -672,23 +694,27 @@
 
 /* Delivery Info */
 .pd-delivery-info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
     padding: 16px;
-    background: var(--bg-primary);
+    background: #fafafa;
     border-radius: var(--pd-radius);
-    border: 1px solid var(--border-light);
+    border: 1px solid #e8e8e8;
 }
 .pd-delivery-item {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     font-size: 0.8rem;
+    padding: 10px 0;
+}
+.pd-delivery-item:not(:last-child) {
+    border-bottom: 1px solid #e8e8e8;
 }
 .pd-delivery-item i {
     font-size: 1.1rem;
-    color: var(--color-gold);
+    color: var(--pd-gold);
     width: 28px;
     text-align: center;
     flex-shrink: 0;
@@ -710,8 +736,8 @@
     gap: 6px;
     font-size: 0.8rem;
     color: var(--text-secondary);
-    padding-top: 8px;
-    border-top: 1px solid var(--border-light);
+    padding-top: 10px;
+    border-top: 1px solid #e8e8e8;
 }
 .pd-meta-item {
     display: flex;
@@ -728,14 +754,16 @@
 }
 
 /* ============================================================
-   PRODUCT TABS
+   PRODUCT TABS — Jumia-Style Underline Tabs
    ============================================================ */
 .pd-tabs-section {
     padding: 0 0 40px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 .pd-tabs-nav {
     display: flex;
-    border-bottom: 2px solid var(--border-light);
+    border-bottom: 2px solid #e8e8e8;
     overflow-x: auto;
     scrollbar-width: none;
     gap: 0;
@@ -762,8 +790,8 @@
     color: var(--text-primary);
 }
 .pd-tab-btn.active {
-    color: var(--color-gold);
-    border-bottom-color: var(--color-gold);
+    color: var(--pd-gold);
+    border-bottom-color: var(--pd-gold);
 }
 
 .pd-tabs-content {
@@ -807,11 +835,11 @@
 .pd-specs-table th,
 .pd-specs-table td {
     padding: 10px 16px;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid #e8e8e8;
     text-align: left;
 }
 .pd-specs-table th {
-    background: var(--bg-primary);
+    background: #fafafa;
     font-weight: 600;
     color: var(--text-primary);
     width: 40%;
@@ -836,7 +864,7 @@
 }
 .pd-size-tab {
     padding: 8px 24px;
-    border: 1.5px solid var(--border-light);
+    border: 1.5px solid #e0e0e0;
     border-radius: 20px;
     background: #fff;
     font-size: 0.8rem;
@@ -847,11 +875,11 @@
     color: var(--text-secondary);
 }
 .pd-size-tab:hover {
-    border-color: var(--text-primary);
+    border-color: #999;
 }
 .pd-size-tab.active {
-    background: var(--color-gold);
-    border-color: var(--color-gold);
+    background: var(--pd-gold);
+    border-color: var(--pd-gold);
     color: #fff;
 }
 .pd-size-table-wrap {
@@ -878,9 +906,9 @@
     margin-bottom: 16px;
 }
 .pd-size-table th {
-    background: var(--bg-primary);
+    background: #fafafa;
     padding: 10px 12px;
-    border: 1px solid var(--border-light);
+    border: 1px solid #e8e8e8;
     text-align: left;
     font-weight: 600;
     font-size: 0.75rem;
@@ -889,11 +917,11 @@
 }
 .pd-size-table td {
     padding: 8px 12px;
-    border: 1px solid var(--border-light);
+    border: 1px solid #e8e8e8;
     text-align: left;
 }
 .pd-size-table tbody tr:hover {
-    background: var(--bg-primary);
+    background: #fafafa;
 }
 
 /* Static content (Shipping, Care) */
@@ -930,7 +958,7 @@
 .pd-reviews-section,
 .pd-qa-section {
     padding: 40px 0;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid #e8e8e8;
 }
 .pd-section-header {
     margin-bottom: 24px;
@@ -948,11 +976,11 @@
 }
 
 .pd-review-form {
-    background: var(--bg-primary);
+    background: #fafafa;
     border-radius: var(--pd-radius);
     padding: 24px;
     margin-bottom: 24px;
-    border: 1px solid var(--border-light);
+    border: 1px solid #e8e8e8;
 }
 .pd-review-form h3 {
     font-size: 1rem;
@@ -966,7 +994,7 @@
 }
 .pd-star-rating i {
     font-size: 1.5rem;
-    color: var(--border-light);
+    color: #e0e0e0;
     cursor: pointer;
     transition: color 0.2s;
 }
@@ -977,7 +1005,7 @@
 .pd-review-textarea {
     width: 100%;
     padding: 12px 16px;
-    border: 1.5px solid var(--border-light);
+    border: 1.5px solid #e0e0e0;
     border-radius: 8px;
     font-size: 0.85rem;
     font-family: inherit;
@@ -989,7 +1017,7 @@
 .pd-review-input:focus,
 .pd-review-textarea:focus {
     outline: none;
-    border-color: var(--color-gold);
+    border-color: var(--pd-gold);
     box-shadow: 0 0 0 3px rgba(200,163,90,0.15);
 }
 .pd-review-textarea {
@@ -997,7 +1025,7 @@
     min-height: 80px;
 }
 .pd-btn-primary {
-    background: var(--color-gold);
+    background: var(--pd-gold);
     color: #fff;
     border: none;
     padding: 12px 32px;
@@ -1009,7 +1037,7 @@
     font-family: inherit;
 }
 .pd-btn-primary:hover {
-    background: #B8943A;
+    background: var(--pd-gold-hover);
 }
 .pd-review-msg {
     font-size: 0.8rem;
@@ -1030,7 +1058,7 @@
     color: var(--text-secondary);
 }
 .pd-review-login-prompt a {
-    color: var(--color-gold);
+    color: var(--pd-gold);
     font-weight: 600;
     text-decoration: underline;
     cursor: pointer;
@@ -1039,7 +1067,7 @@
 /* Review cards */
 .pd-review-card {
     padding: 20px;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid #e8e8e8;
 }
 .pd-review-card:last-child {
     border-bottom: none;
@@ -1054,7 +1082,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--color-gold);
+    background: var(--pd-gold);
     color: #fff;
     display: flex;
     align-items: center;
@@ -1106,11 +1134,11 @@
    Q&A SECTION
    ============================================================ */
 .pd-qa-form {
-    background: var(--bg-primary);
+    background: #fafafa;
     border-radius: var(--pd-radius);
     padding: 24px;
     margin-bottom: 24px;
-    border: 1px solid var(--border-light);
+    border: 1px solid #e8e8e8;
 }
 .pd-qa-form h3 {
     font-size: 1rem;
@@ -1124,7 +1152,7 @@
 .pd-qa-input {
     flex: 1;
     padding: 12px 16px;
-    border: 1.5px solid var(--border-light);
+    border: 1.5px solid #e0e0e0;
     border-radius: 8px;
     font-size: 0.85rem;
     font-family: inherit;
@@ -1134,7 +1162,7 @@
 }
 .pd-qa-input:focus {
     outline: none;
-    border-color: var(--color-gold);
+    border-color: var(--pd-gold);
     box-shadow: 0 0 0 3px rgba(200,163,90,0.15);
 }
 .pd-qa-msg {
@@ -1147,7 +1175,7 @@
 
 .pd-qa-card {
     padding: 16px 0;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid #e8e8e8;
 }
 .pd-qa-card:last-child {
     border-bottom: none;
@@ -1159,7 +1187,7 @@
     font-size: 0.85rem;
 }
 .pd-qa-question i {
-    color: var(--color-gold);
+    color: var(--pd-gold);
     font-size: 0.8rem;
     margin-top: 4px;
 }
@@ -1175,7 +1203,7 @@
     margin-left: 24px;
     margin-top: 8px;
     padding: 12px 16px;
-    background: var(--bg-primary);
+    background: #fafafa;
     border-radius: 8px;
     font-size: 0.83rem;
     color: var(--text-secondary);
@@ -1204,7 +1232,7 @@
    ============================================================ */
 .pd-related-section {
     padding: 40px 0;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid #e8e8e8;
 }
 .pd-related-grid {
     display: grid;
@@ -1255,12 +1283,12 @@
 }
 .pd-newsletter-form input:focus {
     outline: none;
-    border-color: var(--color-gold);
+    border-color: var(--pd-gold);
     background: rgba(255,255,255,0.15);
 }
 .pd-newsletter-form button {
     padding: 14px 28px;
-    background: var(--color-gold);
+    background: var(--pd-gold);
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -1272,7 +1300,7 @@
     white-space: nowrap;
 }
 .pd-newsletter-form button:hover {
-    background: #B8943A;
+    background: var(--pd-gold-hover);
 }
 .pd-newsletter-msg {
     font-size: 0.8rem;
@@ -1398,20 +1426,17 @@
 .pd-lightbox-next:active {
     background: rgba(255,255,255,0.3);
 }
-/* Show arrows on touch devices with no pointer (tablets) */
 @media (hover: none) and (pointer: coarse) {
     .pd-lightbox-prev,
     .pd-lightbox-next {
         display: flex;
     }
 }
-/* Lightbox: hide on desktop — use zoom instead */
 @media (min-width: 769px) {
     .pd-lightbox {
         display: none !important;
     }
 }
-/* Lightbox open on mobile: prevent body scroll */
 body.lightbox-open {
     overflow: hidden !important;
     position: fixed;
@@ -1419,14 +1444,20 @@ body.lightbox-open {
 }
 
 /* ============================================================
-   RESPONSIVE
+   STICKY MOBILE BOTTOM BAR
    ============================================================ */
+.pd-mobile-bar {
+    display: none;
+}
 
-/* Tablet */
+/* ============================================================
+   RESPONSIVE — TABLET
+   ============================================================ */
 @media (max-width: 1024px) {
     .pd-grid {
         grid-template-columns: 1fr;
         gap: 24px;
+        max-width: 100%;
     }
     .pd-gallery {
         position: static;
@@ -1438,15 +1469,21 @@ body.lightbox-open {
         grid-template-columns: repeat(3, 1fr);
     }
     .pd-delivery-info {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+    .pd-tabs-section {
+        max-width: 100%;
     }
 }
 
-/* Mobile Large */
+/* ============================================================
+   RESPONSIVE — MOBILE (<=768px)
+   ============================================================ */
 @media (max-width: 768px) {
     .pd-main {
         padding-top: 60px;
         overflow-x: hidden;
+        padding-bottom: 80px;
     }
     html, body {
         overflow-x: hidden;
@@ -1464,7 +1501,6 @@ body.lightbox-open {
         border-radius: 0;
         aspect-ratio: auto;
         border: none;
-        box-shadow: none;
         background: #f5f5f5;
     }
     .pd-main-image {
@@ -1482,11 +1518,15 @@ body.lightbox-open {
         display: none !important;
     }
     .pd-gallery-indicator {
-        display: none !important;
+        display: flex !important;
     }
     .pd-thumbnails {
         padding: 8px 16px;
         justify-content: center;
+    }
+    .pd-thumbnails img {
+        width: 56px;
+        height: 70px;
     }
     .pd-name {
         font-size: 1.3rem;
@@ -1495,12 +1535,11 @@ body.lightbox-open {
         font-size: 1.5rem;
     }
     .pd-actions {
-        flex-wrap: wrap;
+        flex-direction: column;
     }
     .pd-btn-add-cart,
     .pd-btn-buy-now {
-        flex: 1 1 100%;
-        min-width: unset;
+        width: 100%;
     }
     .pd-btn-wishlist,
     .pd-btn-share,
@@ -1525,10 +1564,6 @@ body.lightbox-open {
     }
     .pd-qa-input-wrap {
         flex-direction: column;
-    }
-    .pd-thumbnails img {
-        width: 56px;
-        height: 70px;
     }
     .pd-delivery-info {
         padding: 12px;
@@ -1556,10 +1591,56 @@ body.lightbox-open {
     }
     .pd-tabs-section {
         overflow-x: hidden;
+        max-width: 100%;
+    }
+
+    /* Sticky Mobile Bottom Bar */
+    .pd-mobile-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        background: #fff;
+        border-top: 1px solid #e8e8e8;
+        box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+        padding: 10px 16px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        gap: 12px;
+    }
+    .pd-mobile-bar .pd-mobile-bar-price {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--pd-gold);
+        white-space: nowrap;
+    }
+    .pd-mobile-bar .pd-mobile-bar-btn {
+        flex: 1;
+        padding: 12px 20px;
+        background: var(--pd-gold);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        font-family: inherit;
+        text-align: center;
+        transition: var(--pd-transition);
+    }
+    .pd-mobile-bar .pd-mobile-bar-btn:active {
+        background: var(--pd-gold-hover);
     }
 }
 
-/* Mobile Small */
+/* ============================================================
+   RESPONSIVE — MOBILE SMALL (<=480px)
+   ============================================================ */
 @media (max-width: 480px) {
     .pd-gallery {
         width: 100%;
@@ -1591,8 +1672,8 @@ body.lightbox-open {
         font-size: 0.65rem;
     }
     .pd-color-chip {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
     }
     .pd-size-chip {
         padding: 6px 14px;
@@ -1609,7 +1690,9 @@ body.lightbox-open {
     }
 }
 
-/* Desktop Large */
+/* ============================================================
+   RESPONSIVE — DESKTOP LARGE (>=1400px)
+   ============================================================ */
 @media (min-width: 1400px) {
     .pd-grid {
         gap: 60px;
@@ -1621,18 +1704,21 @@ body.lightbox-open {
         font-size: 2rem;
     }
     .pd-thumbnails img {
-        width: 84px;
-        height: 105px;
+        width: 66px;
+        height: 82px;
     }
 }
 
-/* MOBILE: Show bottom nav */
+/* ============================================================
+   MOBILE: Show bottom nav
+   ============================================================ */
 @media (max-width: 768px) {
     .mobile-bottom-nav { display: flex !important; }
-    .pd-main { padding-bottom: 72px; }
 }
 
-/* TOUCH: Gallery buttons always visible */
+/* ============================================================
+   TOUCH: Gallery buttons always visible
+   ============================================================ */
 @media (hover: none) and (pointer: coarse) {
     .pd-gallery-btn { opacity: 0.7 !important; }
     .pd-main-image-wrap:hover .pd-gallery-btn { opacity: 1 !important; }
