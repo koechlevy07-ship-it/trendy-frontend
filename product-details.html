@@ -80,6 +80,7 @@
                 word-break: break-word !important;
             }
             .pd-specs-table, .pd-size-table { max-width: 100% !important; }
+            .pd-main-image-wrap { cursor: pointer !important; -webkit-tap-highlight-color: transparent; }
         }
         @media (max-width: 480px) {
             .pd-main-image {
@@ -875,6 +876,16 @@
             <button onclick="openAuthModal()" aria-label="Account" style="background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 12px;color:var(--text-secondary);font-size:0.6rem;min-width:44px;min-height:44px;"><i class="fas fa-user" style="font-size:1.15rem;"></i><span>Account</span></button>
         </div>
     </nav>
+
+    <!-- MOBILE IMAGE LIGHTBOX -->
+    <div class="pd-lightbox" id="pdLightbox" aria-hidden="true" role="dialog" aria-label="Fullscreen image viewer">
+        <div class="pd-lightbox-overlay" id="pdLightboxOverlay"></div>
+        <button class="pd-lightbox-close" id="pdLightboxClose" aria-label="Close"><i class="fas fa-times"></i></button>
+        <div class="pd-lightbox-counter" id="pdLightboxCounter">1 / 1</div>
+        <div class="pd-lightbox-track" id="pdLightboxTrack"></div>
+        <button class="pd-lightbox-prev" id="pdLightboxPrev" aria-label="Previous image"><i class="fas fa-chevron-left"></i></button>
+        <button class="pd-lightbox-next" id="pdLightboxNext" aria-label="Next image"><i class="fas fa-chevron-right"></i></button>
+    </div>
 
     <script src="/js/product-details.js"></script>
 </body>

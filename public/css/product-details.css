@@ -1283,6 +1283,142 @@
 .pd-newsletter-msg.error { color: #FCA5A5; }
 
 /* ============================================================
+   MOBILE IMAGE LIGHTBOX
+   ============================================================ */
+.pd-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: #000;
+    touch-action: none;
+}
+.pd-lightbox.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.pd-lightbox-overlay {
+    position: absolute;
+    inset: 0;
+    background: #000;
+}
+.pd-lightbox-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background 0.2s;
+}
+.pd-lightbox-close:active {
+    background: rgba(255,255,255,0.3);
+}
+.pd-lightbox-counter {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: rgba(0,0,0,0.4);
+    padding: 4px 14px;
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-family: inherit;
+}
+.pd-lightbox-track {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+}
+.pd-lightbox-track.dragging {
+    transition: none;
+}
+.pd-lightbox-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
+    overflow: hidden;
+}
+.pd-lightbox-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+}
+.pd-lightbox-prev,
+.pd-lightbox-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background 0.2s;
+}
+.pd-lightbox-prev { left: 12px; }
+.pd-lightbox-next { right: 12px; }
+.pd-lightbox-prev:active,
+.pd-lightbox-next:active {
+    background: rgba(255,255,255,0.3);
+}
+/* Show arrows on touch devices with no pointer (tablets) */
+@media (hover: none) and (pointer: coarse) {
+    .pd-lightbox-prev,
+    .pd-lightbox-next {
+        display: flex;
+    }
+}
+/* Lightbox: hide on desktop — use zoom instead */
+@media (min-width: 769px) {
+    .pd-lightbox {
+        display: none !important;
+    }
+}
+/* Lightbox open on mobile: prevent body scroll */
+body.lightbox-open {
+    overflow: hidden !important;
+    position: fixed;
+    width: 100%;
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 

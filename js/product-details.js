@@ -1655,6 +1655,13 @@ window.openCheckout = openCheckout;
 // ============================================================
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+        const lb = document.getElementById('pdLightbox');
+        if (lb && lb.classList.contains('active')) {
+            lb.classList.remove('active');
+            document.body.classList.remove('lightbox-open');
+            document.body.style.top = '';
+            return;
+        }
         if (document.getElementById('quickViewOverlay')?.classList.contains('show')) closeQuickView();
         if (document.getElementById('miniCartOverlay')?.classList.contains('show')) closeCartModal();
         if (document.getElementById('checkoutOverlay')?.style.display === 'flex') closeCheckout();
@@ -1665,6 +1672,173 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+// ============================================================
+// MOBILE IMAGE LIGHTBOX
+// ============================================================
+(function() {
+    const lightbox = document.getElementById('pdLightbox');
+    const track = document.getElementById('pdLightboxTrack');
+    const counter = document.getElementById('pdLightboxCounter');
+    const closeBtn = document.getElementById('pdLightboxClose');
+    const prevBtn = document.getElementById('pdLightboxPrev');
+    const nextBtn = document.getElementById('pdLightboxNext');
+    const overlay = document.getElementById('pdLightboxOverlay');
+    const mainImageWrap = document.getElementById('pdMainImageWrap');
+
+    if (!lightbox || !mainImageWrap) return;
+
+    let slides = [];
+    let currentIndex = 0;
+    let isDragging = false;
+    let startX = 0;
+    let currentTranslate = 0;
+    let prevTranslate = 0;
+    let animationID = 0;
+
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+
+    function openLightbox(startIdx) {
+        if (!isMobile()) return;
+        const images = currentProduct && currentProduct.images && currentProduct.images.length
+            ? currentProduct.images
+            : (currentProduct && currentProduct.thumbnail ? [currentProduct.thumbnail] : []);
+        if (images.length === 0) return;
+
+        currentIndex = startIdx;
+        slides = images;
+
+        track.innerHTML = images.map((img, i) => {
+            const url = getImageUrl(img, 1200);
+            return `<div class="pd-lightbox-slide"><img src="${url}" alt="Product image ${i + 1}" draggable="false" /></div>`;
+        }).join('');
+
+        updatePosition(false);
+        updateCounter();
+
+        lightbox.classList.add('active');
+        lightbox.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('lightbox-open');
+        document.body.style.top = `-${window.scrollY}px`;
+
+        prevTranslate = -currentIndex * window.innerWidth;
+        currentTranslate = prevTranslate;
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        lightbox.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('lightbox-open');
+        const scrollY = document.body.style.top;
+        document.body.style.top = '';
+        document.documentElement.style.overflow = '';
+        if (scrollY) window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        track.innerHTML = '';
+        slides = [];
+    }
+
+    function updatePosition(animate) {
+        if (animate) {
+            track.classList.remove('dragging');
+        } else {
+            track.classList.add('dragging');
+        }
+        track.style.transform = `translateX(${currentTranslate}px)`;
+    }
+
+    function updateCounter() {
+        counter.textContent = `${currentIndex + 1} / ${slides.length}`;
+    }
+
+    function goToSlide(index) {
+        currentIndex = Math.max(0, Math.min(index, slides.length - 1));
+        currentTranslate = -currentIndex * window.innerWidth;
+        prevTranslate = currentTranslate;
+        updatePosition(true);
+        updateCounter();
+    }
+
+    // Tap to open
+    mainImageWrap.addEventListener('click', (e) => {
+        if (!isMobile()) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openLightbox(currentGalleryIndex || 0);
+    });
+
+    // Also allow lightbox on thumbnail tap
+    const thumbs = document.getElementById('pdThumbnails');
+    if (thumbs) {
+        thumbs.addEventListener('dblclick', (e) => {
+            if (!isMobile()) return;
+            const img = e.target.closest('img');
+            if (img && img.dataset.index !== undefined) {
+                openLightbox(parseInt(img.dataset.index));
+            }
+        });
+    }
+
+    // Close
+    closeBtn.addEventListener('click', closeLightbox);
+    overlay.addEventListener('click', closeLightbox);
+
+    // Prev/Next buttons
+    prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
+    nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+
+    // Touch swipe on track
+    track.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 1) return;
+        isDragging = true;
+        startX = e.touches[0].clientX;
+        track.classList.add('dragging');
+        cancelAnimationFrame(animationID);
+    }, { passive: true });
+
+    track.addEventListener('touchmove', (e) => {
+        if (!isDragging || e.touches.length > 1) return;
+        const x = e.touches[0].clientX;
+        const diff = x - startX;
+        currentTranslate = prevTranslate + diff;
+        track.style.transform = `translateX(${currentTranslate}px)`;
+    }, { passive: true });
+
+    track.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        const movedBy = currentTranslate - prevTranslate;
+        const threshold = window.innerWidth * 0.2;
+
+        if (movedBy < -threshold && currentIndex < slides.length - 1) {
+            currentIndex++;
+        } else if (movedBy > threshold && currentIndex > 0) {
+            currentIndex--;
+        }
+
+        currentTranslate = -currentIndex * window.innerWidth;
+        prevTranslate = currentTranslate;
+        updatePosition(true);
+        updateCounter();
+    }, { passive: true });
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('active')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') goToSlide(currentIndex - 1);
+        if (e.key === 'ArrowRight') goToSlide(currentIndex + 1);
+    });
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+        if (!lightbox.classList.contains('active')) return;
+        currentTranslate = -currentIndex * window.innerWidth;
+        prevTranslate = currentTranslate;
+        track.style.transform = `translateX(${currentTranslate}px)`;
+    });
+})();
 
 // ============================================================
 // INIT
