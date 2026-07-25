@@ -3414,4 +3414,24 @@
         @media (max-width: 768px) {
             .mobile-bottom-nav { display: flex !important; }
             body { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+        }
+
+        /* ============================================================
+           FORCE: 2-column product grid on mobile — must win
+        ============================================================ */
+        @media (max-width: 768px) {
+            .products-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+            .products-grid .product-card {
+                width: auto !important;
+                min-width: 0 !important;
+                max-width: none !important;
+                grid-column: auto !important;
+            }
         }

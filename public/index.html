@@ -899,7 +899,7 @@
                 <i class="fas fa-home" style="font-size:1.15rem;"></i>
                 <span>Home</span>
             </button>
-            <button data-nav="search" id="bottomNavSearchBtn" aria-label="Search" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
+            <button data-nav="search" id="bottomNavSearchBtn" aria-label="Search" onclick="var so=document.getElementById('searchOverlay');if(so){so.classList.add('open');document.body.classList.add('no-scroll');var si=document.getElementById('searchOverlayInput');if(si){setTimeout(function(){si.focus()},100);}}" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.6rem;flex:1;min-height:44px;">
                 <i class="fas fa-search" style="font-size:1.15rem;"></i>
                 <span>Search</span>
             </button>
