@@ -2049,7 +2049,7 @@
                         ${p.limitedAvailable && p.limitedPieces > 0 && p.limitedPieces <= 10 ? `<span class="badge limited">Only ${p.limitedPieces} left!</span>` : ''}
                         ${p.preOrder ? '<span class="badge pre-order">Pre-Order</span>' : ''}
                         ${!inStock ? '<span class="badge out">OUT OF STOCK</span>' : ''}
-                        <a href="/product-details?id=${p._id}" class="quick-view view-details" data-id="${p._id}" aria-label="View details for ${p.name}" onclick="event.stopPropagation()">View Details</a>
+                        <button class="quick-view" data-id="${p._id}" aria-label="Quick view for ${p.name}" onclick="event.stopPropagation()"><i class="fas fa-eye"></i> Quick View</button>
                     </div>
                     <div class="product-info">
                         ${p.brand ? `<div class="brand">${p.brand}</div>` : ''}
