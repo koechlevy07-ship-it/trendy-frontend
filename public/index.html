@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" /> 
     <title>Trendy_Wardrobe — Luxury Fashion | Premium Trench Coats, Wardrobe & Shoes</title>
     <meta name="description" content="Trendy Wardrobe — Nairobi's premier luxury fashion store. Shop executive trench coats, wardrobe essentials, and designer shoes. Quality fashion for every generation. Free delivery in Nairobi." />
-    <meta name="keywords" content="Trendy Wardrobe, luxury fashion Kenya, trench coats Nairobi, executive fashion, premium clothing, designer shoes, wardrobe essentials" />
     <meta name="author" content="Trendy Wardrobe" />
     <meta name="robots" content="index, follow" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
@@ -16,17 +15,16 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://trendy-frontend-ashen.vercel.app/" />
     <meta property="og:site_name" content="Trendy Wardrobe" />
-    <meta property="og:image" content="https://trendy-frontend-ashen.vercel.app/assets/images/logo-icon.svg" />
+    <meta property="og:image" content="https://trendy-frontend-ashen.vercel.app/assets/images/og-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Trendy Wardrobe — Luxury Fashion" />
     <meta name="twitter:description" content="Nairobi's premier luxury fashion store. Shop executive trench coats, wardrobe essentials, and designer shoes." />
-    <meta name="twitter:image" content="https://trendy-frontend-ashen.vercel.app/assets/images/logo-icon.svg" />
+    <meta name="twitter:image" content="https://trendy-frontend-ashen.vercel.app/assets/images/og-image.png" />
     <link rel="canonical" href="https://trendy-frontend-ashen.vercel.app/" />
     <link rel="icon" type="image/svg+xml" href="/assets/images/logo-icon.svg" />
     <link rel="icon" type="image/svg+xml" sizes="any" href="/assets/images/logo-icon.svg" />
     <link rel="apple-touch-icon" href="/assets/images/logo-icon.svg" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#C8A35A" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -104,9 +102,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Great+Vibes&family=Oswald:wght@400;700&family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://trendy-backend-jq27.onrender.com" crossorigin />
+    <link rel="dns-prefetch" href="https://trendy-backend-jq27.onrender.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Great+Vibes&family=Oswald:wght@400;700&family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Great+Vibes&family=Oswald:wght@400;700&family=Poppins:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" /></noscript>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" media="print" onload="this.media='all'" />
     <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="preload" as="image" href="/assets/images/hero-fashion.png" fetchpriority="high" />
     <!-- NUCLEAR: Inline critical CSS — cannot be cached by SW -->
     <style>
         @media (max-width: 768px) {
@@ -124,12 +126,12 @@
                 min-width: 0 !important;
                 max-width: none !important;
             }
-            .product-card .product-image {
-                aspect-ratio: 4 / 5 !important;
+            .product-card .product-image-wrap {
+                aspect-ratio: 3 / 4 !important;
             }
-            .product-card .product-info .card-actions {
+            .product-card .product-info .add-btn {
                 margin-top: auto !important;
-                padding-top: 8px !important;
+                min-height: 48px !important;
             }
         }
         @media (max-width: 360px) {
@@ -152,9 +154,12 @@
             flex-direction: column !important;
             align-items: stretch !important;
         }
+        /* Prevent layout shift from hero */
+        .hero { min-height: 80vh; }
     </style>
 </head>
 <body>
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
 
     <!-- ============================================================
     STICKY HEADER
@@ -924,7 +929,7 @@
     <!-- ============================================================
     TOAST
     ============================================================ -->
-    <div class="toast" id="toast"><span id="toastMessage">Item added!</span><span class="toast-close" id="toastClose">&times;</span></div>
+    <div class="toast" id="toast" role="alert" aria-live="assertive"><span id="toastMessage">Item added!</span><span class="toast-close" id="toastClose">&times;</span></div>
 
     <!-- ============================================================
     QUICK VIEW MODAL (must be before script for getElementById)
@@ -969,7 +974,7 @@
     <!-- ============================================================
     JAVASCRIPT – COMPLETE FIXED & EXTENDED
     ============================================================ -->
-    <script src="/js/app.js"></script>
+    <script defer src="/js/app.js"></script>
     <script defer src="https://cdn.vercel-insights.com/beacon.js"></script>
 
 </body>

@@ -1388,7 +1388,7 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(200,163,90,0.2);
         }
-        .product-card .product-info .add-btn:active { transform: translateY(0); }
+        .product-card .product-info .add-btn:active { transform: scale(0.93); transition: transform 0.06s ease; background: #333; color: #fff; }
         .product-card .product-info .add-btn:disabled {
             background: #E5E7EB;
             color: #9CA3AF;
@@ -2161,7 +2161,7 @@
             flex-direction: column;
             transition: transform 0.15s ease;
         }
-        .product-card:active { transform: scale(0.98); }
+        .product-card:active { transform: scale(0.95); transition: transform 0.06s ease; }
         .product-card:hover {
             transform: none;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
@@ -2442,6 +2442,16 @@
            MOBILE ENHANCEMENTS – Premium Luxury UX
         ============================================================ */
 
+        /* Global touch optimization */
+        @media (max-width: 768px) {
+            *, *::before, *::after {
+                -webkit-tap-highlight-color: transparent;
+            }
+            button, a, [role="button"], input, select, textarea {
+                touch-action: manipulation;
+            }
+        }
+
         /* Hero mobile landscape override */
         @media (max-width: 768px) and (orientation: landscape) {
             .hero {
@@ -2450,30 +2460,51 @@
             }
         }
 
-        /* Touch feedback for all interactive elements */
+        /* Touch feedback — snappy, visible, instant */
         @media (hover: none) and (pointer: coarse) {
-            .category-card:active { transform: scale(0.97); transition: transform 0.15s ease; }
-            .product-card:active { transform: scale(0.98); transition: transform 0.15s ease; }
-            .btn-shop:active { transform: scale(0.96); transition: transform 0.1s ease; }
-            .add-btn:active { transform: scale(0.96); transition: transform 0.1s ease; }
-            .search-tag:active { transform: scale(0.95); }
-            .qv-btn:active { transform: scale(0.96); transition: transform 0.1s ease; }
-            .wishlist-btn:active { transform: scale(0.9); transition: transform 0.1s ease; }
-            .auth-modal .btn-submit:active { transform: scale(0.96); transition: transform 0.1s ease; }
+            .category-card:active { transform: scale(0.93); transition: transform 0.06s ease; background: rgba(0,0,0,0.02); }
+            .product-card:active { transform: scale(0.95); transition: transform 0.06s ease; }
+            .btn-shop:active { transform: scale(0.92); transition: transform 0.06s ease; background: var(--color-gold); color: #fff; border-color: var(--color-gold); }
+            .add-btn:active { transform: scale(0.92); transition: transform 0.06s ease; background: #333; color: #fff; }
+            .search-tag:active { transform: scale(0.92); transition: transform 0.06s ease; background: #f0f0f0; }
+            .qv-btn:active { transform: scale(0.92); transition: transform 0.06s ease; }
+            .wishlist-btn:active { transform: scale(0.85); transition: transform 0.06s ease; }
+            .auth-modal .btn-submit:active { transform: scale(0.95); transition: transform 0.06s ease; }
+            .icon-btn:active { transform: scale(0.88); transition: transform 0.06s ease; }
+            .search-btn:active { transform: scale(0.88); transition: transform 0.06s ease; }
+            .profile-btn:active { transform: scale(0.88); transition: transform 0.06s ease; }
+            .hamburger-btn:active { transform: scale(0.88); transition: transform 0.06s ease; }
+            .filter-btn:active { transform: scale(0.92); transition: transform 0.06s ease; background: var(--color-gold); color: #fff; }
+            .sort-select:active { transform: scale(0.97); transition: transform 0.06s ease; }
+            .drawer .drawer-nav > a:active,
+            .drawer .drawer-nav .drawer-dropdown > .drawer-toggle:active { background: rgba(200,163,90,0.08); transition: background 0.06s ease; }
+            .mini-cart-item .item-qty button:active { transform: scale(0.88); transition: transform 0.06s ease; background: #f0f0f0; }
+            .close-qv:active, .cart-close:active, .search-close:active, .drawer-close:active { transform: scale(0.85); transition: transform 0.06s ease; }
+            .size-chip:active, .color-chip:active { transform: scale(0.9); transition: transform 0.06s ease; }
+            .gender-btn:active { transform: scale(0.93); transition: transform 0.06s ease; }
+            .mobile-bottom-nav button:active { transform: scale(0.88); transition: transform 0.06s ease; }
+            #backToTop:active { transform: scale(0.88); transition: transform 0.06s ease; }
+            .pd-btn-add-cart:active, .pd-btn-buy-now:active { transform: scale(0.95); transition: transform 0.06s ease; }
+            .pd-mobile-bar .pd-mobile-bar-btn:active { transform: scale(0.95); transition: transform 0.06s ease; }
+            .pd-qty-btn:active { transform: scale(0.88); transition: transform 0.06s ease; background: #f0f0f0; }
+            .pd-color-chip:active, .pd-size-chip:active { transform: scale(0.9); transition: transform 0.06s ease; }
         }
 
         /* Improved tap targets – minimum 44px */
         @media (max-width: 768px) {
-            .product-card .product-info .add-btn { min-height: 44px; padding: 10px 12px; font-size: 0.65rem; }
-            .mini-cart-item .item-qty button { width: 36px; height: 36px; font-size: 1rem; }
+            .product-card .product-info .add-btn { min-height: 48px; padding: 12px 14px; font-size: 0.68rem; }
+            .mini-cart-item .item-qty button { width: 40px; height: 40px; font-size: 1rem; }
             .drawer .drawer-nav > a,
-            .drawer .drawer-nav .drawer-dropdown > .drawer-toggle { min-height: 48px; padding: 14px 0; font-size: 1.05rem; }
+            .drawer .drawer-nav .drawer-dropdown > .drawer-toggle { min-height: 52px; padding: 14px 0; font-size: 1.05rem; }
+            .filter-btn { min-height: 44px; }
+            .close-qv, .cart-close, .search-close, .drawer-close { min-width: 48px; min-height: 48px; }
+            .size-chip, .color-chip { min-width: 44px; min-height: 44px; }
         }
 
         /* Filter buttons on small mobile — readable but compact */
         @media (max-width: 480px) {
             .filter-group { gap: 4px; }
-            .filter-btn { padding: 5px 10px; font-size: 0.6rem; border-radius: 30px; min-height: 36px; }
+            .filter-btn { padding: 6px 12px; font-size: 0.6rem; border-radius: 30px; min-height: 40px; }
             .filter-label { font-size: 0.55rem; }
         }
 
@@ -2822,39 +2853,39 @@
         }
 
         /* ============================================================
-           MOBILE UX: 44px minimum touch targets
+           MOBILE UX: 48px touch targets — exceeds WCAG 2.5.5
         ============================================================ */
         @media (max-width: 768px) {
             .mobile-bottom-nav button {
                 flex: 1;
-                min-height: 44px;
+                min-height: 48px;
                 padding: 8px 0;
             }
             .icon-btn, .search-btn, .wishlist-btn {
-                min-width: 44px;
-                min-height: 44px;
+                min-width: 48px;
+                min-height: 48px;
             }
             .filter-btn {
-                min-height: 36px;
-                padding: 6px 12px;
+                min-height: 44px;
+                padding: 8px 14px;
             }
             .mini-cart-item .item-qty button {
-                width: 40px;
-                height: 40px;
+                width: 44px;
+                height: 44px;
             }
             .close-qv, .cart-close, .search-close, .drawer-close {
-                min-width: 44px;
-                min-height: 44px;
+                min-width: 48px;
+                min-height: 48px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
             .qv-btn, .qv-btn.add-to-cart, .qv-btn.buy-now {
-                min-height: 44px;
-                padding: 10px 16px;
+                min-height: 48px;
+                padding: 12px 18px;
             }
             .auth-modal .btn-submit, .auth-modal button {
-                min-height: 44px;
+                min-height: 48px;
             }
             .size-chip, .color-chip {
                 min-width: 44px;
@@ -2864,11 +2895,25 @@
                 font-size: 0.75rem;
             }
             .coupon-apply-btn, #applyCoupon {
-                min-height: 44px;
+                min-height: 48px;
             }
             .wishlist-remove, .remove-item {
-                min-width: 44px;
-                min-height: 44px;
+                min-width: 48px;
+                min-height: 48px;
+            }
+            .hamburger-btn {
+                min-width: 48px;
+                min-height: 48px;
+            }
+            .pd-qty-btn {
+                width: 44px;
+                height: 44px;
+            }
+            .pd-mobile-bar .pd-mobile-bar-btn {
+                min-height: 48px;
+            }
+            .pd-btn-add-cart, .pd-btn-buy-now {
+                min-height: 48px;
             }
         }
 

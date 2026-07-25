@@ -33,6 +33,7 @@ function getEffectiveStock(product) {
     if (product.stock > 0) return product.stock;
     if (product.limitedAvailable && product.limitedPieces > 0) return product.limitedPieces;
     if (product.preOrder) return 999;
+    if (product.inStock) return product.stockThreshold || 5;
     return 0;
 }
 function isProductAvailable(product) {
@@ -40,6 +41,7 @@ function isProductAvailable(product) {
     if (product.stock > 0) return true;
     if (product.limitedAvailable && product.limitedPieces > 0) return true;
     if (product.preOrder) return true;
+    if (product.inStock) return true;
     return false;
 }
 
@@ -293,6 +295,8 @@ function renderMiniProductCard(product) {
 // ---- State ----
 let currentProduct = null;
 let currentGalleryIndex = 0;
+let _galleryKeyHandler = null;
+let _flashTimerInterval = null;
 
 // ---- DOM refs ----
 const $ = id => document.getElementById(id);
@@ -362,7 +366,7 @@ function renderProduct(p) {
     const ogImage = document.querySelector('meta[property="og:image"]');
     if (ogImage && p.images && p.images[0]) ogImage.content = p.images[0];
     const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) canonical.href = window.location.href.split('?')[0] + '?id=' + p._id;
+    if (canonical) canonical.href = window.location.origin + '/product-details.html?id=' + p._id;
 
     // Product JSON-LD Schema
     const existingSchema = document.getElementById('productSchema');
@@ -491,8 +495,12 @@ function renderProduct(p) {
         $('pdTags').textContent = p.tags.join(', ');
     }
 
-    // Description
-    $('pdFullDescription').innerHTML = p.description ? p.description : '<p>No description available.</p>';
+    // Description (sanitize to prevent XSS)
+    if (typeof DOMPurify !== 'undefined') {
+        $('pdFullDescription').innerHTML = DOMPurify.sanitize(p.description || '<p>No description available.</p>', { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'] });
+    } else {
+        $('pdFullDescription').textContent = p.description ? p.description.replace(/<[^>]+>/g, '') : 'No description available.';
+    }
 
     // Specifications
     renderSpecs(p);
@@ -557,11 +565,13 @@ function renderGallery(p) {
         showImage(i);
     });
 
-    // Keyboard
-    document.addEventListener('keydown', function galleryKey(e) {
+    // Keyboard — clean up previous listener to avoid leaks
+    if (_galleryKeyHandler) document.removeEventListener('keydown', _galleryKeyHandler);
+    _galleryKeyHandler = function galleryKey(e) {
         if (e.key === 'ArrowLeft') { prevBtn.click(); }
         if (e.key === 'ArrowRight') { nextBtn.click(); }
-    });
+    };
+    document.addEventListener('keydown', _galleryKeyHandler);
 
     // Touch swipe for gallery
     let touchStartX = 0;
@@ -678,14 +688,15 @@ function renderColors(p) {
         const swatch = swatches[i];
         const bg = swatch && swatch.hex ? swatch.hex : (swatch && swatch.name ? '#' + swatch.name : '#ccc');
         const hexColor = swatch && swatch.hex ? swatch.hex : color;
-        return `<button class="pd-color-chip ${i === 0 ? 'active' : ''}" data-color="${escHtml(color)}" style="background:${hexColor};" title="${escHtml(color)}"></button>`;
+        return `<button class="pd-color-chip ${i === 0 ? 'active' : ''}" data-color="${escHtml(color)}" style="background:${hexColor};" title="${escHtml(color)}" aria-label="Color: ${escHtml(color)}" ${i === 0 ? 'aria-pressed="true"' : 'aria-pressed="false"'}></button>`;
     }).join('');
 
     nameEl.textContent = p.colors[0] || '—';
     chips.querySelectorAll('.pd-color-chip').forEach(chip => {
         chip.addEventListener('click', () => {
-            chips.querySelectorAll('.pd-color-chip').forEach(c => c.classList.remove('active'));
+            chips.querySelectorAll('.pd-color-chip').forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed', 'false'); });
             chip.classList.add('active');
+            chip.setAttribute('aria-pressed', 'true');
             nameEl.textContent = chip.dataset.color;
         });
     });
@@ -704,14 +715,15 @@ function renderSizes(p) {
 
     section.style.display = 'flex';
     chips.innerHTML = p.sizes.map((size, i) =>
-        `<button class="pd-size-chip ${i === 0 ? 'active' : ''}" data-size="${escHtml(size)}">${escHtml(size)}</button>`
+        `<button class="pd-size-chip ${i === 0 ? 'active' : ''}" data-size="${escHtml(size)}" aria-pressed="${i === 0 ? 'true' : 'false'}">${escHtml(size)}</button>`
     ).join('');
 
     nameEl.textContent = p.sizes[0] || '—';
     chips.querySelectorAll('.pd-size-chip').forEach(chip => {
         chip.addEventListener('click', () => {
-            chips.querySelectorAll('.pd-size-chip').forEach(c => c.classList.remove('active'));
+            chips.querySelectorAll('.pd-size-chip').forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed', 'false'); });
             chip.classList.add('active');
+            chip.setAttribute('aria-pressed', 'true');
             nameEl.textContent = chip.dataset.size;
         });
     });
@@ -721,10 +733,12 @@ function renderSizes(p) {
 function startFlashTimer(endDate) {
     const timer = $('pdTimer');
     if (!timer) return;
+    if (_flashTimerInterval) clearInterval(_flashTimerInterval);
     function update() {
         const diff = new Date(endDate) - new Date();
         if (diff <= 0) {
             timer.textContent = 'Ended';
+            clearInterval(_flashTimerInterval);
             return;
         }
         const h = Math.floor(diff / 3600000);
@@ -733,7 +747,7 @@ function startFlashTimer(endDate) {
         timer.innerHTML = `<span>${String(h).padStart(2,'0')}</span>:<span>${String(m).padStart(2,'0')}</span>:<span>${String(s).padStart(2,'0')}</span>`;
     }
     update();
-    setInterval(update, 1000);
+    _flashTimerInterval = setInterval(update, 1000);
 }
 
 // ---- Specs ----
@@ -1072,9 +1086,12 @@ $('pdSubmitQuestion').addEventListener('click', async () => {
     if (!question) { showToast('Please type your question', 'error'); return; }
 
     try {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = getToken();
+        if (token) headers['Authorization'] = `Bearer ${token}`;
         const res = await fetch(`${API_URL}/qa`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ productId: currentProduct._id, text: question })
         });
         const data = await res.json();
@@ -1635,7 +1652,11 @@ async function loadSocialLinks() {
         const links = data.data || data || {};
         const iconMap = { facebook: 'fab fa-facebook-f', twitter: 'fab fa-twitter', instagram: 'fab fa-instagram', pinterest: 'fab fa-pinterest', youtube: 'fab fa-youtube', tiktok: 'fab fa-tiktok', linkedin: 'fab fa-linkedin-in' };
         const html = Object.keys(links).filter(k => k !== '_id' && k !== 'createdAt' && k !== 'updatedAt' && k !== '__v' && k !== 'website' && links[k] && typeof links[k] === 'object' && links[k].enabled && links[k].url)
-            .map(k => `<a href="${links[k].url}" target="_blank" aria-label="${k}"><i class="${iconMap[k] || 'fas fa-link'}"></i></a>`).join('');
+            .map(k => {
+                const url = links[k].url;
+                if (!/^https?:\/\//i.test(url)) return '';
+                return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" aria-label="${escHtml(k)}"><i class="${iconMap[k] || 'fas fa-link'}"></i></a>`;
+            }).filter(Boolean).join('');
         document.getElementById('footerSocialLinks').innerHTML = html;
         document.getElementById('drawerSocialLinks').innerHTML = html;
     } catch(e) {}

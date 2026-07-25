@@ -32,15 +32,15 @@
                 const parts = url.split('/upload/');
                 if (parts.length === 2) {
                     const w = width || 800;
-                    url = parts[0] + '/upload/f_auto,q_85,w_' + w + '/' + parts[1];
+                    url = parts[0] + '/upload/f_auto,fl_webp,q_auto:good,w_' + w + '/' + parts[1];
                 }
             }
             return url;
         }
 
         function getOptimizedImage(url, size) {
-            const sizes = { thumb: 240, card: 800, hero: 1400, full: 1800 };
-            return getImageUrl(url, sizes[size] || 800);
+            const sizes = { thumb: 240, card: 600, hero: 1400, full: 1800 };
+            return getImageUrl(url, sizes[size] || 600);
         }
 
         // ============================================================
@@ -1191,6 +1191,7 @@
             if (product.stock > 0) return product.stock;
             if (product.limitedAvailable && product.limitedPieces > 0) return product.limitedPieces;
             if (product.preOrder) return 999;
+            if (product.inStock) return product.stockThreshold || 5;
             return 0;
         }
 
@@ -1199,6 +1200,7 @@
             if (product.stock > 0) return true;
             if (product.limitedAvailable && product.limitedPieces > 0) return true;
             if (product.preOrder) return true;
+            if (product.inStock) return true;
             return false;
         }
 
@@ -1490,7 +1492,7 @@
                     const imgUrl = slide.mobileImage || slide.desktopImage || '';
                     if (imgUrl) {
                         heroVideo.style.display = 'none';
-                        heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl)})`;
+                        heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl, 800)})`;
                     } else {
                         heroVideo.style.display = '';
                     }
@@ -1500,7 +1502,7 @@
                 heroVideo.classList.add('hidden-video');
                 heroVideo.src = '';
                 if (imgUrl) {
-                    heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl)})`;
+                    heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl, isMobile ? 800 : 1400)})`;
                 }
             }
             const heading = document.getElementById('heroHeading');
@@ -1650,14 +1652,14 @@
                 if (s.email) {
                     document.querySelectorAll('.footer-contact-line').forEach(el => {
                         if (el.querySelector('.fa-envelope')) {
-                            el.innerHTML = `<i class="fas fa-envelope"></i> ${s.email}`;
+                            el.innerHTML = `<i class="fas fa-envelope"></i> ${escHtml(s.email)}`;
                         }
                     });
                 }
                 if (s.phone) {
                     document.querySelectorAll('.footer-contact-line').forEach(el => {
                         if (el.querySelector('.fa-phone')) {
-                            el.innerHTML = `<i class="fas fa-phone"></i> ${s.phone}`;
+                            el.innerHTML = `<i class="fas fa-phone"></i> ${escHtml(s.phone)}`;
                         }
                     });
                 }
@@ -1699,7 +1701,7 @@
                     const el = document.querySelector('.cp-hours-grid');
                     if (el && !el.hasAttribute('data-api-set')) {
                         el.setAttribute('data-api-set', '1');
-                        el.innerHTML = `<span class="day">Hours</span><span class="time">${s.businessHours}</span>`;
+                        el.innerHTML = `<span class="day">Hours</span><span class="time">${escHtml(s.businessHours)}</span>`;
                     }
                 }
 
@@ -1866,7 +1868,7 @@
 
                     published.forEach(cat => {
                         const li = document.createElement('li');
-                        li.innerHTML = `<a href="#" data-category="${cat.slug}" class="footer-link">${cat.name}</a>`;
+                        li.innerHTML = `<a href="#" data-category="${escHtml(cat.slug)}" class="footer-link">${escHtml(cat.name)}</a>`;
                         footerShop.appendChild(li);
                     });
 
@@ -2005,20 +2007,9 @@
             const inWish = isInWishlist(p._id);
             const inStock = isProductAvailable(p);
             const effectiveStock = getEffectiveStock(p);
-            const original = p.originalPrice ? `<span class="original">Ksh ${p.originalPrice.toLocaleString()}</span>` : '';
             const discount = p.originalPrice && p.originalPrice > p.price
                 ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100)
                 : 0;
-            const discountBadge = discount ? `<span class="discount">${discount}%</span>` : '';
-            const badges = [];
-            if (p.flashSale && p.flashSaleEnd && new Date(p.flashSaleEnd) > new Date()) badges.push('<span class="mini-badge flash-sale">Flash Sale</span>');
-            if (p.sponsored) badges.push('<span class="mini-badge sponsored">Sponsored</span>');
-            if (p.isNewArrival) badges.push('<span class="mini-badge new">New</span>');
-            if (p.isBestSeller) badges.push('<span class="mini-badge hot">Best Seller</span>');
-            if (p.featured) badges.push('<span class="mini-badge featured">Featured</span>');
-            if (p.limitedAvailable && p.limitedPieces > 0 && p.limitedPieces <= 10) badges.push(`<span class="mini-badge limited">Only ${p.limitedPieces} left</span>`);
-            if (p.installmentEligible) badges.push('<span class="mini-badge installment">Lipa Mdogo Mdogo</span>');
-            if (p.preOrder) badges.push('<span class="mini-badge pre-order">Pre-Order</span>');
             const rating = p.rating || 0;
             const fullStars = Math.floor(rating);
             const hasHalf = rating % 1 >= 0.5;
@@ -2026,65 +2017,49 @@
                 `<i class="fas fa-star ${i < fullStars ? '' : (i === fullStars && hasHalf ? 'half' : 'empty')}"></i>`
             ).join('');
             const reviewCount = p.totalReviews || p.reviewCount || 0;
-            const imageHtml = p.images && p.images.length > 1
-                ? `<div class="carousel-container">${p.images.map((img, i) => `<div class="carousel-slide ${i === 0 ? 'active' : ''}"><img src="${getOptimizedImage(img, 'card') || 'https://placehold.co/400x533/FAF9F6/C8A35A?text=Product'}" alt="${p.name} ${i + 1}" loading="lazy" decoding="async" /></div>`).join('')}<button class="carousel-arrow left" aria-label="Previous"><i class="fas fa-chevron-left"></i></button><button class="carousel-arrow right" aria-label="Next"><i class="fas fa-chevron-right"></i></button><div class="carousel-dots">${p.images.map((_, i) => `<span class="${i === 0 ? 'active' : ''}"></span>`).join('')}</div></div>`
-                : `<img src="${p.images?.[0] ? getOptimizedImage(p.images[0], 'card') : 'https://placehold.co/400x533/FAF9F6/C8A35A?text=Product'}" alt="${p.name}" loading="lazy" decoding="async" />`;
-            const deliveryEstimate = p.deliveryEstimate || 'Delivery in 2-5 days';
+            const imgUrl = p.images?.[0] ? (getOptimizedImage(p.images[0], 'card') || 'https://placehold.co/400x533/FAF9F6/C8A35A?text=Product') : 'https://placehold.co/400x533/FAF9F6/C8A35A?text=Product';
+            const secondImg = p.images?.[1] ? (getOptimizedImage(p.images[1], 'card') || null) : null;
+            const brandText = p.brand || (typeof p.category === 'string' ? p.category : 'Trendy Wardrobe');
+            const displayPrice = (p.flashSale && p.flashSalePrice) ? p.flashSalePrice : p.price;
+            const isNew = p.isNewArrival;
+            const isLimited = p.limitedAvailable && p.limitedPieces > 0 && p.limitedPieces <= 10;
+            const isFlash = p.flashSale && p.flashSaleEnd && new Date(p.flashSaleEnd) > new Date();
             return `
-                <div class="product-card" data-id="${p._id}" tabindex="0" role="article" aria-label="${p.name}">
-                    <div class="product-image">
-                        ${imageHtml}
-                        <div class="quick-actions">
-                            <button class="compare-btn" data-id="${p._id}" aria-label="Add to compare" title="Compare"><i class="fas fa-exchange-alt"></i></button>
-                            <button class="share-btn" data-id="${p._id}" aria-label="Share product" title="Share"><i class="fas fa-share-alt"></i></button>
-                        </div>
-                        <button class="wishlist-btn ${inWish ? 'liked' : ''}" data-id="${p._id}" aria-label="${inWish ? 'Remove from wishlist' : 'Add to wishlist'}"><i class="fa${inWish ? 's' : 'r'} fa-heart"></i></button>
-                        ${p.flashSale && p.flashSaleEnd && new Date(p.flashSaleEnd) > new Date() ? '<span class="badge flash-sale">FLASH SALE</span>' : ''}
-                        ${p.featured ? '<span class="badge featured-badge">Featured</span>' : ''}
-                        ${p.sponsored ? '<span class="badge sponsored">Sponsored</span>' : ''}
-                        ${p.isNewArrival ? '<span class="badge new">New</span>' : ''}
-                        ${p.isBestSeller ? '<span class="badge hot">Best Seller</span>' : ''}
-                        ${p.limitedAvailable && p.limitedPieces > 0 && p.limitedPieces <= 10 ? `<span class="badge limited">Only ${p.limitedPieces} left!</span>` : ''}
-                        ${p.preOrder ? '<span class="badge pre-order">Pre-Order</span>' : ''}
-                        ${!inStock ? '<span class="badge out">OUT OF STOCK</span>' : ''}
-                        <a href="/product-details?id=${p._id}" class="quick-view view-details" data-id="${p._id}" aria-label="View details for ${p.name}" onclick="event.stopPropagation()">View Details</a>
+                <article class="product-card" data-id="${p._id}" tabindex="0" role="article" aria-label="${p.name}">
+                    <div class="product-image-wrap">
+                        <img class="card-img-primary" src="${imgUrl}" alt="${escHtml(p.name)}" loading="lazy" decoding="async" />
+                        ${secondImg ? `<img class="card-img-hover" src="${secondImg}" alt="${escHtml(p.name)} hover" loading="lazy" decoding="async" />` : ''}
+                        ${discount ? `<span class="badge-discount">-${discount}%</span>` : ''}
+                        ${isNew ? '<span class="badge-new">New</span>' : ''}
+                        ${isFlash ? '<span class="badge-flash">Flash</span>' : ''}
+                        ${isLimited ? `<span class="badge-limited">Only ${p.limitedPieces} left</span>` : ''}
+                        ${!inStock ? '<span class="badge-out">Out of Stock</span>' : ''}
+                        <button class="wishlist-btn ${inWish ? 'liked' : ''}" data-id="${p._id}" aria-label="${inWish ? 'Remove from wishlist' : 'Add to wishlist'}" onclick="event.stopPropagation()"><i class="fa${inWish ? 's' : 'r'} fa-heart"></i></button>
                     </div>
                     <div class="product-info">
-                        ${p.brand ? `<div class="brand">${p.brand}</div>` : ''}
+                        <div class="product-brand">${escHtml(brandText)}</div>
                         <div class="product-name">${escHtml(p.name)}</div>
-                        <div class="rating" aria-label="Rating ${rating.toFixed(1)} out of 5">
-                            <div class="stars">${stars}</div>
-                            ${rating > 0 ? `<span class="score">${rating.toFixed(1)}</span><span class="count">(${reviewCount})</span>` : ''}
+                        ${rating > 0 ? `<div class="product-rating" aria-label="Rating ${rating.toFixed(1)} out of 5"><span class="stars">${stars}</span><span class="count">(${reviewCount})</span></div>` : ''}
+                        <div class="product-price-row">
+                            <span class="current">Ksh ${displayPrice.toLocaleString()}</span>
+                            ${discount ? `<span class="original">Ksh ${p.originalPrice.toLocaleString()}</span>` : ''}
                         </div>
-                        <div class="badges-row">${badges.join('')}</div>
-                        <div class="stock-status ${inStock ? (effectiveStock <= 5 && effectiveStock > 0 ? 'low' : 'in-stock') : 'out'}">${inStock ? (effectiveStock <= 5 && effectiveStock > 0 ? 'Only ' + effectiveStock + ' left' : 'In Stock') : 'Out of Stock'}</div>
-                        <div class="delivery-estimate"><i class="fas fa-truck"></i>${deliveryEstimate}</div>
-                        <div class="product-price">
-                            <span class="current">Ksh ${(p.flashSale && p.flashSalePrice ? p.flashSalePrice : p.price).toLocaleString()}</span>
-                            ${original}
-                            ${discountBadge}
-                        </div>
-                        ${p.installmentEligible && p.installmentPrice ? `<div class="installment-info">or ${Math.ceil(p.price / (p.installmentPrice || 1))}x Ksh ${(p.installmentPrice || p.price).toLocaleString()}/mo</div>` : ''}
-                        <div class="card-actions">
-                            <button class="add-to-cart" data-id="${p._id}" ${!inStock ? 'disabled' : ''} aria-label="Add ${p.name} to cart"><i class="fas fa-shopping-bag"></i> <span>${inStock ? 'Add' : 'Out of Stock'}</span></button>
-                            <button class="buy-now" data-id="${p._id}" ${!inStock ? 'disabled' : ''} aria-label="Buy ${p.name} now"><i class="fas fa-bolt"></i></button>
-                        </div>
+                        <button class="add-btn" data-id="${p._id}" ${!inStock ? 'disabled' : ''} onclick="event.stopPropagation()"><i class="fas fa-shopping-bag"></i> ${inStock ? 'Add to Cart' : 'Out of Stock'}</button>
                     </div>
-                </div>`;
+                </article>`;
         }
 
         function bindProductCardEvents(container) {
             container.querySelectorAll('.product-card').forEach(card => {
-                initCarousel(card);
                 card.addEventListener('click', e => {
-                    if (e.target.closest('button') || e.target.closest('a.view-details')) return;
+                    if (e.target.closest('button')) return;
                     window.location.href = '/product-details?id=' + card.dataset.id;
                 });
                 card.addEventListener('keydown', e => {
-                    if (e.key === 'Enter' && !e.target.closest('button') && !e.target.closest('a.view-details')) window.location.href = '/product-details?id=' + card.dataset.id;
+                    if (e.key === 'Enter' && !e.target.closest('button')) window.location.href = '/product-details?id=' + card.dataset.id;
                 });
             });
-            container.querySelectorAll('.add-to-cart').forEach(btn => {
+            container.querySelectorAll('.add-btn').forEach(btn => {
                 btn.addEventListener('click', async e => {
                     e.stopPropagation();
                     if (btn.disabled) return;
@@ -2095,15 +2070,6 @@
                     }
                 });
             });
-            container.querySelectorAll('.buy-now').forEach(btn => {
-                btn.addEventListener('click', async e => {
-                    e.stopPropagation();
-                    if (btn.disabled) return;
-                    const cached = currentProducts.find(p => p._id === btn.dataset.id);
-                    const product = cached || await (async () => { try { const res = await fetch(`${API_URL}/products/${btn.dataset.id}`); const raw = await res.json(); return raw.data || raw; } catch (err) { showToast('Error adding to cart', 'error'); return null; } })();
-                    if (product) { addToCart(product); openCheckout(); }
-                });
-            });
             container.querySelectorAll('.wishlist-btn').forEach(btn => {
                 btn.addEventListener('click', async e => {
                     e.stopPropagation();
@@ -2112,29 +2078,6 @@
                         const raw = await res.json();
                         await toggleWishlist(raw.data || raw);
                     } catch (err) { showToast('Error updating wishlist', 'error'); }
-                });
-            });
-            container.querySelectorAll('.quick-view').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    openQuickView(btn.dataset.id);
-                });
-            });
-            container.querySelectorAll('.compare-btn').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    showToast('Compare feature coming soon!', 'info');
-                });
-            });
-            container.querySelectorAll('.share-btn').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    const url = `${window.location.origin}/#product-${btn.dataset.id}`;
-                    if (navigator.share) {
-                        navigator.share({ title: 'Check this out!', url });
-                    } else {
-                        navigator.clipboard.writeText(url).then(() => showToast('Link copied!', 'success'));
-                    }
                 });
             });
         }
@@ -3504,7 +3447,7 @@
         }
 
         // ============================================================
-        // INIT
+        // INIT — Staggered loading to avoid Render cold-start bottleneck
         // ============================================================
         // Restore filters from URL
         (function() {
@@ -3524,18 +3467,15 @@
         })();
         loadCart();
         loadWishlist();
-        loadProducts(currentFilter, currentGender, lastFetchSearch);
-        loadHeroImages();
-        loadCategoryImages();
-        loadSocialLinks();
-        loadSettings();
-        loadCategories();
-        loadSearchTags();
-        loadHomepageSections();
-        loadFlashSales();
-        loadPromoBanners();
-        loadTestimonials();
         updateUI();
+        // Tier 1: Critical content (immediate)
+        loadProducts(currentFilter, currentGender, lastFetchSearch);
+        // Tier 2: Above-fold content (100ms delay — lets first paint happen)
+        setTimeout(() => { loadHeroImages(); loadCategoryImages(); loadSettings(); }, 100);
+        // Tier 3: Below-fold content (400ms delay — after first paint)
+        setTimeout(() => { loadHomepageSections(); loadFlashSales(); loadPromoBanners(); }, 400);
+        // Tier 4: Non-essential (800ms delay — after user sees content)
+        setTimeout(() => { loadSocialLinks(); loadCategories(); loadSearchTags(); loadTestimonials(); }, 800);
         console.log('🚀 Trendy_Wardrobe – All features fixed & extended');
         console.log('📡 API:', API_URL);
 

@@ -32,15 +32,15 @@
                 const parts = url.split('/upload/');
                 if (parts.length === 2) {
                     const w = width || 800;
-                    url = parts[0] + '/upload/f_auto,q_85,w_' + w + '/' + parts[1];
+                    url = parts[0] + '/upload/f_auto,fl_webp,q_auto:good,w_' + w + '/' + parts[1];
                 }
             }
             return url;
         }
 
         function getOptimizedImage(url, size) {
-            const sizes = { thumb: 240, card: 800, hero: 1400, full: 1800 };
-            return getImageUrl(url, sizes[size] || 800);
+            const sizes = { thumb: 240, card: 600, hero: 1400, full: 1800 };
+            return getImageUrl(url, sizes[size] || 600);
         }
 
         // ============================================================
@@ -1492,7 +1492,7 @@
                     const imgUrl = slide.mobileImage || slide.desktopImage || '';
                     if (imgUrl) {
                         heroVideo.style.display = 'none';
-                        heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl)})`;
+                        heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl, 800)})`;
                     } else {
                         heroVideo.style.display = '';
                     }
@@ -1502,7 +1502,7 @@
                 heroVideo.classList.add('hidden-video');
                 heroVideo.src = '';
                 if (imgUrl) {
-                    heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl)})`;
+                    heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl, isMobile ? 800 : 1400)})`;
                 }
             }
             const heading = document.getElementById('heroHeading');
@@ -3447,7 +3447,7 @@
         }
 
         // ============================================================
-        // INIT
+        // INIT — Staggered loading to avoid Render cold-start bottleneck
         // ============================================================
         // Restore filters from URL
         (function() {
@@ -3467,18 +3467,15 @@
         })();
         loadCart();
         loadWishlist();
-        loadProducts(currentFilter, currentGender, lastFetchSearch);
-        loadHeroImages();
-        loadCategoryImages();
-        loadSocialLinks();
-        loadSettings();
-        loadCategories();
-        loadSearchTags();
-        loadHomepageSections();
-        loadFlashSales();
-        loadPromoBanners();
-        loadTestimonials();
         updateUI();
+        // Tier 1: Critical content (immediate)
+        loadProducts(currentFilter, currentGender, lastFetchSearch);
+        // Tier 2: Above-fold content (100ms delay — lets first paint happen)
+        setTimeout(() => { loadHeroImages(); loadCategoryImages(); loadSettings(); }, 100);
+        // Tier 3: Below-fold content (400ms delay — after first paint)
+        setTimeout(() => { loadHomepageSections(); loadFlashSales(); loadPromoBanners(); }, 400);
+        // Tier 4: Non-essential (800ms delay — after user sees content)
+        setTimeout(() => { loadSocialLinks(); loadCategories(); loadSearchTags(); loadTestimonials(); }, 800);
         console.log('🚀 Trendy_Wardrobe – All features fixed & extended');
         console.log('📡 API:', API_URL);
 
