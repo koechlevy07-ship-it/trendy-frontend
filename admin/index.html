@@ -4059,7 +4059,44 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
         }
         document.querySelectorAll('.chart-filters button').forEach(btn=>{ btn.addEventListener('click',function(){ document.querySelectorAll('.chart-filters button').forEach(b=>b.classList.remove('active')); this.classList.add('active'); renderChart(this.dataset.period); }); });
 
-        async function loadDashboard() { startNotificationPolling(); await loadDashboardData(); await Promise.all([loadProducts(),loadCategories()]); loadOrders(); loadCustomers(); }
+        let notificationInterval = null;
+
+        async function fetchNotifications() {
+            try {
+                const res = await fetch(`${API_URL}/notifications`, { headers: getHeaders() });
+                if (!res.ok) return;
+                const data = await res.json();
+                const notifications = data.data || data.notifications || [];
+                const unread = notifications.filter(n => !n.read && !n.isRead);
+                const badge = document.getElementById('unreadBadge');
+                if (badge) {
+                    badge.textContent = unread.length;
+                    badge.style.display = unread.length > 0 ? 'flex' : 'none';
+                }
+                const list = document.getElementById('notificationList');
+                if (!list) return;
+                if (notifications.length === 0) {
+                    list.innerHTML = '<div class="notification-empty">No notifications</div>';
+                    return;
+                }
+                list.innerHTML = notifications.slice(0, 20).map(n => `
+                    <div class="notification-item ${(!n.read && !n.isRead) ? 'unread' : ''}">
+                        <div class="notif-content">
+                            <div style="font-size:0.8rem;">${escHtml(n.message || n.title || '')}</div>
+                            <div class="notif-time">${n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) { /* notifications are non-critical */ }
+        }
+
+        function startNotificationPolling() {
+            fetchNotifications();
+            if (notificationInterval) clearInterval(notificationInterval);
+            notificationInterval = setInterval(fetchNotifications, 60000);
+        }
+
+        async function loadDashboard() { try { startNotificationPolling(); } catch(e) {} await loadDashboardData(); await Promise.all([loadProducts(),loadCategories()]); loadOrders(); loadCustomers(); }
 
         async function loadDashboardData() {
             try {
