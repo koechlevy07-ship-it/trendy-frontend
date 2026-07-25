@@ -687,6 +687,29 @@
         function getHeaders() { return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }; }
         function getAuthHeaders() { return { 'Authorization': `Bearer ${getToken()}` }; }
 
+        async function safeFetch(url, options = {}, retries = 2) {
+            for (let attempt = 0; attempt <= retries; attempt++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), attempt === 0 ? 12000 : 18000);
+                    const res = await fetch(url, { ...options, signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    return res;
+                } catch (err) {
+                    if (attempt < retries) {
+                        await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+                        continue;
+                    }
+                    throw err;
+                }
+            }
+        }
+
+        // Warm up the backend on admin load (Render free tier sleeps after 15 min)
+        (async function warmUp() {
+            try { await safeFetch(`${API_URL}/health`, {}, 1); } catch(e) { /* ignore */ }
+        })();
+
         async function adminLogin(email, password) {
             const res = await fetch(`${API_URL}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
             const data = await res.json();
@@ -751,8 +774,8 @@
         async function loadDashboardData() {
             try {
                 const [ordersRes,statsRes,usersRes,productsRes] = await Promise.allSettled([
-                    fetch(`${API_URL}/orders/admin/all`,{headers:getHeaders()}), fetch(`${API_URL}/orders/admin/statistics`,{headers:getHeaders()}),
-                    fetch(`${API_URL}/users`,{headers:getHeaders()}), fetch(`${API_URL}/products`)
+                    safeFetch(`${API_URL}/orders/admin/all`,{headers:getHeaders()}), safeFetch(`${API_URL}/orders/admin/statistics`,{headers:getHeaders()}),
+                    safeFetch(`${API_URL}/users`,{headers:getHeaders()}), safeFetch(`${API_URL}/products`)
                 ]);
                 const orders=ordersRes.status==='fulfilled'&&ordersRes.value.ok?await ordersRes.value.json():[];
                 const stats=statsRes.status==='fulfilled'&&statsRes.value.ok?(await statsRes.value.json()).data:null;
@@ -775,7 +798,7 @@
         /* PRODUCTS */
         let allProducts=[], allOrders=[], allUsers=[];
         async function loadProducts() {
-            try { const res=await fetch(`${API_URL}/products`); if(!res.ok)throw new Error('Failed'); const data=await res.json(); allProducts=Array.isArray(data)?data:(data.data||[]); renderProductsTable(); document.getElementById('productCountBadge').textContent=allProducts.length; } catch(err){showToast('Error loading products');}
+            try { const res=await safeFetch(`${API_URL}/products`); if(!res.ok)throw new Error('Failed'); const data=await res.json(); allProducts=Array.isArray(data)?data:(data.data||[]); renderProductsTable(); document.getElementById('productCountBadge').textContent=allProducts.length; } catch(err){showToast('Error loading products');}
         }
         function renderProductsTable() {
             const tbody=document.getElementById('productsTableBody');
@@ -863,12 +886,12 @@
             } else {
                 data={name:document.getElementById('productName').value.trim(),slug:document.getElementById('productSlug').value.trim(),description:document.getElementById('productDescription').value.trim(),price:parseFloat(document.getElementById('productPrice').value),originalPrice:parseFloat(document.getElementById('productOriginalPrice').value)||null,category:cat,gender:document.getElementById('productGender').value,sizes:document.getElementById('productSizes').value.split(',').map(s=>s.trim()).filter(Boolean),colors:document.getElementById('productColors').value.split(',').map(s=>s.trim()).filter(Boolean),stock:parseInt(document.getElementById('productStock').value)||0,limitedAvailable:document.getElementById('productLimitedAvailable').checked,images};
             }
-            try{const url=id?`${API_URL}/products/${id}`:`${API_URL}/products`;const method=id?'PUT':'POST';const res=await fetch(url,{method,headers:getHeaders(),body:JSON.stringify(data)});if(!res.ok)throw new Error('Failed to save');showToast(id?'Product updated':'Product added');document.getElementById('productFormModal').classList.remove('show');await loadProducts();}catch(err){showToast(err.message);}
+            try{const url=id?`${API_URL}/products/${id}`:`${API_URL}/products`;const method=id?'PUT':'POST';const res=await safeFetch(url,{method,headers:getHeaders(),body:JSON.stringify(data)});if(!res.ok)throw new Error('Failed to save');showToast(id?'Product updated':'Product added');document.getElementById('productFormModal').classList.remove('show');await loadProducts();}catch(err){showToast(err.message);}
         });
         /* CATEGORIES */
         let categories=[];
         async function loadCategories() {
-            try{const res=await fetch(`${API_URL}/categories`);if(!res.ok)throw new Error('Failed');const data=await res.json();categories=Array.isArray(data)?data:(data.data||[]);renderCategoriesTable();populateCategorySelect();document.getElementById('categoryCountBadge').textContent=categories.length;}catch(err){console.error('Categories error:',err);}
+            try{const res=await safeFetch(`${API_URL}/categories`);if(!res.ok)throw new Error('Failed');const data=await res.json();categories=Array.isArray(data)?data:(data.data||[]);renderCategoriesTable();populateCategorySelect();document.getElementById('categoryCountBadge').textContent=categories.length;}catch(err){console.error('Categories error:',err);}
         }
         function renderCategoriesTable(){
             const tbody=document.getElementById('categoriesTableBody');
@@ -893,7 +916,7 @@
         async function loadOrders(status,search){
             if(status!==undefined)currentOrderStatusFilter=status;if(search!==undefined)currentOrderSearch=search;
             try{let url=`${API_URL}/orders/admin/all?`;if(currentOrderStatusFilter)url+=`status=${currentOrderStatusFilter}&`;if(currentOrderSearch)url+=`search=${encodeURIComponent(currentOrderSearch)}&`;
-            const res=await fetch(url,{headers:getHeaders()});if(!res.ok)throw new Error('Failed');const data=await res.json();ordersData=Array.isArray(data)?data:(data.data||[]);renderOrdersTable();document.getElementById('orderCountBadge').textContent=ordersData.length;}catch(err){showToast(err.message);}
+            const res=await safeFetch(url,{headers:getHeaders()});if(!res.ok)throw new Error('Failed');const data=await res.json();ordersData=Array.isArray(data)?data:(data.data||[]);renderOrdersTable();document.getElementById('orderCountBadge').textContent=ordersData.length;}catch(err){showToast(err.message);}
         }
         function renderOrdersTable(){
             const tbody=document.getElementById('ordersTableBody');
@@ -958,7 +981,7 @@
                 let url = `${API_URL}/users/admin?`;
                 if (search) url += `search=${encodeURIComponent(search)}&`;
                 if (status) url += `status=${status}`;
-                const res = await fetch(url, { headers: getHeaders() });
+                const res = await safeFetch(url, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed');
                 const data = await res.json();
                 const users = data.data || [];
@@ -1074,7 +1097,7 @@
         async function loadContacts() {
             try{const search=document.getElementById('contactSearchInput')?.value?.trim()||'';const status=document.getElementById('contactStatusFilter')?.value||'all';
             let url=`${API_URL}/contact/admin?status=${status}`;if(search)url+=`&search=${encodeURIComponent(search)}`;
-            const [cr,sr]=await Promise.allSettled([fetch(url,{headers:getHeaders()}),fetch(`${API_URL}/contact/stats`,{headers:getHeaders()})]);
+            const [cr,sr]=await Promise.allSettled([safeFetch(url,{headers:getHeaders()}),safeFetch(`${API_URL}/contact/stats`,{headers:getHeaders()})]);
             const cd=cr.status==='fulfilled'&&cr.value.ok?await cr.value.json():{data:[]};
             const sd=sr.status==='fulfilled'&&sr.value.ok?await sr.value.json():{data:{}};
             const contacts=cd.data||[];const stats=sd.data||{};
@@ -1127,7 +1150,7 @@
 
         /* REVIEWS */
         async function loadReviews() {
-            try{const res=await fetch(`${API_URL}/reviews/admin/all`,{headers:getHeaders()});if(!res.ok)throw new Error('Failed');const reviews=await res.json();const list=Array.isArray(reviews)?reviews:(reviews.data||[]);
+            try{const res=await safeFetch(`${API_URL}/reviews/admin/all`,{headers:getHeaders()});if(!res.ok)throw new Error('Failed');const reviews=await res.json();const list=Array.isArray(reviews)?reviews:(reviews.data||[]);
             const tbody=document.getElementById('reviewsTableBody');
             if(!list.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No reviews yet.</td></tr>';return;}
             tbody.innerHTML=list.map(r=>`<tr><td>${r.productId?.name||'Deleted'}</td><td>${r.userId?.name||'Unknown'}</td><td>${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</td><td style="max-width:200px;white-space:normal;word-wrap:break-word;">${r.comment}</td><td><span class="status-badge ${r.status}">${r.status}</span></td><td style="text-align:right;">${r.status==='pending'?`<button class="approve-review" data-id="${r._id}" style="background:var(--success);color:#fff;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;margin-right:4px;">Approve</button><button class="reject-review" data-id="${r._id}" style="background:var(--error);color:#fff;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;">Reject</button>`:`<span style="font-size:0.8rem;color:var(--text-muted);">${r.status}</span>`}</td></tr>`).join('');
@@ -1137,11 +1160,11 @@
         async function updateReviewStatus(id,status){try{const res=await fetch(`${API_URL}/reviews/${id}/status`,{method:'PUT',headers:getHeaders(),body:JSON.stringify({status})});if(!res.ok)throw new Error('Update failed');showToast(`Review ${status}`);loadReviews();}catch(err){showToast(err.message);}}
 
         /* INVENTORY */
-        async function loadInventory(){try{const res=await fetch(`${API_URL}/products`);if(!res.ok)throw new Error('Failed');const data=await res.json();const prods=Array.isArray(data)?data:(data.data||[]);const tbody=document.getElementById('inventoryTableBody');if(!prods.length){tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--text-muted);">No products.</td></tr>';return;}tbody.innerHTML=prods.map(p=>{const s=p.stock>0;return`<tr><td><strong>${p.name}</strong></td><td>${p.stock||0}</td><td><span class="status-badge ${s?'paid':'cancelled'}">${s?'In Stock':'Out of Stock'}</span></td></tr>`;}).join('');}catch(err){showToast(err.message);}}
+        async function loadInventory(){try{const res=await safeFetch(`${API_URL}/products`);if(!res.ok)throw new Error('Failed');const data=await res.json();const prods=Array.isArray(data)?data:(data.data||[]);const tbody=document.getElementById('inventoryTableBody');if(!prods.length){tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--text-muted);">No products.</td></tr>';return;}tbody.innerHTML=prods.map(p=>{const s=p.stock>0;return`<tr><td><strong>${p.name}</strong></td><td>${p.stock||0}</td><td><span class="status-badge ${s?'paid':'cancelled'}">${s?'In Stock':'Out of Stock'}</span></td></tr>`;}).join('');}catch(err){showToast(err.message);}}
         /* COUPONS */
         async function loadCoupons(search='') {
             try{const url=search?`${API_URL}/coupons?search=${encodeURIComponent(search)}`:`${API_URL}/coupons`;
-            const res=await fetch(url,{headers:getAuthHeaders()});if(!res.ok)throw new Error('Failed');const data=await res.json();const coupons=Array.isArray(data)?data:(data.data||[]);
+            const res=await safeFetch(url,{headers:getAuthHeaders()});if(!res.ok)throw new Error('Failed');const data=await res.json();const coupons=Array.isArray(data)?data:(data.data||[]);
             const tbody=document.getElementById('couponsTableBody');
             if(!coupons.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text-muted);">No coupons found.</td></tr>';document.getElementById('couponCountBadge').textContent=0;return;}
             document.getElementById('couponCountBadge').textContent=coupons.length;
@@ -1161,7 +1184,7 @@
 
         /* HERO BANNERS */
         let heroSlides=[];
-        async function loadHeroSlides(){try{const res=await fetch(`${API_URL}/homepage`);const data=await res.json();const hp=data.data||data;heroSlides=hp.heroSlides||[];renderHeroSlides();}catch(err){showToast('Error loading hero slides');}}
+        async function loadHeroSlides(){try{const res=await safeFetch(`${API_URL}/homepage`);const data=await res.json();const hp=data.data||data;heroSlides=hp.heroSlides||[];renderHeroSlides();}catch(err){showToast('Error loading hero slides');}}
         function renderHeroSlides(){
             const c=document.getElementById('heroSlidesList');
             if(!heroSlides.length){c.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:40px;">No hero slides yet. Click "Add Slide" to create one.</p>';return;}
@@ -1193,7 +1216,7 @@ document.getElementById('heroVideoInput').addEventListener('change',async functi
         ];
         async function loadCatalogues(){
             try{
-                const res=await fetch(`${API_URL}/homepage`);
+                const res=await safeFetch(`${API_URL}/homepage`);
                 const data=await res.json();
                 const hp=data.data||data;
                 catalogues=hp.genderCatalogues||[];
@@ -1293,7 +1316,7 @@ document.getElementById('heroVideoInput').addEventListener('change',async functi
             {key:'telegram',name:'Telegram',icon:'fab fa-telegram'}
         ];
         let socialLinksData={};
-        async function loadSocialLinks(){try{const res=await fetch(`${API_URL}/social-links`);const data=await res.json();socialLinksData=data.data||data||{};renderSocialLinks();}catch(err){showToast('Error loading social links');}}
+        async function loadSocialLinks(){try{const res=await safeFetch(`${API_URL}/social-links`);const data=await res.json();socialLinksData=data.data||data||{};renderSocialLinks();}catch(err){showToast('Error loading social links');}}
         function renderSocialLinks(){
             const c=document.getElementById('socialLinksForm');
             c.innerHTML=socialPlatforms.map(p=>{const d=socialLinksData[p.key]||{url:'',enabled:false,openInNewTab:true};return`<div class="social-link-row"><div class="platform-name"><i class="${p.icon}"></i> ${p.name}</div><input type="text" value="${d.url||''}" id="social-url-${p.key}" placeholder="https://..." /><label><input type="checkbox" ${d.enabled?'checked':''} id="social-enabled-${p.key}" /> Enabled</label><label><input type="checkbox" ${d.openInNewTab!==false?'checked':''} id="social-newtab-${p.key}" /> New tab</label><button class="copy-url-btn" onclick="copySocialUrl('${p.key}')"><i class="fas fa-copy"></i></button></div>`;}).join('')+
@@ -1303,7 +1326,7 @@ document.getElementById('heroVideoInput').addEventListener('change',async functi
         async function saveSocialLinks(){const data={};socialPlatforms.forEach(p=>{data[p.key]={url:document.getElementById(`social-url-${p.key}`)?.value||'',enabled:document.getElementById(`social-enabled-${p.key}`)?.checked||false,openInNewTab:document.getElementById(`social-newtab-${p.key}`)?.checked||false};});try{const res=await fetch(`${API_URL}/social-links`,{method:'PUT',headers:getHeaders(),body:JSON.stringify(data)});if(!res.ok)throw new Error('Failed');showToast('Social links saved');}catch(err){showToast(err.message);}}
 
         /* SETTINGS */
-        async function loadSettingsData(){try{const res=await fetch(`${API_URL}/settings`);if(res.ok){const data=await res.json();if(data.siteName)document.getElementById('settingSiteName').value=data.siteName;if(data.adminEmail)document.getElementById('settingAdminEmail').value=data.adminEmail;if(data.currency)document.getElementById('settingCurrency').value=data.currency;if(data.language)document.getElementById('settingLanguage').value=data.language;}}catch(e){}}
+        async function loadSettingsData(){try{const res=await safeFetch(`${API_URL}/settings`);if(res.ok){const data=await res.json();if(data.siteName)document.getElementById('settingSiteName').value=data.siteName;if(data.adminEmail)document.getElementById('settingAdminEmail').value=data.adminEmail;if(data.currency)document.getElementById('settingCurrency').value=data.currency;if(data.language)document.getElementById('settingLanguage').value=data.language;}}catch(e){}}
         document.getElementById('saveSettingsBtn').addEventListener('click',async()=>{try{const data={siteName:document.getElementById('settingSiteName').value,adminEmail:document.getElementById('settingAdminEmail').value,currency:document.getElementById('settingCurrency').value,language:document.getElementById('settingLanguage').value};const res=await fetch(`${API_URL}/settings`,{method:'POST',headers:getHeaders(),body:JSON.stringify(data)});if(!res.ok)throw new Error('Failed');showToast('Settings saved');}catch(err){showToast(err.message);}});
 
         /* RESET DATA */
@@ -1328,7 +1351,7 @@ document.getElementById('heroVideoInput').addEventListener('change',async functi
 
         /* NOTIFICATIONS */
         let notificationInterval=null;
-        async function fetchNotifications(){try{const res=await fetch(`${API_URL}/notifications`,{headers:getAuthHeaders()});if(!res.ok)throw new Error('Failed');const data=await res.json();renderNotifications(data.notifications||[],data.unreadCount||0);}catch(err){console.error('Notification error:',err);}}
+        async function fetchNotifications(){try{const res=await safeFetch(`${API_URL}/notifications`,{headers:getAuthHeaders()});if(!res.ok)throw new Error('Failed');const data=await res.json();renderNotifications(data.notifications||[],data.unreadCount||0);}catch(err){console.warn('Notifications unavailable (server may be waking up)');}}
         function renderNotifications(notifications,unread){
             if(!notificationList)return;
             if(!notifications.length){notificationList.innerHTML='<div class="notification-empty">No notifications</div>';updateBadge(0);return;}

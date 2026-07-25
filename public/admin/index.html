@@ -4108,7 +4108,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
 
         async function loadDashboardData() {
             try {
-                const res = await fetch(`${API_URL}/admin/dashboard`, { headers: getHeaders() });
+                const res = await safeFetch(`${API_URL}/admin/dashboard`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Dashboard API failed');
                 const json = await res.json();
                 const d = json.data || {};
@@ -4258,7 +4258,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
         let allProducts=[], allOrders=[], allUsers=[], selectedProductIds=new Set();
         let productSearchDebounce, productPage=1, productTotalPages=1, productSort='', productViewMode='table';
         async function loadProductStats() {
-            try{const res=await fetch(`${API_URL}/admin/products/stats`,{headers:getHeaders()});if(!res.ok)return;const d=await res.json();if(d.success&&d.data){const s=d.data;document.getElementById('prodStatTotal').textContent=s.total;document.getElementById('prodStatActive').textContent=s.published;document.getElementById('prodStatDraft').textContent=s.draft;document.getElementById('prodStatFeatured').textContent=s.featured;document.getElementById('prodStatOutOfStock').textContent=s.outOfStock;document.getElementById('prodStatLowStock').textContent=s.lowStock;document.getElementById('prodStatHidden').textContent=s.hidden;}}catch(e){}
+            try{const res=await safeFetch(`${API_URL}/admin/products/stats`,{headers:getHeaders()});if(!res.ok)return;const d=await res.json();if(d.success&&d.data){const s=d.data;document.getElementById('prodStatTotal').textContent=s.total;document.getElementById('prodStatActive').textContent=s.published;document.getElementById('prodStatDraft').textContent=s.draft;document.getElementById('prodStatFeatured').textContent=s.featured;document.getElementById('prodStatOutOfStock').textContent=s.outOfStock;document.getElementById('prodStatLowStock').textContent=s.lowStock;document.getElementById('prodStatHidden').textContent=s.hidden;}}catch(e){}
         }
         async function loadProducts(pg) {
             if(pg!==undefined)productPage=pg;
@@ -4270,7 +4270,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
             const limit=25;
             const params=new URLSearchParams({page:productPage,limit,...(cat?{category:cat}:{}),...(gender?{gender}:{}),...(status?{status}:{}),...(sort?{sort}:{}),...(search?{search}:{})});
             try{
-                const res=await fetch(`${API_URL}/admin/products?${params}`,{headers:getHeaders()});
+                const res=await safeFetch(`${API_URL}/admin/products?${params}`,{headers:getHeaders()});
                 if(!res.ok)throw new Error('Failed');
                 const data=await res.json();
                 allProducts=Array.isArray(data)?data:(data.data||[]);
@@ -4708,7 +4708,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
                     images
                 };
             }
-            try{const url=id?`${API_URL}/products/${id}`:`${API_URL}/products`;const method=id?'PUT':'POST';const res=await fetch(url,{method,headers:getHeaders(),body:JSON.stringify(data)});if(!res.ok)throw new Error('Failed to save');showToast(id?'Product updated':'Product added');document.getElementById('productFormModal').classList.remove('show');await loadProducts();loadDashboardData();}catch(err){showToast(err.message);}
+            try{const url=id?`${API_URL}/products/${id}`:`${API_URL}/products`;const method=id?'PUT':'POST';const res=await safeFetch(url,{method,headers:getHeaders(),body:JSON.stringify(data)});if(!res.ok)throw new Error('Failed to save');showToast(id?'Product updated':'Product added');document.getElementById('productFormModal').classList.remove('show');await loadProducts();loadDashboardData();}catch(err){showToast(err.message);}
         });
         document.getElementById('productFormCancel').addEventListener('click',()=>document.getElementById('productFormModal').classList.remove('show'));
         document.getElementById('previewProductBtn')?.addEventListener('click',()=>{
@@ -4721,7 +4721,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
         let categories=[], catPage=1, catTotalPages=1, catViewMode='table', catSearchDebounce;
         let catSelectedIds=new Set();
         async function loadCategoryStats() {
-            try{const res=await fetch(`${API_URL}/categories/stats`,{headers:getHeaders()});if(!res.ok)return;const d=await res.json();if(d.success&&d.data){const s=d.data;document.getElementById('catStatTotal').textContent=s.total;document.getElementById('catStatPublished').textContent=s.published;document.getElementById('catStatHidden').textContent=s.hidden;document.getElementById('catStatFeatured').textContent=s.featured;document.getElementById('catStatParent').textContent=s.withParent;document.getElementById('catStatSub').textContent=s.subcategories;document.getElementById('catStatWithProds').textContent=s.withProducts;document.getElementById('catStatEmpty').textContent=s.empty;}}catch(e){}
+            try{const res=await safeFetch(`${API_URL}/categories/stats`,{headers:getHeaders()});if(!res.ok)return;const d=await res.json();if(d.success&&d.data){const s=d.data;document.getElementById('catStatTotal').textContent=s.total;document.getElementById('catStatPublished').textContent=s.published;document.getElementById('catStatHidden').textContent=s.hidden;document.getElementById('catStatFeatured').textContent=s.featured;document.getElementById('catStatParent').textContent=s.withParent;document.getElementById('catStatSub').textContent=s.subcategories;document.getElementById('catStatWithProds').textContent=s.withProducts;document.getElementById('catStatEmpty').textContent=s.empty;}}catch(e){}
         }
         async function loadCategories(pg) {
             if(pg!==undefined)catPage=pg;
@@ -4732,7 +4732,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
             const limit=50;
             const params=new URLSearchParams({page:catPage,limit,...(status?{status}:{}),...(featured?{featured}:{}),...(sort?{sort}:{}),...(search?{search}:{})});
             try{
-                const res=await fetch(`${API_URL}/categories?${params}`,{headers:getHeaders()});
+                const res=await safeFetch(`${API_URL}/categories?${params}`,{headers:getHeaders()});
                 if(!res.ok)throw new Error('Failed');
                 const data=await res.json();
                 categories=Array.isArray(data)?data:(data.data||[]);
@@ -4971,7 +4971,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
                 canonicalUrl:document.getElementById('catCanonicalUrl').value.trim()
             };
             if(!data.name){showToast('Category name is required.');return;}
-            try{const url=id?`${API_URL}/categories/${id}`:`${API_URL}/categories`;const method=id?'PUT':'POST';const res=await fetch(url,{method,headers:getHeaders(),body:JSON.stringify(data)});const r=await res.json();if(!res.ok)throw new Error(r.message||'Failed');showToast(id?'Category updated':'Category added');document.getElementById('categoryFormModal').classList.remove('show');await loadCategories();}catch(err){showToast(err.message);}
+            try{const url=id?`${API_URL}/categories/${id}`:`${API_URL}/categories`;const method=id?'PUT':'POST';const res=await safeFetch(url,{method,headers:getHeaders(),body:JSON.stringify(data)});const r=await res.json();if(!res.ok)throw new Error(r.message||'Failed');showToast(id?'Category updated':'Category added');document.getElementById('categoryFormModal').classList.remove('show');await loadCategories();}catch(err){showToast(err.message);}
         });
         // Category event listeners
         document.getElementById('selectAllCategories')?.addEventListener('change',function(){const cbs=document.querySelectorAll('.cat-checkbox');cbs.forEach(cb=>{cb.checked=this.checked;if(this.checked)catSelectedIds.add(cb.dataset.id);else catSelectedIds.delete(cb.dataset.id);});updateCatBulkActions();});
@@ -5026,7 +5026,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
 
         async function loadOrderStats() {
             try {
-                const res = await fetch(`${API_URL}/orders/admin/statistics`, { headers: getHeaders() });
+                const res = await safeFetch(`${API_URL}/orders/admin/statistics`, { headers: getHeaders() });
                 if (!res.ok) return;
                 const d = await res.json();
                 if (!d.success || !d.data) return;
@@ -5076,7 +5076,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
             if (payment) params.set('paymentStatus', payment);
             if (sort) params.set('sort', sort);
             try {
-                const res = await fetch(`${API_URL}/orders/admin/all?${params}`, { headers: getHeaders() });
+                const res = await safeFetch(`${API_URL}/orders/admin/all?${params}`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed');
                 const d = await res.json();
                 ordersData = d.data || [];
@@ -5151,7 +5151,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
         }
         async function loadOrderDetail(orderId) {
             try {
-                const res = await fetch(`${API_URL}/orders/admin/${orderId}`, { headers: getHeaders() });
+                const res = await safeFetch(`${API_URL}/orders/admin/${orderId}`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed');
                 const d = await res.json();
                 if (!d.success || !d.data) throw new Error('Not found');
@@ -5280,7 +5280,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
                 if (note) body.note = note;
                 if (trackingNumber) body.trackingNumber = trackingNumber;
                 if (courier) body.courier = courier;
-                const res = await fetch(`${API_URL}/orders/${orderId}/status`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(body) });
+                const res = await safeFetch(`${API_URL}/orders/${orderId}/status`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify(body) });
                 if (!res.ok) throw new Error('Update failed');
                 showToast('Order updated');
                 document.getElementById('orderDetailModal').classList.remove('show');
@@ -5406,7 +5406,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
         }
         async function loadOrderDetailForPrint(orderId) {
             try {
-                const res = await fetch(`${API_URL}/orders/admin/${orderId}`, { headers: getHeaders() });
+                const res = await safeFetch(`${API_URL}/orders/admin/${orderId}`, { headers: getHeaders() });
                 if (!res.ok) throw new Error('Failed');
                 const d = await res.json();
                 if (d.success && d.data) printOrderDoc(d.data, 'Invoice');
@@ -7928,7 +7928,7 @@ async function loadHeroSlides() {
     const list = document.getElementById('heroSlidesList');
     if (!list) return;
     try {
-        const res = await fetch(`${API_URL}/homepage`, { headers: getHeaders() });
+        const res = await safeFetch(`${API_URL}/homepage`, { headers: getHeaders() });
         if (!res.ok) throw new Error('Failed to load');
         const d = await res.json();
         heroSlidesData = (d.data && d.data.heroSlides) || [];
