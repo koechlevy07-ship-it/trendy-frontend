@@ -3262,13 +3262,21 @@ Sitemap: https://trendywardrobe.com/sitemap.xml</textarea>
                 return Date.now() >= payload.exp * 1000;
             } catch { return false; }
         }
-        async function safeFetch(url, options = {}) {
+        async function safeFetch(url, options = {}, retries = 2) {
             if (isTokenExpired() && getToken()) {
                 showToast('Session expired. Please log in again.');
                 logout();
                 throw new Error('Session expired');
             }
-            return fetch(url, options);
+            for (let i = 0; i <= retries; i++) {
+                try {
+                    const res = await fetch(url, options);
+                    return res;
+                } catch(e) {
+                    if (i < retries) await new Promise(r => setTimeout(r, 2000 * (i + 1)));
+                    else throw e;
+                }
+            }
         }
 
         async function adminLogin(email, password) {
@@ -4063,8 +4071,8 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
 
         async function fetchNotifications() {
             try {
-                const res = await fetch(`${API_URL}/notifications`, { headers: getHeaders() });
-                if (!res.ok) return;
+                const res = await safeFetch(`${API_URL}/notifications`, { headers: getHeaders() });
+                if (!res || !res.ok) return;
                 const data = await res.json();
                 const notifications = data.data || data.notifications || [];
                 const unread = notifications.filter(n => !n.read && !n.isRead);
@@ -4087,7 +4095,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
                         </div>
                     </div>
                 `).join('');
-            } catch(e) { /* notifications are non-critical */ }
+            } catch(e) { /* notifications are non-critical — silently ignore */ }
         }
 
         function startNotificationPolling() {
