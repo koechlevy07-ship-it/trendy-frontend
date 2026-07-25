@@ -26,6 +26,7 @@ function getEffectiveStock(product) {
     if (product.stock > 0) return product.stock;
     if (product.limitedAvailable && product.limitedPieces > 0) return product.limitedPieces;
     if (product.preOrder) return 999;
+    if (product.inStock) return product.stockThreshold || 5;
     return 0;
 }
 function isProductAvailable(product) {
@@ -33,6 +34,7 @@ function isProductAvailable(product) {
     if (product.stock > 0) return true;
     if (product.limitedAvailable && product.limitedPieces > 0) return true;
     if (product.preOrder) return true;
+    if (product.inStock) return true;
     return false;
 }
 
