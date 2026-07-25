@@ -653,17 +653,11 @@
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', preset);
-            // Optional: add transformation at upload time
-            if (CLOUDINARY_CONFIG.transforms[transformKey]) {
-                formData.append('transformation', CLOUDINARY_CONFIG.transforms[transformKey]);
-            }
             const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`;
             const res = await fetch(url, { method: 'POST', body: formData });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error?.message || 'Cloudinary upload failed');
-            // Return optimized URL with transformation
-            const transform = CLOUDINARY_CONFIG.transforms[transformKey] || '';
-            return `${CLOUDINARY_CONFIG.baseUrl}/${transform}/${data.public_id}.${data.format}`;
+            return data.secure_url;
         }
         const loginOverlay = document.getElementById('loginOverlay');
         const loginError = document.getElementById('loginError');
