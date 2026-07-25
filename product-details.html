@@ -46,6 +46,28 @@
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 12px !important;
             }
+            .pd-gallery {
+                margin-left: -24px !important;
+                margin-right: -24px !important;
+                width: calc(100% + 48px) !important;
+            }
+            .pd-main-image-wrap {
+                border-radius: 0 !important;
+                border-left: none !important;
+                border-right: none !important;
+            }
+            .pd-main-image {
+                object-fit: contain !important;
+                background: #f8f8f8;
+            }
+            .pd-zoom-lens, .pd-zoom-result { display: none !important; }
+        }
+        @media (max-width: 480px) {
+            .pd-gallery {
+                margin-left: -16px !important;
+                margin-right: -16px !important;
+                width: calc(100% + 32px) !important;
+            }
         }
     </style>
 </head>
