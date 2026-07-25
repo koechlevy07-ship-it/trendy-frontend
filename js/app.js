@@ -1652,14 +1652,14 @@
                 if (s.email) {
                     document.querySelectorAll('.footer-contact-line').forEach(el => {
                         if (el.querySelector('.fa-envelope')) {
-                            el.innerHTML = `<i class="fas fa-envelope"></i> ${s.email}`;
+                            el.innerHTML = `<i class="fas fa-envelope"></i> ${escHtml(s.email)}`;
                         }
                     });
                 }
                 if (s.phone) {
                     document.querySelectorAll('.footer-contact-line').forEach(el => {
                         if (el.querySelector('.fa-phone')) {
-                            el.innerHTML = `<i class="fas fa-phone"></i> ${s.phone}`;
+                            el.innerHTML = `<i class="fas fa-phone"></i> ${escHtml(s.phone)}`;
                         }
                     });
                 }
@@ -1701,7 +1701,7 @@
                     const el = document.querySelector('.cp-hours-grid');
                     if (el && !el.hasAttribute('data-api-set')) {
                         el.setAttribute('data-api-set', '1');
-                        el.innerHTML = `<span class="day">Hours</span><span class="time">${s.businessHours}</span>`;
+                        el.innerHTML = `<span class="day">Hours</span><span class="time">${escHtml(s.businessHours)}</span>`;
                     }
                 }
 
@@ -1868,7 +1868,7 @@
 
                     published.forEach(cat => {
                         const li = document.createElement('li');
-                        li.innerHTML = `<a href="#" data-category="${cat.slug}" class="footer-link">${cat.name}</a>`;
+                        li.innerHTML = `<a href="#" data-category="${escHtml(cat.slug)}" class="footer-link">${escHtml(cat.name)}</a>`;
                         footerShop.appendChild(li);
                     });
 

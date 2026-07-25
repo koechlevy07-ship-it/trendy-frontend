@@ -196,7 +196,7 @@ function renderOrder(order) {
         'card-payment': 'Card Payment', 'paypal': 'PayPal', 'stripe': 'Stripe',
         'bank-transfer': 'Bank Transfer'
     };
-    $('confPayment').innerHTML = `<strong>${paymentLabels[order.paymentMethod] || order.paymentMethod || 'Cash on Delivery'}</strong>`;
+    $('confPayment').innerHTML = `<strong>${escHtml(paymentLabels[order.paymentMethod] || order.paymentMethod || 'Cash on Delivery')}</strong>`;
 
     // Timeline
     const timeline = order.timeline || [];

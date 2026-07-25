@@ -9,9 +9,11 @@
     <meta property="og:title" content="Product — Trendy Wardrobe" />
     <meta property="og:description" content="View product details and shop premium fashion." />
     <meta property="og:type" content="product" />
+    <meta property="og:url" content="https://trendy-frontend-ashen.vercel.app/product-details.html" />
     <meta property="og:site_name" content="Trendy Wardrobe" />
-    <meta property="og:image" content="/assets/images/logo-icon.svg" />
+    <meta property="og:image" content="https://trendy-frontend-ashen.vercel.app/assets/images/og-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://trendy-frontend-ashen.vercel.app/assets/images/og-image.png" />
     <link rel="canonical" href="https://trendy-frontend-ashen.vercel.app/product-details.html" />
     <link rel="icon" type="image/svg+xml" href="/assets/images/logo-icon.svg" />
     <link rel="apple-touch-icon" href="/assets/images/logo-icon.svg" />
@@ -25,6 +27,19 @@
             productTransform: 'f_auto,q_auto,w_800,c_limit',
             thumbnailTransform: 'f_auto,q_auto,w_400,h_400,c_fill,g_auto'
         };
+    </script>
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var id = params.get('id');
+            if (id) {
+                var base = 'https://trendy-frontend-ashen.vercel.app/product-details.html?id=' + encodeURIComponent(id);
+                var canonical = document.querySelector('link[rel="canonical"]');
+                if (canonical) canonical.href = base;
+                var ogUrl = document.querySelector('meta[property="og:url"]');
+                if (ogUrl) ogUrl.setAttribute('content', base);
+            }
+        })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -929,6 +944,7 @@
         </button>
     </div>
 
-    <script src="/js/product-details.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" defer></script>
+    <script src="/js/product-details.js" defer></script>
 </body>
 </html>

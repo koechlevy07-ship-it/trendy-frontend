@@ -910,7 +910,7 @@ function renderLoyalty() {
     const data = loyaltyData.data;
     
     // Tier info
-    $('accTierIcon').innerHTML = `<i class="fas ${data.tierIcon || 'fa-crown'}" style="font-size:2rem;"></i>`;
+    $('accTierIcon').innerHTML = `<i class="fas ${escHtml(data.tierIcon || 'fa-crown')}" style="font-size:2rem;"></i>`;
     $('accTierName').textContent = data.tierName || data.currentTier || 'Bronze';
     if (data.nextTier) {
         $('accTierPoints').textContent = `${data.currentPoints?.toLocaleString() || 0} / ${data.nextTier.minPoints?.toLocaleString() || 0} points to ${data.nextTier.name || 'next tier'}`;

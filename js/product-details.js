@@ -688,14 +688,15 @@ function renderColors(p) {
         const swatch = swatches[i];
         const bg = swatch && swatch.hex ? swatch.hex : (swatch && swatch.name ? '#' + swatch.name : '#ccc');
         const hexColor = swatch && swatch.hex ? swatch.hex : color;
-        return `<button class="pd-color-chip ${i === 0 ? 'active' : ''}" data-color="${escHtml(color)}" style="background:${hexColor};" title="${escHtml(color)}"></button>`;
+        return `<button class="pd-color-chip ${i === 0 ? 'active' : ''}" data-color="${escHtml(color)}" style="background:${hexColor};" title="${escHtml(color)}" aria-label="Color: ${escHtml(color)}" ${i === 0 ? 'aria-pressed="true"' : 'aria-pressed="false"'}></button>`;
     }).join('');
 
     nameEl.textContent = p.colors[0] || '—';
     chips.querySelectorAll('.pd-color-chip').forEach(chip => {
         chip.addEventListener('click', () => {
-            chips.querySelectorAll('.pd-color-chip').forEach(c => c.classList.remove('active'));
+            chips.querySelectorAll('.pd-color-chip').forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed', 'false'); });
             chip.classList.add('active');
+            chip.setAttribute('aria-pressed', 'true');
             nameEl.textContent = chip.dataset.color;
         });
     });
@@ -714,14 +715,15 @@ function renderSizes(p) {
 
     section.style.display = 'flex';
     chips.innerHTML = p.sizes.map((size, i) =>
-        `<button class="pd-size-chip ${i === 0 ? 'active' : ''}" data-size="${escHtml(size)}">${escHtml(size)}</button>`
+        `<button class="pd-size-chip ${i === 0 ? 'active' : ''}" data-size="${escHtml(size)}" aria-pressed="${i === 0 ? 'true' : 'false'}">${escHtml(size)}</button>`
     ).join('');
 
     nameEl.textContent = p.sizes[0] || '—';
     chips.querySelectorAll('.pd-size-chip').forEach(chip => {
         chip.addEventListener('click', () => {
-            chips.querySelectorAll('.pd-size-chip').forEach(c => c.classList.remove('active'));
+            chips.querySelectorAll('.pd-size-chip').forEach(c => { c.classList.remove('active'); c.setAttribute('aria-pressed', 'false'); });
             chip.classList.add('active');
+            chip.setAttribute('aria-pressed', 'true');
             nameEl.textContent = chip.dataset.size;
         });
     });
