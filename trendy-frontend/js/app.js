@@ -3546,27 +3546,87 @@
         // MOBILE BOTTOM NAV INIT
         // ============================================================
         (function initMobileBottomNav() {
-            const mql = window.matchMedia('(max-width: 768px)');
-            const nav = document.getElementById('mobileBottomNav');
+            var mql = window.matchMedia('(max-width: 768px)');
+            var nav = document.getElementById('mobileBottomNav');
             function applyMobileNav(e) {
                 if (nav) nav.style.display = e.matches ? 'flex' : 'none';
             }
             mql.addEventListener('change', applyMobileNav);
             applyMobileNav(mql);
 
+            // --- Active state tracking ---
+            var navBtns = nav ? nav.querySelectorAll('[data-nav]') : [];
+            var currentActive = null;
+            function setActive(key) {
+                if (currentActive === key) return;
+                navBtns.forEach(function(b) { b.classList.remove('active'); });
+                currentActive = key;
+                var btn = nav ? nav.querySelector('[data-nav="' + key + '"]') : null;
+                if (btn) btn.classList.add('active');
+            }
+            function clearActive() {
+                navBtns.forEach(function(b) { b.classList.remove('active'); });
+                currentActive = null;
+            }
+
+            // Home: IntersectionObserver on hero
+            var heroEl = document.getElementById('heroSection');
+            if (heroEl && 'IntersectionObserver' in window) {
+                var heroObs = new IntersectionObserver(function(entries) {
+                    if (entries[0].isIntersecting && !currentActive) setActive('home');
+                    else if (entries[0].isIntersecting) setActive('home');
+                }, { threshold: 0.25 });
+                heroObs.observe(heroEl);
+            }
+
             // Bottom nav search button → open search overlay
-            const bottomSearchBtn = document.getElementById('bottomNavSearchBtn');
+            var bottomSearchBtn = document.getElementById('bottomNavSearchBtn');
             if (bottomSearchBtn) {
-                bottomSearchBtn.addEventListener('click', () => {
-                    const so = document.getElementById('searchOverlay');
-                    const soInput = document.getElementById('searchOverlayInput');
+                bottomSearchBtn.addEventListener('click', function() {
+                    var so = document.getElementById('searchOverlay');
+                    var soInput = document.getElementById('searchOverlayInput');
                     if (so) {
                         so.classList.add('open');
                         document.body.classList.add('no-scroll');
                         if (typeof renderRecentSearches === 'function') renderRecentSearches();
-                        setTimeout(() => soInput?.focus(), 100);
+                        setTimeout(function() { if (soInput) soInput.focus(); }, 100);
                     }
                 });
+            }
+
+            // Search overlay: watch for open class
+            var searchOverlay = document.getElementById('searchOverlay');
+            if (searchOverlay && typeof MutationObserver !== 'undefined') {
+                var searchObs = new MutationObserver(function() {
+                    if (searchOverlay.classList.contains('open')) setActive('search');
+                    else if (currentActive === 'search') clearActive();
+                });
+                searchObs.observe(searchOverlay, { attributes: true, attributeFilter: ['class'] });
+            }
+
+            // Cart: watch miniCartOverlay for show class
+            var cartOverlay = document.getElementById('miniCartOverlay');
+            if (cartOverlay && typeof MutationObserver !== 'undefined') {
+                var cartObs = new MutationObserver(function() {
+                    if (cartOverlay.classList.contains('show')) setActive('cart');
+                    else if (currentActive === 'cart') clearActive();
+                });
+                cartObs.observe(cartOverlay, { attributes: true, attributeFilter: ['class'] });
+            }
+
+            // Auth overlay (wishlist/account): watch display style
+            var authOverlay = document.getElementById('authOverlay');
+            if (authOverlay && typeof MutationObserver !== 'undefined') {
+                var authObs = new MutationObserver(function() {
+                    if (authOverlay.style.display === 'flex') {
+                        var activeTab = document.querySelector('.dashboard-tabs button.active');
+                        if (activeTab && activeTab.dataset.tab === 'wishlist') setActive('wishlist');
+                        else setActive('account');
+                    } else if (currentActive === 'wishlist' || currentActive === 'account') {
+                        clearActive();
+                    }
+                });
+                authObs.observe(authOverlay, { attributes: true, attributeFilter: ['style'] });
             }
         })();
 
