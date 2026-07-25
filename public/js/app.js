@@ -1504,11 +1504,15 @@
                 }
             }
             const heading = document.getElementById('heroHeading');
-            const collectionEl = document.getElementById('heroCollection');
+            const highlight = heading ? heading.querySelector('.highlight') : null;
             const subheading = document.getElementById('heroSubheading');
             const shopBtn = document.getElementById('shopNowBtn');
             if (slide.heading) {
-                heading.innerHTML = slide.heading.replace(/\n/g, '<br>');
+                if (highlight) {
+                    highlight.textContent = slide.heading;
+                } else {
+                    heading.textContent = slide.heading;
+                }
             }
             if (slide.subheading) {
                 subheading.textContent = slide.subheading;
@@ -1517,7 +1521,23 @@
                 shopBtn.textContent = slide.buttonText;
             }
             if (slide.buttonLink) {
-                shopBtn.setAttribute('href', slide.buttonLink);
+                shopBtn.onclick = () => {
+                    if (slide.buttonLink.startsWith('http')) {
+                        window.open(slide.buttonLink, '_blank');
+                    } else if (slide.buttonLink.startsWith('#')) {
+                        document.querySelector(slide.buttonLink)?.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        const url = new URL(slide.buttonLink, window.location.origin);
+                        const gender = url.searchParams.get('gender');
+                        const cat = url.searchParams.get('category');
+                        if (gender) {
+                            document.querySelector(`.gender-btn[data-gender="${gender}"]`)?.click();
+                        }
+                        if (cat) {
+                            document.querySelector(`.filter-btn[data-filter="${cat}"]`)?.click();
+                        }
+                    }
+                };
             }
         }
 
@@ -2804,23 +2824,12 @@
         });
 
         // ============================================================
-        // HERO CTA BUTTONS
+        // SHOP NOW BUTTON
         // ============================================================
-        document.getElementById('shopNowBtn').addEventListener('click', e => {
-            e.preventDefault();
+        document.getElementById('shopNowBtn').addEventListener('click', () => {
             showHomeSection();
             document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
         });
-        const exploreTrenchBtn = document.getElementById('exploreTrenchBtn');
-        if (exploreTrenchBtn) {
-            exploreTrenchBtn.addEventListener('click', e => {
-                e.preventDefault();
-                showHomeSection();
-                const filterBtn = document.querySelector('[data-filter="trench-coats"]');
-                if (filterBtn) filterBtn.click();
-                document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
-            });
-        }
 
         // ============================================================
         // HERO TOUCH SWIPE
