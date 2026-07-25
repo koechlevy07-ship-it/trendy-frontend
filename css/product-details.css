@@ -76,6 +76,26 @@
 }
 
 /* --- Breadcrumb --- */
+/* --- Back Link --- */
+.pd-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.pd-back-link:hover {
+    color: var(--color-gold);
+}
+.pd-back-link i {
+    font-size: 0.75rem;
+}
+
 .pd-breadcrumb-wrap {
     padding-top: 24px;
     padding-bottom: 8px;

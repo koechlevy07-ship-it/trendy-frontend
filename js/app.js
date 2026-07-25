@@ -1504,15 +1504,11 @@
                 }
             }
             const heading = document.getElementById('heroHeading');
-            const highlight = heading ? heading.querySelector('.highlight') : null;
+            const collectionEl = document.getElementById('heroCollection');
             const subheading = document.getElementById('heroSubheading');
             const shopBtn = document.getElementById('shopNowBtn');
             if (slide.heading) {
-                if (highlight) {
-                    highlight.textContent = slide.heading;
-                } else {
-                    heading.textContent = slide.heading;
-                }
+                heading.innerHTML = slide.heading.replace(/\n/g, '<br>');
             }
             if (slide.subheading) {
                 subheading.textContent = slide.subheading;
@@ -1521,26 +1517,7 @@
                 shopBtn.textContent = slide.buttonText;
             }
             if (slide.buttonLink) {
-                shopBtn.onclick = () => {
-                    if (slide.buttonLink.startsWith('http')) {
-                        window.open(slide.buttonLink, '_blank');
-                    } else if (slide.buttonLink.startsWith('#')) {
-                        document.querySelector(slide.buttonLink)?.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                        const url = new URL(slide.buttonLink, window.location.origin);
-                        const gender = url.searchParams.get('gender');
-                        const cat = url.searchParams.get('category');
-                        if (gender) {
-                            document.querySelector(`.gender-btn[data-gender="${gender}"]`)?.click();
-                        }
-                        if (cat) {
-                            document.querySelector(`.filter-btn[data-filter="${cat}"]`)?.click();
-                        }
-                        if (!gender && !cat) loadProducts();
-                        showHomeSection();
-                        document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
-                    }
-                };
+                shopBtn.setAttribute('href', slide.buttonLink);
             }
         }
 
@@ -2050,7 +2027,7 @@
                         ${p.limitedAvailable && p.limitedPieces > 0 && p.limitedPieces <= 10 ? `<span class="badge limited">Only ${p.limitedPieces} left!</span>` : ''}
                         ${p.preOrder ? '<span class="badge pre-order">Pre-Order</span>' : ''}
                         ${!inStock ? '<span class="badge out">OUT OF STOCK</span>' : ''}
-                        <button class="quick-view" data-id="${p._id}" aria-label="Quick view ${p.name}">Quick View</button>
+                        <a href="/product-details?id=${p._id}" class="quick-view view-details" data-id="${p._id}" aria-label="View details for ${p.name}" onclick="event.stopPropagation()">View Details</a>
                     </div>
                     <div class="product-info">
                         ${p.brand ? `<div class="brand">${p.brand}</div>` : ''}
@@ -2080,11 +2057,11 @@
             container.querySelectorAll('.product-card').forEach(card => {
                 initCarousel(card);
                 card.addEventListener('click', e => {
-                    if (e.target.closest('button')) return;
-                    openQuickView(card.dataset.id);
+                    if (e.target.closest('button') || e.target.closest('a.view-details')) return;
+                    window.location.href = '/product-details?id=' + card.dataset.id;
                 });
                 card.addEventListener('keydown', e => {
-                    if (e.key === 'Enter' && !e.target.closest('button')) openQuickView(card.dataset.id);
+                    if (e.key === 'Enter' && !e.target.closest('button') && !e.target.closest('a.view-details')) window.location.href = '/product-details?id=' + card.dataset.id;
                 });
             });
             container.querySelectorAll('.add-to-cart').forEach(btn => {
@@ -2827,12 +2804,23 @@
         });
 
         // ============================================================
-        // SHOP NOW BUTTON
+        // HERO CTA BUTTONS
         // ============================================================
-        document.getElementById('shopNowBtn').addEventListener('click', () => {
+        document.getElementById('shopNowBtn').addEventListener('click', e => {
+            e.preventDefault();
             showHomeSection();
             document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
         });
+        const exploreTrenchBtn = document.getElementById('exploreTrenchBtn');
+        if (exploreTrenchBtn) {
+            exploreTrenchBtn.addEventListener('click', e => {
+                e.preventDefault();
+                showHomeSection();
+                const filterBtn = document.querySelector('[data-filter="trench-coats"]');
+                if (filterBtn) filterBtn.click();
+                document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
 
         // ============================================================
         // HERO TOUCH SWIPE
