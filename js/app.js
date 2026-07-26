@@ -229,25 +229,7 @@
             });
         }
 
-        // Load social links into contact panel
-        async function loadCpSocialLinks() {
-            try {
-                const res = await fetch(`${API_URL}/social-links`);
-                if (!res.ok) return;
-                const json = await res.json();
-                const data = json.data || json || {};
-                const platforms = Object.keys(data).filter(k => k !== '_id' && k !== 'createdAt' && k !== 'updatedAt' && k !== '__v' && k !== 'website' && data[k] && typeof data[k] === 'object' && data[k].enabled && data[k].url);
-                if (!platforms.length) return;
-                const html = platforms.map(k => {
-                    const link = data[k]; const icon = socialIconMap[k] || 'fas fa-link';
-                    const target = link.openInNewTab !== false ? ' target="_blank"' : '';
-                    return `<a href="${link.url}"${target} class="cp-social-link" aria-label="${k}"><i class="${icon}"></i></a>`;
-                }).join('');
-                const container = document.getElementById('cpSocialLinks');
-                if (container) container.innerHTML = html;
-            } catch (e) { /* silent */ }
-        }
-        loadCpSocialLinks();
+        // Social links loaded later by loadSocialLinks() — no separate early fetch needed
 
         // ============================================================
         // TOAST
@@ -1590,12 +1572,12 @@
                 try {
                     const keys = ['menImage', 'womenImage', 'kidsImage'];
                     const ids = { menImage: 'catalogMenImg', womenImage: 'catalogWomenImg', kidsImage: 'catalogKidsImg' };
-                    for (const key of keys) {
-                        const res = await fetch(`${API_URL}/settings/${key}`);
-                        const url = await res.json();
+                    const results = await Promise.all(keys.map(k => fetch(`${API_URL}/settings/${k}`).then(r => r.json()).catch(() => null)));
+                    keys.forEach((key, i) => {
+                        const url = results[i];
                         const img = document.getElementById(ids[key]);
                         if (img && url) img.src = getImageUrl(url);
-                    }
+                    });
                 } catch (e) { console.error('Category images error', e); }
             }
         }
@@ -1890,33 +1872,26 @@
                 }
 
             } catch (e) { console.error('Categories load error', e); }
+            // Also populate search tags from the same data (no extra API call)
+            try { loadSearchTags(categories || []); } catch(e) {}
         }
 
         // ============================================================
-        // POPULAR SEARCH TAGS — populate from categories
+        // POPULAR SEARCH TAGS — populated from cached categories (no extra API call)
         // ============================================================
-        async function loadSearchTags() {
+        function loadSearchTags(categories) {
             const container = document.getElementById('popularSearchTags');
             if (!container) return;
-            try {
-                const res = await fetch(`${API_URL}/categories`);
-                if (!res.ok) return;
-                const json = await res.json();
-                const categories = json.data || json || [];
-                const published = categories.filter(c => c.status === 'published');
-                if (!published.length) {
-                    container.innerHTML = '<span class="search-tag" data-search="Dresses">Dresses</span><span class="search-tag" data-search="Sneakers">Sneakers</span>';
-                    bindSearchTags();
-                    return;
-                }
-                container.innerHTML = published.map(c =>
-                    `<span class="search-tag" data-search="${c.name}">${c.name}</span>`
-                ).join('');
-                bindSearchTags();
-            } catch (e) {
+            const published = (categories || []).filter(c => c.status === 'published');
+            if (!published.length) {
                 container.innerHTML = '<span class="search-tag" data-search="Dresses">Dresses</span><span class="search-tag" data-search="Sneakers">Sneakers</span>';
                 bindSearchTags();
+                return;
             }
+            container.innerHTML = published.map(c =>
+                `<span class="search-tag" data-search="${c.name}">${c.name}</span>`
+            ).join('');
+            bindSearchTags();
         }
 
         function bindSearchTags() {
@@ -2027,8 +2002,8 @@
             return `
                 <article class="product-card" data-id="${p._id}" tabindex="0" role="article" aria-label="${p.name}">
                     <div class="product-image-wrap">
-                        <img class="card-img-primary" src="${imgUrl}" alt="${escHtml(p.name)}" loading="lazy" decoding="async" />
-                        ${secondImg ? `<img class="card-img-hover" src="${secondImg}" alt="${escHtml(p.name)} hover" loading="lazy" decoding="async" />` : ''}
+                        <img class="card-img-primary" src="${imgUrl}" alt="${escHtml(p.name)}" loading="lazy" decoding="async" width="400" height="533" />
+                        ${secondImg ? `<img class="card-img-hover" src="${secondImg}" alt="${escHtml(p.name)} hover" loading="lazy" decoding="async" width="400" height="533" />` : ''}
                         ${discount ? `<span class="badge-discount">-${discount}%</span>` : ''}
                         ${isNew ? '<span class="badge-new">New</span>' : ''}
                         ${isFlash ? '<span class="badge-flash">Flash</span>' : ''}
@@ -2740,6 +2715,14 @@
                 if (footerContainer) footerContainer.innerHTML = html;
                 const drawerContainer = document.getElementById('drawerSocialLinks');
                 if (drawerContainer) drawerContainer.innerHTML = html;
+                // Contact panel social links (was separate loadCpSocialLinks — merged to save 1 API call)
+                const cpHtml = platforms.map(k => {
+                    const link = data[k]; const icon = socialIconMap[k] || 'fas fa-link';
+                    const target = link.openInNewTab !== false ? ' target="_blank"' : '';
+                    return `<a href="${link.url}"${target} class="cp-social-link" aria-label="${k}"><i class="${icon}"></i></a>`;
+                }).join('');
+                const cpContainer = document.getElementById('cpSocialLinks');
+                if (cpContainer) cpContainer.innerHTML = cpHtml;
                 if (data.whatsapp && data.whatsapp.enabled && data.whatsapp.url) {
                     const floater = document.getElementById('floatingWhatsApp');
                     if (floater) { floater.href = data.whatsapp.url; floater.classList.remove('hidden-wa'); }
@@ -3468,6 +3451,8 @@
         loadCart();
         loadWishlist();
         updateUI();
+        // Show skeleton cards instantly (before API responds — eliminates blank screen)
+        renderSkeletonCards(10);
         // Tier 1: Critical content (immediate)
         loadProducts(currentFilter, currentGender, lastFetchSearch);
         // Tier 2: Above-fold content (100ms delay — lets first paint happen)
@@ -3475,7 +3460,7 @@
         // Tier 3: Below-fold content (400ms delay — after first paint)
         setTimeout(() => { loadHomepageSections(); loadFlashSales(); loadPromoBanners(); }, 400);
         // Tier 4: Non-essential (800ms delay — after user sees content)
-        setTimeout(() => { loadSocialLinks(); loadCategories(); loadSearchTags(); loadTestimonials(); }, 800);
+        setTimeout(() => { loadSocialLinks(); loadCategories(); loadTestimonials(); }, 800);
         console.log('🚀 Trendy_Wardrobe – All features fixed & extended');
         console.log('📡 API:', API_URL);
 
