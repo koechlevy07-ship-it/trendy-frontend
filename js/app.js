@@ -32,7 +32,7 @@
                 const parts = url.split('/upload/');
                 if (parts.length === 2) {
                     const w = width || 800;
-                    url = parts[0] + '/upload/f_auto,fl_webp,q_auto:good,w_' + w + '/' + parts[1];
+                    url = parts[0] + '/upload/f_auto,q_auto:good,w_' + w + '/' + parts[1];
                 }
             }
             return url;
