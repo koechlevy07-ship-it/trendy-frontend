@@ -1,8 +1,6 @@
         // ============================================================
         // CONFIGURATION
         // ============================================================
-        const API_URL = 'https://trendy-backend-jq27.onrender.com/api';
-        const IMAGE_BASE = API_URL.replace('/api', '');
 
         // SECURITY: XSS prevention — escape HTML entities
         function escHtml(str) {
@@ -22,25 +20,6 @@
             else if (res.status === 404) { msg = 'Resource not found.'; }
             else if (res.status >= 500) { msg = 'Server error. Please try again later.'; }
             return msg;
-        }
-
-        function getImageUrl(path, width) {
-            if (!path) return '';
-            let url = path.startsWith('http://') || path.startsWith('https://') ? path : IMAGE_BASE + path;
-            if (url.includes('res.cloudinary.com') && !url.includes('/upload/')) return url;
-            if (url.includes('res.cloudinary.com')) {
-                const parts = url.split('/upload/');
-                if (parts.length === 2) {
-                    const w = width || 800;
-                    url = parts[0] + '/upload/f_auto,q_auto:good,w_' + w + '/' + parts[1];
-                }
-            }
-            return url;
-        }
-
-        function getOptimizedImage(url, size) {
-            const sizes = { thumb: 240, card: 600, hero: 1400, full: 1800 };
-            return getImageUrl(url, sizes[size] || 600);
         }
 
         // ============================================================

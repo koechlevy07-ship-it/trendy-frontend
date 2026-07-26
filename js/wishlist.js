@@ -2,10 +2,6 @@
 // WISHLIST PAGE — Trendy Wardrobe
 // ============================================================
 
-// ---- CONFIG ----
-const API_URL = 'https://trendy-backend-jq27.onrender.com/api';
-const IMAGE_BASE = API_URL.replace('/api', '');
-
 // ---- State ----
 let wishlistItems = [];
 let wishlistStats = { count: 0, inStock: 0, outOfStock: 0, estimatedValue: 0 };
@@ -36,21 +32,6 @@ function isProductAvailable(product) {
     if (product.preOrder) return true;
     if (product.inStock) return true;
     return false;
-}
-
-// ---- Image Helper ----
-function getImageUrl(path, width) {
-    if (!path) return '';
-    let url = path.startsWith('http://') || path.startsWith('https://') ? path : IMAGE_BASE + path;
-    if (url.includes('res.cloudinary.com') && !url.includes('/upload/')) return url;
-    if (url.includes('res.cloudinary.com')) {
-        const parts = url.split('/upload/');
-        if (parts.length === 2) {
-            const w = width || 800;
-            url = parts[0] + '/upload/f_auto,q_85,w_' + w + '/' + parts[1];
-        }
-    }
-    return url;
 }
 
 // ---- Auth ----
