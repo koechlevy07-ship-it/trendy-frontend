@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const { minify } = require('terser');
+const CleanCSS = require('clean-css');
 
 function copyRecursive(src, dest) {
     const stat = fs.statSync(src);
@@ -16,7 +18,52 @@ function copyRecursive(src, dest) {
     }
 }
 
-function build() {
+async function minifyFile(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    try {
+        const content = fs.readFileSync(filePath, 'utf8');
+        if (ext === '.js' && !filePath.endsWith('sw.js')) {
+            const result = await minify(content, {
+                compress: { drop_console: false, passes: 2 },
+                mangle: true,
+                output: { comments: false }
+            });
+            if (result.code) {
+                const before = content.length;
+                fs.writeFileSync(filePath, result.code);
+                const savings = Math.round((1 - result.code.length / before) * 100);
+                console.log(`  Minified: ${path.relative(__dirname, filePath)} (${savings}% smaller)`);
+            }
+        } else if (ext === '.css') {
+            const result = new CleanCSS({
+                level: 2,
+                compatibility: 'ie9+'
+            }).minify(content);
+            if (!result.errors.length && result.styles) {
+                const before = content.length;
+                fs.writeFileSync(filePath, result.styles);
+                const savings = Math.round((1 - result.styles.length / before) * 100);
+                console.log(`  Minified: ${path.relative(__dirname, filePath)} (${savings}% smaller)`);
+            }
+        }
+    } catch (e) {
+        console.warn(`  Warning: Could not minify ${path.relative(__dirname, filePath)}: ${e.message}`);
+    }
+}
+
+async function minifyDir(dirPath) {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    for (const entry of entries) {
+        const fullPath = path.join(dirPath, entry.name);
+        if (entry.isDirectory()) {
+            await minifyDir(fullPath);
+        } else {
+            await minifyFile(fullPath);
+        }
+    }
+}
+
+async function build() {
     const publicDir = path.join(__dirname, 'public');
 
     // Clean and create public directory
@@ -57,6 +104,10 @@ function build() {
             console.warn(`Warning: ${dir} directory not found`);
         }
     }
+
+    // Minify CSS and JS files in public/
+    console.log('\nMinifying assets...');
+    await minifyDir(publicDir);
 
     console.log('\nBuild completed successfully!');
     console.log(`Output: ${publicDir}`);
