@@ -157,19 +157,19 @@
         const contactPanelClose = document.getElementById('contactPanelClose');
 
         function openContactPanel() {
-            contactPanel.classList.add('open');
-            contactPanelOverlay.classList.add('open');
+            if (contactPanel) contactPanel.classList.add('open');
+            if (contactPanelOverlay) contactPanelOverlay.classList.add('open');
             document.body.classList.add('no-scroll');
         }
         function closeContactPanel() {
-            contactPanel.classList.remove('open');
-            contactPanelOverlay.classList.remove('open');
+            if (contactPanel) contactPanel.classList.remove('open');
+            if (contactPanelOverlay) contactPanelOverlay.classList.remove('open');
             document.body.classList.remove('no-scroll');
         }
         if (contactNav) {
             contactNav.addEventListener('click', function(e) {
                 e.preventDefault();
-                if (contactPanel.classList.contains('open')) {
+                if (contactPanel && contactPanel.classList.contains('open')) {
                     closeContactPanel();
                 } else {
                     openContactPanel();
@@ -179,7 +179,7 @@
         if (contactPanelClose) contactPanelClose.addEventListener('click', closeContactPanel);
         if (contactPanelOverlay) contactPanelOverlay.addEventListener('click', closeContactPanel);
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && contactPanel.classList.contains('open')) closeContactPanel();
+            if (e.key === 'Escape' && contactPanel && contactPanel.classList.contains('open')) closeContactPanel();
         });
 
         // Contact panel form
@@ -214,6 +214,7 @@
         // TOAST
         // ============================================================
         function showToast(msg, type = 'info') {
+            if (!toast || !toastMessage) return;
             toastMessage.textContent = msg;
             toast.className = 'toast';
             if (type) toast.classList.add(type);
@@ -221,7 +222,7 @@
             clearTimeout(toast._timer);
             toast._timer = setTimeout(() => toast.classList.remove('show'), 4000);
         }
-        toastClose.addEventListener('click', () => toast.classList.remove('show'));
+        if (toastClose) toastClose.addEventListener('click', () => toast.classList.remove('show'));
 
         // ============================================================
         // AUTH HELPERS
@@ -258,15 +259,15 @@
         function updateUI() {
             const user = getUser();
             if (user) {
-                userIcon.className = 'fas fa-user-check';
+                if (userIcon) userIcon.className = 'fas fa-user-check';
                 // Update desktop profile dropdown
                 updateProfileDropdown(user);
-                if (authOverlay.style.display === 'flex') showDashboard(user);
+                if (authOverlay && authOverlay.style.display === 'flex') showDashboard(user);
             } else {
-                userIcon.className = 'far fa-user';
+                if (userIcon) userIcon.className = 'far fa-user';
                 // Update desktop profile dropdown
                 updateProfileDropdown(null);
-                if (authOverlay.style.display === 'flex') showAuthForms();
+                if (authOverlay && authOverlay.style.display === 'flex') showAuthForms();
             }
             updateWishlistIcon();
             updateCartBadge();
@@ -384,6 +385,7 @@
         // AUTH MODAL
         // ============================================================
         function openAuthModal() {
+            if (!authOverlay) return;
             authOverlay.style.display = 'flex';
             document.body.classList.add('no-scroll');
             if (isLoggedIn()) {
@@ -394,12 +396,13 @@
         }
 
         function closeAuthModal() {
+            if (!authOverlay) return;
             authOverlay.style.display = 'none';
             document.body.classList.remove('no-scroll');
         }
 
-        authCloseBtn.addEventListener('click', closeAuthModal);
-        authOverlay.addEventListener('click', function(e) {
+        if (authCloseBtn) authCloseBtn.addEventListener('click', closeAuthModal);
+        if (authOverlay) authOverlay.addEventListener('click', function(e) {
             if (e.target === this) closeAuthModal();
         });
 
@@ -411,35 +414,36 @@
         };
 
         function showAuthForms() {
-            authForms.style.display = 'block';
-            authLoggedIn.style.display = 'none';
-            authModalTitle.textContent = 'Account';
+            if (authForms) authForms.style.display = 'block';
+            if (authLoggedIn) authLoggedIn.style.display = 'none';
+            if (authModalTitle) authModalTitle.textContent = 'Account';
             document.querySelectorAll('.auth-tabs button').forEach(b => b.classList.remove('active'));
-            document.querySelector('[data-tab="login"]').classList.add('active');
-            loginForm.style.display = 'flex';
-            registerForm.style.display = 'none';
-            loginError.style.display = 'none';
-            registerError.style.display = 'none';
+            var loginTab = document.querySelector('[data-tab="login"]');
+            if (loginTab) loginTab.classList.add('active');
+            if (loginForm) loginForm.style.display = 'flex';
+            if (registerForm) registerForm.style.display = 'none';
+            if (loginError) loginError.style.display = 'none';
+            if (registerError) registerError.style.display = 'none';
         }
 
         function showDashboard(user) {
-            authForms.style.display = 'none';
-            authLoggedIn.style.display = 'block';
-            authModalTitle.textContent = 'My Account';
-            userAvatar.textContent = user.name.charAt(0).toUpperCase();
-            userDisplayName.textContent = user.name;
-            userDisplayEmail.textContent = user.email;
-            profileName.value = user.name || '';
-            profileEmail.value = user.email || '';
-            profilePassword.value = '';
-            profileConfirm.value = '';
-            profileUpdateMsg.style.display = 'none';
+            if (authForms) authForms.style.display = 'none';
+            if (authLoggedIn) authLoggedIn.style.display = 'block';
+            if (authModalTitle) authModalTitle.textContent = 'My Account';
+            if (userAvatar) userAvatar.textContent = user.name.charAt(0).toUpperCase();
+            if (userDisplayName) userDisplayName.textContent = user.name;
+            if (userDisplayEmail) userDisplayEmail.textContent = user.email;
+            if (profileName) profileName.value = user.name || '';
+            if (profileEmail) profileEmail.value = user.email || '';
+            if (profilePassword) profilePassword.value = '';
+            if (profileConfirm) profileConfirm.value = '';
+            if (profileUpdateMsg) profileUpdateMsg.style.display = 'none';
             loadOrders();
             loadWishlistDashboard();
             switchDashboardTab('dashboard');
         }
 
-        userBtn.addEventListener('click', openAuthModal);
+        if (userBtn) userBtn.addEventListener('click', openAuthModal);
 
         // Auth tabs
         authTabs.forEach(tab => {
@@ -448,21 +452,21 @@
                 this.classList.add('active');
                 const tabName = this.dataset.tab;
                 if (tabName === 'login') {
-                    loginForm.style.display = 'flex';
-                    registerForm.style.display = 'none';
-                    loginError.style.display = 'none';
+                    if (loginForm) loginForm.style.display = 'flex';
+                    if (registerForm) registerForm.style.display = 'none';
+                    if (loginError) loginError.style.display = 'none';
                 } else {
-                    loginForm.style.display = 'none';
-                    registerForm.style.display = 'flex';
-                    registerError.style.display = 'none';
+                    if (loginForm) loginForm.style.display = 'none';
+                    if (registerForm) registerForm.style.display = 'flex';
+                    if (registerError) registerError.style.display = 'none';
                 }
             });
         });
 
         // Login
-        loginForm.addEventListener('submit', async function(e) {
+        if (loginForm) loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            loginError.style.display = 'none';
+            if (loginError) loginError.style.display = 'none';
             const email = loginEmail.value.trim();
             const password = loginPassword.value.trim();
             try {
@@ -473,8 +477,7 @@
                 });
                 const data = await res.json();
                 if (!res.ok) {
-                    loginError.textContent = data.message || 'Login failed';
-                    loginError.style.display = 'block';
+                    if (loginError) { loginError.textContent = data.message || 'Login failed'; loginError.style.display = 'block'; }
                     return;
                 }
                 setAuth(data.user, data.token);
@@ -494,9 +497,9 @@
         });
 
         // Register
-        registerForm.addEventListener('submit', async function(e) {
+        if (registerForm) registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            registerError.style.display = 'none';
+            if (registerError) registerError.style.display = 'none';
             const name = registerName.value.trim();
             const email = registerEmail.value.trim();
             const password = registerPassword.value.trim();
@@ -535,7 +538,7 @@
         });
 
         // Logout
-        logoutBtn.addEventListener('click', function() {
+        if (logoutBtn) logoutBtn.addEventListener('click', function() {
             clearAuth();
             closeAuthModal();
             showToast('👋 Logged out successfully', 'info');
@@ -544,9 +547,9 @@
         });
 
         // Profile Update
-        profileUpdateForm.addEventListener('submit', async function(e) {
+        if (profileUpdateForm) profileUpdateForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            profileUpdateMsg.style.display = 'none';
+            if (profileUpdateMsg) profileUpdateMsg.style.display = 'none';
             const name = profileName.value.trim();
             const email = profileEmail.value.trim();
             const password = profilePassword.value;
@@ -605,6 +608,7 @@
         // ORDERS (Dashboard)
         // ============================================================
         async function loadOrders() {
+            if (!ordersListContainer) return;
             const token = getToken();
             if (!token) {
                 ordersListContainer.innerHTML = '<p style="color:var(--text-secondary);">Please log in to see your orders.</p>';
@@ -1220,14 +1224,15 @@
         }
 
         function renderMiniCart() {
+            if (!cartItemsContainer) return;
             if (cartItems.length === 0) {
                 cartItemsContainer.innerHTML = '';
-                cartTotalContainer.style.display = 'none';
-                emptyCartMsg.style.display = 'block';
+                if (cartTotalContainer) cartTotalContainer.style.display = 'none';
+                if (emptyCartMsg) emptyCartMsg.style.display = 'block';
                 return;
             }
-            emptyCartMsg.style.display = 'none';
-            cartTotalContainer.style.display = 'block';
+            if (emptyCartMsg) emptyCartMsg.style.display = 'none';
+            if (cartTotalContainer) cartTotalContainer.style.display = 'block';
             let html = '',
                 total = 0;
             cartItems.forEach((item, idx) => {
@@ -1271,26 +1276,26 @@
                 </div>`;
             }
             cartItemsContainer.innerHTML = html;
-            cartTotalPrice.textContent = `Ksh ${total.toLocaleString()}`;
+            if (cartTotalPrice) cartTotalPrice.textContent = `Ksh ${total.toLocaleString()}`;
         }
 
         function openCart() { renderMiniCart();
-            miniCartOverlay.classList.add('show');
+            if (miniCartOverlay) miniCartOverlay.classList.add('show');
             document.body.classList.add('no-scroll'); }
 
-        function closeCartFn() { miniCartOverlay.classList.remove('show');
+        function closeCartFn() { if (miniCartOverlay) miniCartOverlay.classList.remove('show');
             document.body.classList.remove('no-scroll'); }
-        cartBtn.addEventListener('click', openCart);
+        if (cartBtn) cartBtn.addEventListener('click', openCart);
         const cartBtnDesktop = document.getElementById('cartBtnDesktop');
         if (cartBtnDesktop) cartBtnDesktop.addEventListener('click', openCart);
-        closeCart.addEventListener('click', closeCartFn);
-        miniCartOverlay.addEventListener('click', e => { if (e.target === miniCartOverlay) closeCartFn(); });
-        continueShoppingBtn.addEventListener('click', closeCartFn);
+        if (closeCart) closeCart.addEventListener('click', closeCartFn);
+        if (miniCartOverlay) miniCartOverlay.addEventListener('click', e => { if (e.target === miniCartOverlay) closeCartFn(); });
+        if (continueShoppingBtn) continueShoppingBtn.addEventListener('click', closeCartFn);
 
         // ============================================================
         // CHECKOUT
         // ============================================================
-        checkoutBtn.addEventListener('click', function() {
+        if (checkoutBtn) checkoutBtn.addEventListener('click', function() {
             if (!isLoggedIn()) {
                 showToast('⚠️ Please log in to checkout', 'error');
                 openAuthModal();
@@ -1306,24 +1311,22 @@
         function openCheckout() {
             updateCheckoutTotals();
             const user = getUser();
-            if (user) {
-                checkoutName.value = user.name || '';
-            }
-            checkoutOverlay.classList.add('show');
+            if (user && checkoutName) checkoutName.value = user.name || '';
+            if (checkoutOverlay) checkoutOverlay.classList.add('show');
             document.body.classList.add('no-scroll');
         }
 
-        checkoutCloseBtn.addEventListener('click', closeCheckout);
-        checkoutOverlay.addEventListener('click', function(e) {
+        if (checkoutCloseBtn) checkoutCloseBtn.addEventListener('click', closeCheckout);
+        if (checkoutOverlay) checkoutOverlay.addEventListener('click', function(e) {
             if (e.target === this) closeCheckout();
         });
 
         function closeCheckout() {
-            checkoutOverlay.classList.remove('show');
+            if (checkoutOverlay) checkoutOverlay.classList.remove('show');
             document.body.classList.remove('no-scroll');
         }
 
-        checkoutForm.addEventListener('submit', async function(e) {
+        if (checkoutForm) checkoutForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = checkoutName.value.trim();
             const phone = checkoutPhone.value.trim();
@@ -2040,10 +2043,12 @@
             if (!products) products = currentProducts;
             else if (!append) currentProducts = products;
             else currentProducts = currentProducts.concat(products);
+            if (!productsGrid) return;
             if (!currentProducts.length && !append) {
                 productsGrid.innerHTML =
                     `<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-secondary);">No products found.</div>`;
-                document.getElementById('loadMoreWrap').style.display = 'none';
+                var lmr = document.getElementById('loadMoreWrap');
+                if (lmr) lmr.style.display = 'none';
                 return;
             }
             if (append) {
@@ -2052,8 +2057,10 @@
             } else {
                 productsGrid.innerHTML = currentProducts.map(p => buildProductCard(p)).join('');
             }
-            document.getElementById('loadMoreWrap').style.display = (currentPage < totalPages) ? 'block' : 'none';
-            document.getElementById('loadMoreBtn').style.display = (currentPage < totalPages) ? '' : 'none';
+            var lmr2 = document.getElementById('loadMoreWrap');
+            if (lmr2) lmr2.style.display = (currentPage < totalPages) ? 'block' : 'none';
+            var lmb = document.getElementById('loadMoreBtn');
+            if (lmb) lmb.style.display = (currentPage < totalPages) ? '' : 'none';
 
             bindProductCardEvents(productsGrid);
         }
@@ -2129,7 +2136,8 @@
             spinner.style.display = 'none';
         }
 
-        document.getElementById('loadMoreBtn').addEventListener('click', loadMore);
+        var loadMoreBtnEl = document.getElementById('loadMoreBtn');
+        if (loadMoreBtnEl) loadMoreBtnEl.addEventListener('click', loadMore);
 
         // ============================================================
         // QUICK VIEW
@@ -2442,17 +2450,17 @@
             if (e.target === quickViewOverlay) closeQuickView();
         });
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && quickViewOverlay.classList.contains('show')) closeQuickView();
+            if (e.key === 'Escape' && quickViewOverlay && quickViewOverlay.classList.contains('show')) closeQuickView();
         });
 
         // ============================================================
         // SEARCH
         // ============================================================
         function performSearch(query) {
-            const q = query || searchInput.value.trim();
+            const q = query || (searchInput ? searchInput.value.trim() : '');
             if (q.length > 0) {
                 loadProducts('all', null, q);
-                if (searchOverlay.classList.contains('open')) {
+                if (searchOverlay && searchOverlay.classList.contains('open')) {
                     searchOverlay.classList.remove('open');
                     document.body.classList.remove('no-scroll');
                 }
@@ -2461,13 +2469,13 @@
             }
         }
 
-        searchBtn.addEventListener('click', () => performSearch());
-        searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
+        if (searchBtn) searchBtn.addEventListener('click', () => performSearch());
+        if (searchInput) searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
 
         // Search icon mobile — opens search overlay with recent searches
         if (searchIconMobile) {
             searchIconMobile.addEventListener('click', () => {
-                searchOverlay.classList.add('open');
+                if (searchOverlay) searchOverlay.classList.add('open');
                 document.body.classList.add('no-scroll');
                 renderRecentSearches();
                 setTimeout(() => searchOverlayInput?.focus(), 100);
@@ -2478,10 +2486,10 @@
         if (searchInput) {
             searchInput.addEventListener('focus', () => {
                 if (window.innerWidth <= 768) {
-                    searchOverlay.classList.add('open');
+                    if (searchOverlay) searchOverlay.classList.add('open');
                     document.body.classList.add('no-scroll');
                     renderRecentSearches();
-                    searchOverlayInput.value = searchInput.value;
+                    if (searchOverlayInput) searchOverlayInput.value = searchInput.value;
                     setTimeout(() => searchOverlayInput?.focus(), 100);
                 }
             });
@@ -2519,21 +2527,21 @@
             });
         }
 
-        searchClose.addEventListener('click', () => {
-            searchOverlay.classList.remove('open');
+        if (searchClose) searchClose.addEventListener('click', () => {
+            if (searchOverlay) searchOverlay.classList.remove('open');
             document.body.classList.remove('no-scroll');
         });
-        searchOverlay.addEventListener('click', e => {
+        if (searchOverlay) searchOverlay.addEventListener('click', e => {
             if (e.target === searchOverlay || (!e.target.closest('.search-panel') && !e.target.closest('.search-result-item') && !e.target.closest('.search-tag') && !e.target.closest('.search-recent-item'))) {
                 searchOverlay.classList.remove('open');
                 document.body.classList.remove('no-scroll');
             }
         });
-        searchOverlaySubmit.addEventListener('click', () => {
-            const q = searchOverlayInput.value.trim();
+        if (searchOverlaySubmit) searchOverlaySubmit.addEventListener('click', () => {
+            const q = searchOverlayInput ? searchOverlayInput.value.trim() : '';
             if (q) { addRecentSearch(q); performSearch(q); }
         });
-        searchOverlayInput.addEventListener('keypress', e => {
+        if (searchOverlayInput) searchOverlayInput.addEventListener('keypress', e => {
             if (e.key === 'Enter') {
                 const q = searchOverlayInput.value.trim();
                 if (q) { addRecentSearch(q); performSearch(q); }
@@ -2556,6 +2564,7 @@
         // ============================================================
         // HEADER SHRINK & HIDE/SHOW ON SCROLL
         // ============================================================
+        if (stickyHeader) {
         let lastScrollY = window.scrollY;
         let scrollTimeout;
         window.addEventListener('scroll', () => {
@@ -2574,13 +2583,14 @@
                 lastScrollY = scrollY;
             }
         }, { passive: true });
+        }
 
         // ============================================================
         // MOBILE DRAWER (updated for new header)
         // ============================================================
         function openDrawer() {
-            drawer.classList.add('open');
-            drawerOverlay.classList.add('open');
+            if (drawer) drawer.classList.add('open');
+            if (drawerOverlay) drawerOverlay.classList.add('open');
             document.body.classList.add('no-scroll');
             const hamburger = document.getElementById('hamburgerBtn');
             if (hamburger) hamburger.setAttribute('aria-expanded', 'true');
@@ -2588,14 +2598,15 @@
         }
 
         function closeDrawerFn() {
-            drawer.classList.remove('open');
-            drawerOverlay.classList.remove('open');
+            if (drawer) drawer.classList.remove('open');
+            if (drawerOverlay) drawerOverlay.classList.remove('open');
             document.body.classList.remove('no-scroll');
             const hamburger = document.getElementById('hamburgerBtn');
             if (hamburger) hamburger.setAttribute('aria-expanded', 'false');
         }
 
         function drawerFocusTrap() {
+            if (!drawer) return;
             const focusable = drawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])');
             if (!focusable.length) return;
             const first = focusable[0];
@@ -2614,8 +2625,8 @@
         if (hamburgerBtn) {
             hamburgerBtn.addEventListener('click', openDrawer);
         }
-        closeDrawer.addEventListener('click', closeDrawerFn);
-        drawerOverlay.addEventListener('click', closeDrawerFn);
+        if (closeDrawer) closeDrawer.addEventListener('click', closeDrawerFn);
+        if (drawerOverlay) drawerOverlay.addEventListener('click', closeDrawerFn);
 
         document.querySelectorAll('.drawer-toggle').forEach(toggle => {
             toggle.addEventListener('click', function() {
@@ -2635,9 +2646,9 @@
             });
         });
 
-        drawerHome.addEventListener('click', (e) => { e.preventDefault();
+        if (drawerHome) drawerHome.addEventListener('click', (e) => { e.preventDefault();
             showHomeSection(); });
-        drawerContact.addEventListener('click', (e) => {
+        if (drawerContact) drawerContact.addEventListener('click', (e) => {
             window.location.href = '/contact.html'; });
 
         // New drawer items
@@ -2722,7 +2733,8 @@
                     const cat = this.dataset.category;
                     loadProducts(cat);
                     showHomeSection();
-                    document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
+                    var psEl = document.getElementById('productsSection');
+                    if (psEl) psEl.scrollIntoView({ behavior: 'smooth' });
                     showToast(`🛍️ ${cat.replace('-',' ')}`, 'info');
                 }
             });
@@ -2731,9 +2743,11 @@
         // ============================================================
         // SHOP NOW BUTTON
         // ============================================================
-        document.getElementById('shopNowBtn').addEventListener('click', () => {
+        var shopNowBtnEl = document.getElementById('shopNowBtn');
+        if (shopNowBtnEl) shopNowBtnEl.addEventListener('click', () => {
             showHomeSection();
-            document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
+            var psEl = document.getElementById('productsSection');
+            if (psEl) psEl.scrollIntoView({ behavior: 'smooth' });
         });
 
         // ============================================================
@@ -2953,7 +2967,8 @@
             });
         });
 
-        document.getElementById('sortSelect').addEventListener('change', function() {
+        var sortSelectEl = document.getElementById('sortSelect');
+        if (sortSelectEl) sortSelectEl.addEventListener('change', function() {
             currentSort = this.value;
             setFilterToURL(currentFilter, currentGender, lastFetchSearch, currentSort);
             loadProducts(currentFilter, currentGender);
@@ -3411,35 +3426,43 @@
         // ============================================================
         // INIT — Staggered loading to avoid Render cold-start bottleneck
         // ============================================================
-        // Restore filters from URL
-        (function() {
-            const urlState = getFilterFromURL();
-            if (urlState.filter !== 'all') currentFilter = urlState.filter;
-            if (urlState.gender) currentGender = urlState.gender;
-            if (urlState.sort) currentSort = urlState.sort;
-            if (urlState.search) lastFetchSearch = urlState.search;
-            document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
-            document.querySelectorAll('.gender-btn[data-gender]').forEach(b => {
-                const g = b.dataset.gender === 'all' ? null : b.dataset.gender;
-                b.classList.toggle('active', g === currentGender);
-                if (g === currentGender && currentGender) { b.style.background = 'var(--color-gold)'; b.style.color = '#fff'; b.style.borderColor = 'var(--color-gold)'; }
-            });
-            const sortSel = document.getElementById('sortSelect');
-            if (sortSel) sortSel.value = currentSort;
-        })();
+        // Shared features (run on ALL pages)
         loadCart();
         loadWishlist();
         updateUI();
-        // Show skeleton cards instantly (before API responds — eliminates blank screen)
-        renderSkeletonCards(10);
-        // Tier 1: Critical content (immediate)
-        loadProducts(currentFilter, currentGender, lastFetchSearch);
-        // Tier 2: Above-fold content (100ms delay — lets first paint happen)
-        setTimeout(() => { loadHeroImages(); loadCategoryImages(); loadSettings(); }, 100);
-        // Tier 3: Below-fold content (400ms delay — after first paint)
-        setTimeout(() => { loadHomepageSections(); loadFlashSales(); loadPromoBanners(); }, 400);
-        // Tier 4: Non-essential (800ms delay — after user sees content)
-        setTimeout(() => { loadSocialLinks(); loadCategories(); loadTestimonials(); }, 800);
+
+        // Homepage-only features
+        if (productsGrid) {
+            // Restore filters from URL
+            (function() {
+                const urlState = getFilterFromURL();
+                if (urlState.filter !== 'all') currentFilter = urlState.filter;
+                if (urlState.gender) currentGender = urlState.gender;
+                if (urlState.sort) currentSort = urlState.sort;
+                if (urlState.search) lastFetchSearch = urlState.search;
+                document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
+                document.querySelectorAll('.gender-btn[data-gender]').forEach(b => {
+                    const g = b.dataset.gender === 'all' ? null : b.dataset.gender;
+                    b.classList.toggle('active', g === currentGender);
+                    if (g === currentGender && currentGender) { b.style.background = 'var(--color-gold)'; b.style.color = '#fff'; b.style.borderColor = 'var(--color-gold)'; }
+                });
+                const sortSel = document.getElementById('sortSelect');
+                if (sortSel) sortSel.value = currentSort;
+            })();
+            // Show skeleton cards instantly (before API responds — eliminates blank screen)
+            renderSkeletonCards(10);
+            // Tier 1: Critical content (immediate)
+            loadProducts(currentFilter, currentGender, lastFetchSearch);
+            // Tier 2: Above-fold content (100ms delay — lets first paint happen)
+            setTimeout(() => { loadHeroImages(); loadCategoryImages(); loadSettings(); }, 100);
+            // Tier 3: Below-fold content (400ms delay — after first paint)
+            setTimeout(() => { loadHomepageSections(); loadFlashSales(); loadPromoBanners(); }, 400);
+            // Tier 4: Non-essential (800ms delay — after user sees content)
+            setTimeout(() => { loadSocialLinks(); loadCategories(); loadTestimonials(); }, 800);
+        } else {
+            // Non-homepage: only load social links (for WhatsApp FAB + footer socials)
+            setTimeout(() => { loadSocialLinks(); }, 800);
+        }
         console.log('🚀 Trendy_Wardrobe – All features fixed & extended');
         console.log('📡 API:', API_URL);
 
