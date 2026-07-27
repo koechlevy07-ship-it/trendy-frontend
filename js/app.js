@@ -1407,11 +1407,64 @@
         });
 
         // ============================================================
-        // HERO BACKGROUND
+        // HERO BACKGROUND — Luxury Fashion Editorial
         // ============================================================
         let heroSlides = [],
             heroIndex = 0,
-            heroInterval = null;
+            heroInterval = null,
+            heroPaused = false;
+
+        function handleCtaClick(link) {
+            if (!link) return;
+            if (link.startsWith('http')) {
+                window.open(link, '_blank');
+            } else if (link.startsWith('#')) {
+                document.querySelector(link)?.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                const url = new URL(link, window.location.origin);
+                const gender = url.searchParams.get('gender');
+                const cat = url.searchParams.get('category');
+                if (gender) document.querySelector(`.gender-btn[data-gender="${gender}"]`)?.click();
+                if (cat) document.querySelector(`.filter-btn[data-filter="${cat}"]`)?.click();
+                if (!gender && !cat) window.location.href = link;
+            }
+        }
+
+        function buildHeroIndicators() {
+            const container = document.getElementById('heroIndicators');
+            if (!container || heroSlides.length < 2) { if (container) container.innerHTML = ''; return; }
+            container.innerHTML = heroSlides.map((_, i) =>
+                `<button class="hero-dot${i === 0 ? ' active' : ''}" data-slide="${i}" aria-label="Go to slide ${i + 1}"></button>`
+            ).join('');
+            container.querySelectorAll('.hero-dot').forEach(dot => {
+                dot.addEventListener('click', () => {
+                    const idx = parseInt(dot.dataset.slide);
+                    if (idx !== heroIndex) { heroIndex = idx; setHeroSlide(heroSlides[heroIndex], true); resetHeroAutoplay(); }
+                });
+            });
+        }
+
+        function updateHeroIndicators() {
+            const dots = document.querySelectorAll('#heroIndicators .hero-dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i === heroIndex));
+        }
+
+        function animateHeroContent() {
+            const elements = ['#heroEyebrow', '.gold-line', '#heroHeading', '#heroSecondary', '#heroSubheading', '.hero-ctas'];
+            elements.forEach((sel, i) => {
+                const el = document.querySelector(sel);
+                if (!el) return;
+                el.style.animation = 'none';
+                el.offsetHeight;
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    el.style.transition = `opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.12}s, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.12}s`;
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, 50);
+            });
+        }
 
         async function loadHeroImages() {
             try {
@@ -1430,16 +1483,31 @@
                 } catch (e) { console.error('Hero fallback error', e); }
             }
             if (heroSlides.length) {
-                setHeroSlide(heroSlides[0]);
-                if (heroInterval) clearInterval(heroInterval);
-                heroInterval = setInterval(() => {
-                    heroIndex = (heroIndex + 1) % heroSlides.length;
-                    setHeroSlide(heroSlides[heroIndex]);
-                }, 5000);
+                setHeroSlide(heroSlides[0], false);
+                buildHeroIndicators();
+                if (heroSlides.length > 1) {
+                    if (heroInterval) clearInterval(heroInterval);
+                    heroInterval = setInterval(() => {
+                        if (heroPaused) return;
+                        heroIndex = (heroIndex + 1) % heroSlides.length;
+                        setHeroSlide(heroSlides[heroIndex], true);
+                    }, 7000);
+                }
             }
         }
 
-        function setHeroSlide(slide) {
+        function resetHeroAutoplay() {
+            if (heroInterval) clearInterval(heroInterval);
+            if (heroSlides.length > 1) {
+                heroInterval = setInterval(() => {
+                    if (heroPaused) return;
+                    heroIndex = (heroIndex + 1) % heroSlides.length;
+                    setHeroSlide(heroSlides[heroIndex], true);
+                }, 7000);
+            }
+        }
+
+        function setHeroSlide(slide, animate) {
             const hero = document.getElementById('heroSection');
             const heroBg = document.getElementById('heroBg');
             const heroVideo = document.getElementById('heroVideo');
@@ -1457,56 +1525,102 @@
                     const imgUrl = slide.mobileImage || slide.desktopImage || '';
                     if (imgUrl) {
                         heroVideo.style.display = 'none';
-                        heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl, 800)})`;
+                        if (heroBg) heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl, 800)})`;
                     } else {
                         heroVideo.style.display = '';
                     }
                 }
             } else {
                 const imgUrl = isMobile ? (slide.mobileImage || slide.desktopImage || '') : (slide.desktopImage || slide.mobileImage || '');
-                heroVideo.classList.add('hidden-video');
-                heroVideo.src = '';
-                if (imgUrl) {
-                    heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl, isMobile ? 800 : 1400)})`;
+                if (heroVideo) { heroVideo.classList.add('hidden-video'); heroVideo.src = ''; }
+                if (imgUrl && heroBg) {
+                    if (animate) {
+                        heroBg.classList.add('transitioning');
+                        heroBg.style.opacity = '0';
+                        setTimeout(() => {
+                            heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl, isMobile ? 800 : 1600)})`;
+                            heroBg.style.opacity = '1';
+                            setTimeout(() => heroBg.classList.remove('transitioning'), 1000);
+                        }, 400);
+                    } else {
+                        heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl, isMobile ? 800 : 1600)})`;
+                    }
                 }
             }
+
+            // --- Text content ---
+            const eyebrow = document.getElementById('heroEyebrow');
             const heading = document.getElementById('heroHeading');
-            const highlight = heading ? heading.querySelector('.highlight') : null;
+            const secondary = document.getElementById('heroSecondary');
             const subheading = document.getElementById('heroSubheading');
             const shopBtn = document.getElementById('shopNowBtn');
-            if (slide.heading) {
-                if (highlight) {
-                    highlight.textContent = slide.heading;
+            const secondaryCta = document.getElementById('heroSecondaryCta');
+
+            // Eyebrow
+            if (eyebrow) {
+                const season = slide.season || 'NEW SEASON \u2022 2026';
+                eyebrow.textContent = season;
+            }
+
+            // Heading — new format: two lines LUXURY / FASHION
+            if (heading) {
+                const lines = heading.querySelectorAll('.hero-title-line');
+                if (lines.length >= 2) {
+                    const parts = (slide.heading || 'LUXURY FASHION').split(/\s+/);
+                    if (parts.length >= 2) {
+                        lines[0].textContent = parts[0];
+                        lines[1].textContent = parts.slice(1).join(' ');
+                    } else {
+                        lines[0].textContent = slide.heading || 'LUXURY';
+                        lines[1].textContent = 'FASHION';
+                    }
                 } else {
-                    heading.textContent = slide.heading;
+                    heading.textContent = slide.heading || 'LUXURY FASHION';
                 }
             }
-            if (slide.subheading) {
-                subheading.textContent = slide.subheading;
+
+            // Secondary
+            if (secondary) {
+                secondary.textContent = slide.subheading || 'NEW COLLECTION 2026';
             }
-            if (slide.buttonText) {
-                shopBtn.textContent = slide.buttonText;
+
+            // Description
+            if (subheading) {
+                subheading.textContent = slide.description || slide.subheading || 'Discover timeless pieces designed for your signature style.';
             }
-            if (slide.buttonLink) {
-                shopBtn.onclick = () => {
-                    if (slide.buttonLink.startsWith('http')) {
-                        window.open(slide.buttonLink, '_blank');
-                    } else if (slide.buttonLink.startsWith('#')) {
-                        document.querySelector(slide.buttonLink)?.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                        const url = new URL(slide.buttonLink, window.location.origin);
-                        const gender = url.searchParams.get('gender');
-                        const cat = url.searchParams.get('category');
-                        if (gender) {
-                            document.querySelector(`.gender-btn[data-gender="${gender}"]`)?.click();
-                        }
-                        if (cat) {
-                            document.querySelector(`.filter-btn[data-filter="${cat}"]`)?.click();
-                        }
-                    }
-                };
+
+            // Primary CTA
+            if (shopBtn) {
+                const ctaText = slide.primaryCtaText || slide.buttonText || 'SHOP THE COLLECTION';
+                const ctaLink = slide.primaryCtaUrl || slide.buttonLink || '/collections';
+                shopBtn.textContent = ctaText;
+                shopBtn.onclick = () => handleCtaClick(ctaLink);
             }
+
+            // Secondary CTA
+            if (secondaryCta) {
+                const secText = slide.secondaryCtaText || '';
+                const secLink = slide.secondaryCtaUrl || '';
+                if (secText && secLink) {
+                    secondaryCta.textContent = secText;
+                    secondaryCta.style.display = '';
+                    secondaryCta.onclick = () => handleCtaClick(secLink);
+                } else {
+                    secondaryCta.style.display = 'none';
+                }
+            }
+
+            updateHeroIndicators();
+            if (animate) animateHeroContent();
         }
+
+        // Pause autoplay on hover
+        (function initHeroHoverPause() {
+            const hero = document.getElementById('heroSection');
+            if (!hero) return;
+            hero.addEventListener('mouseenter', () => { heroPaused = true; });
+            hero.addEventListener('mouseleave', () => { heroPaused = false; });
+        })();
 
         // ============================================================
         // CATEGORY IMAGES
@@ -3590,17 +3704,17 @@
         setInterval(updateMobileCartBadge, 2000);
 
         // ============================================================
-        // HERO PARALLAX — Premium smooth scroll effect
+        // HERO PARALLAX + MOUSE PARALLAX — Premium cinematic effect
         // ============================================================
         (function initHeroParallax() {
             const heroBg = document.getElementById('heroBg');
             const hero = document.getElementById('heroSection');
             if (!heroBg || !hero) return;
 
-            // Detect if parallax should be disabled (reduced motion, low-end devices)
             const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             const isLowEndDevice = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
             const isMobile = window.innerWidth <= 768;
+            const isTouch = 'ontouchstart' in window;
             const disableParallax = prefersReducedMotion || isLowEndDevice;
 
             if (disableParallax) {
@@ -3608,40 +3722,50 @@
                 return;
             }
 
-            // Parallax intensity — subtle (0.25 as specified)
-            const PARALLAX_FACTOR = isMobile ? 0.15 : 0.25;
+            // Scroll parallax
+            const SCROLL_FACTOR = isMobile ? 0.12 : 0.2;
+            let currentY = 0, targetY = 0, rafId = null;
 
-            // Smooth interpolation using requestAnimationFrame
-            let currentY = 0;
-            let targetY = 0;
-            let rafId = null;
-            let lastScrollY = window.scrollY;
+            // Mouse parallax (desktop only)
+            let mouseX = 0, mouseY = 0, currentMouseX = 0, currentMouseY = 0;
+            const MOUSE_FACTOR = isMobile ? 0 : 6;
+            let mouseActive = false;
+
+            if (!isMobile && !isTouch) {
+                hero.addEventListener('mousemove', (e) => {
+                    const rect = hero.getBoundingClientRect();
+                    mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+                    mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+                    mouseActive = true;
+                }, { passive: true });
+                hero.addEventListener('mouseleave', () => {
+                    mouseX = 0;
+                    mouseY = 0;
+                }, { passive: true });
+            }
 
             function updateParallax() {
                 const scrollY = window.scrollY;
                 const heroRect = hero.getBoundingClientRect();
-                const heroBottom = heroRect.bottom;
-                const heroTop = heroRect.top;
 
-                // Only apply parallax when hero is in viewport
-                if (heroBottom > 0 && heroTop < window.innerHeight) {
-                    // Calculate target based on scroll position
-                    targetY = scrollY * PARALLAX_FACTOR;
+                if (heroRect.bottom > 0 && heroRect.top < window.innerHeight) {
+                    targetY = scrollY * SCROLL_FACTOR;
                 }
 
-                // Smooth interpolation (lerp) for 60fps smoothness
-                currentY += (targetY - currentY) * 0.15;
+                currentY += (targetY - currentY) * 0.12;
+                currentMouseX += (mouseX * MOUSE_FACTOR - currentMouseX) * 0.08;
+                currentMouseY += (mouseY * MOUSE_FACTOR - currentMouseY) * 0.08;
 
-                // Apply GPU-accelerated transform
-                heroBg.style.transform = `translateZ(0) translateY(${currentY}px) scale(1)`;
+                const tx = currentMouseX;
+                const ty = currentY + currentMouseY;
+
+                heroBg.style.transform = `translateZ(0) translate(${tx}px, ${ty}px)`;
 
                 rafId = requestAnimationFrame(updateParallax);
             }
 
-            // Start the animation loop
             rafId = requestAnimationFrame(updateParallax);
 
-            // Cleanup on page unload
             window.addEventListener('beforeunload', () => {
                 if (rafId) cancelAnimationFrame(rafId);
             });

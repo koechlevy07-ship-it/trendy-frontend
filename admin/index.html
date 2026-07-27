@@ -3009,11 +3009,14 @@ Sitemap: https://trendywardrobe.com/sitemap.xml</textarea>
                     <div class="image-upload-area"><input type="file" id="heroVideoInput" accept="video/mp4,video/webm,video/quicktime" disabled /><label for="heroVideoInput" class="upload-label" style="opacity:0.5;cursor:not-allowed;"><i class="fas fa-video"></i> Upload hero video (MP4/WebM) — <em>Disabled</em></label></div>
                     <div class="image-preview-grid" id="heroVideoPreview"></div><input type="hidden" id="heroVideoUrl" />
                 </div>
-                <div class="form-group"><label>Heading *</label><input type="text" id="heroSlideHeading" required placeholder="New Collection 2024" /></div>
-                <div class="form-group"><label>Subheading</label><input type="text" id="heroSlideSubheading" placeholder="Discover the latest trends" /></div>
-                <div class="form-group"><label>Button Text</label><input type="text" id="heroSlideBtnText" placeholder="Shop Now" /></div>
-                <div class="form-group"><label>Button Link</label><input type="text" id="heroSlideBtnLink" placeholder="/collections" /></div>
-                <div class="form-group"><label>Display Order</label><input type="number" id="heroSlideOrder" min="0" value="0" /></div>
+                <div class="form-group" style="grid-column:1/-1;"><label>Heading *</label><input type="text" id="heroSlideHeading" required placeholder="LUXURY FASHION" style="width:100%;padding:8px 10px;border:1px solid var(--border-light);border-radius:var(--radius-sm);font-size:0.85rem;" /></div>
+                <div class="form-group" style="grid-column:1/-1;"><label>Secondary Text (below heading)</label><input type="text" id="heroSlideSubheading" placeholder="NEW COLLECTION 2026" style="width:100%;padding:8px 10px;border:1px solid var(--border-light);border-radius:var(--radius-sm);font-size:0.85rem;" /></div>
+                <div class="form-group" style="grid-column:1/-1;"><label>Description</label><textarea id="heroSlideDescription" rows="2" placeholder="Discover timeless pieces designed for your signature style." style="width:100%;padding:8px 10px;border:1px solid var(--border-light);border-radius:var(--radius-sm);font-size:0.85rem;resize:vertical;"></textarea></div>
+                <div class="form-group" style="grid-column:1/-1;"><label>Primary CTA Text</label><input type="text" id="heroSlideBtnText" placeholder="SHOP THE COLLECTION" style="width:100%;padding:8px 10px;border:1px solid var(--border-light);border-radius:var(--radius-sm);font-size:0.85rem;" /></div>
+                <div class="form-group" style="grid-column:1/-1;"><label>Primary CTA Link</label><input type="text" id="heroSlideBtnLink" placeholder="/collections" style="width:100%;padding:8px 10px;border:1px solid var(--border-light);border-radius:var(--radius-sm);font-size:0.85rem;" /></div>
+                <div class="form-group" style="grid-column:1/-1;"><label>Secondary CTA Text</label><input type="text" id="heroSlideSecondaryCtaText" placeholder="VIEW LOOKBOOK" style="width:100%;padding:8px 10px;border:1px solid var(--border-light);border-radius:var(--radius-sm);font-size:0.85rem;" /></div>
+                <div class="form-group" style="grid-column:1/-1;"><label>Secondary CTA Link</label><input type="text" id="heroSlideSecondaryCtaLink" placeholder="/lookbook" style="width:100%;padding:8px 10px;border:1px solid var(--border-light);border-radius:var(--radius-sm);font-size:0.85rem;" /></div>
+                <div class="form-group"><label>Display Order</label><input type="number" id="heroSlideOrder" min="0" value="0" style="width:100%;padding:8px 10px;border:1px solid var(--border-light);border-radius:var(--radius-sm);font-size:0.85rem;" /></div>
                 <div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="heroSlideActive" checked /> Active</label></div>
             </div>
             <div style="display:flex;gap:16px;margin-top:20px;"><button type="submit" class="btn-submit">Save Slide</button><button type="button" class="btn-cancel" id="heroSlideFormCancel">Cancel</button></div>
@@ -7911,9 +7914,12 @@ function showHeroSlideForm(slide) {
     const title = document.getElementById('heroSlideFormTitle');
     document.getElementById('heroSlideId').value = slide ? slide._id : '';
     document.getElementById('heroSlideHeading').value = slide ? slide.heading : '';
-    document.getElementById('heroSlideSubheading').value = slide ? slide.subheading : '';
-    document.getElementById('heroSlideBtnText').value = slide ? (slide.buttonText || 'Shop Now') : 'Shop Now';
-    document.getElementById('heroSlideBtnLink').value = slide ? (slide.buttonLink || '/products') : '/products';
+    document.getElementById('heroSlideSubheading').value = slide ? (slide.subheading || '') : '';
+    document.getElementById('heroSlideDescription').value = slide ? (slide.description || '') : '';
+    document.getElementById('heroSlideBtnText').value = slide ? (slide.primaryCtaText || slide.buttonText || 'Shop Now') : 'Shop Now';
+    document.getElementById('heroSlideBtnLink').value = slide ? (slide.primaryCtaUrl || slide.buttonLink || '/products') : '/products';
+    document.getElementById('heroSlideSecondaryCtaText').value = slide ? (slide.secondaryCtaText || '') : '';
+    document.getElementById('heroSlideSecondaryCtaLink').value = slide ? (slide.secondaryCtaUrl || '') : '';
     document.getElementById('heroSlideOrder').value = slide ? (slide.displayOrder || 0) : 0;
     document.getElementById('heroSlideActive').checked = slide ? slide.active !== false : true;
     document.getElementById('heroDesktopImageUrl').value = slide ? (slide.desktopImage || '') : '';
@@ -7944,6 +7950,8 @@ async function loadHeroSlides() {
                 <div style="flex:1;min-width:0;">
                     <div style="font-weight:600;">${escHtml(s.heading || 'Untitled')}</div>
                     <div style="font-size:0.8rem;color:var(--text-muted);">${escHtml(s.subheading || '')}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:2px;">${escHtml((s.description || '').substring(0, 60))}${(s.description || '').length > 60 ? '...' : ''}</div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:2px;">CTA: ${escHtml(s.primaryCtaText || s.buttonText || '—')} → ${escHtml(s.primaryCtaUrl || s.buttonLink || '—')}${s.secondaryCtaText ? ' | ' + escHtml(s.secondaryCtaText) + ' → ' + escHtml(s.secondaryCtaUrl || '') : ''}</div>
                     <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:4px;">Order: ${s.displayOrder || 0} | ${s.active !== false ? '<span style="color:#16a34a;">Active</span>' : '<span style="color:#dc2626;">Inactive</span>'}</div>
                 </div>
                 <div style="display:flex;gap:6px;flex-shrink:0;">
@@ -8010,8 +8018,13 @@ document.addEventListener('DOMContentLoaded', () => {
             mobileImage: document.getElementById('heroMobileImageUrl').value || '',
             heading,
             subheading: document.getElementById('heroSlideSubheading').value || '',
+            description: document.getElementById('heroSlideDescription').value || '',
             buttonText: document.getElementById('heroSlideBtnText').value || 'Shop Now',
             buttonLink: document.getElementById('heroSlideBtnLink').value || '/products',
+            primaryCtaText: document.getElementById('heroSlideBtnText').value || 'Shop Now',
+            primaryCtaUrl: document.getElementById('heroSlideBtnLink').value || '/products',
+            secondaryCtaText: document.getElementById('heroSlideSecondaryCtaText').value || '',
+            secondaryCtaUrl: document.getElementById('heroSlideSecondaryCtaLink').value || '',
             displayOrder: parseInt(document.getElementById('heroSlideOrder').value) || 0,
             active: document.getElementById('heroSlideActive').checked
         };
