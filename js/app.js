@@ -4193,32 +4193,4 @@
             scale = Math.min(Math.max(scale + (e.deltaY > 0 ? -0.1 : 0.1), 0.5), 4);
             if (scale <= 1) { resetZoom(); } else { zoomImg.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ')'; }
         }, { passive: false });
-    })();
-
-    // ============================================================
-    // DARK MODE TOGGLE
-    // ============================================================
-    (function() {
-        var toggle = document.getElementById('themeToggle');
-        if (!toggle) return;
-        var icon = toggle.querySelector('i');
-        var stored = localStorage.getItem('tw-theme');
-        if (stored) {
-            document.documentElement.setAttribute('data-theme', stored);
-            if (icon) icon.className = stored === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        }
-        toggle.style.display = 'flex';
-        toggle.addEventListener('click', function() {
-            var current = document.documentElement.getAttribute('data-theme');
-            var next = current === 'dark' ? 'light' : 'dark';
-            if (next === 'light') next = '';
-            if (next) {
-                document.documentElement.setAttribute('data-theme', next);
-                localStorage.setItem('tw-theme', next);
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-                localStorage.removeItem('tw-theme');
-            }
-            if (icon) icon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        });
     })();
