@@ -94,8 +94,9 @@ function showToast(msg, type) {
     clearTimeout(toast._timer);
     toast._timer = setTimeout(() => toast.classList.remove('show'), 4000);
 }
-document.getElementById('toastClose').addEventListener('click', () => {
-    document.getElementById('toast').classList.remove('show');
+document.getElementById('toastClose')?.addEventListener('click', () => {
+    const t = document.getElementById('toast');
+    if (t) t.classList.remove('show');
 });
 
 // ---- Cart (localStorage-based, consistent with SPA) ----
@@ -318,15 +319,15 @@ async function init() {
 }
 
 function showError(msg) {
-    pdLoading.style.display = 'none';
-    pdError.style.display = 'flex';
-    pdErrorMessage.textContent = msg;
+    if (pdLoading) pdLoading.style.display = 'none';
+    if (pdError) pdError.style.display = 'flex';
+    if (pdErrorMessage) pdErrorMessage.textContent = msg;
 }
 
 // ---- Render Product ----
 function renderProduct(p) {
-    pdLoading.style.display = 'none';
-    pdContent.style.display = 'block';
+    if (pdLoading) pdLoading.style.display = 'none';
+    if (pdContent) pdContent.style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const inStock = isProductAvailable(p);
@@ -780,16 +781,18 @@ document.getElementById('pdSizeGuideBtn')?.addEventListener('click', () => {
 
 // ---- Quantity ----
 const qtyInput = $('pdQtyInput');
-$('pdQtyMinus').addEventListener('click', () => {
+$('pdQtyMinus')?.addEventListener('click', () => {
+    if (!qtyInput) return;
     const v = parseInt(qtyInput.value) || 1;
     if (v > 1) qtyInput.value = v - 1;
 });
-$('pdQtyPlus').addEventListener('click', () => {
+$('pdQtyPlus')?.addEventListener('click', () => {
+    if (!qtyInput) return;
     const max = parseInt(qtyInput.max) || 99;
     const v = parseInt(qtyInput.value) || 1;
     if (v < max) qtyInput.value = v + 1;
 });
-qtyInput.addEventListener('change', () => {
+qtyInput?.addEventListener('change', () => {
     let v = parseInt(qtyInput.value) || 1;
     const max = parseInt(qtyInput.max) || 99;
     if (v < 1) v = 1;
@@ -798,7 +801,7 @@ qtyInput.addEventListener('change', () => {
 });
 
 // ---- Add to Cart ----
-$('pdAddToCart').addEventListener('click', () => {
+$('pdAddToCart')?.addEventListener('click', () => {
     if (!currentProduct) return;
     const colorSection = $('pdColorSection');
     const sizeSection = $('pdSizeSection');
@@ -1133,6 +1136,7 @@ $('pdNewsletterForm').addEventListener('submit', async (e) => {
 // ============================================================
 function openAuthModal() {
     const overlay = document.getElementById('authOverlay');
+    if (!overlay) return;
     overlay.style.display = 'flex';
     document.body.classList.add('no-scroll');
     if (isLoggedIn()) {
@@ -1142,34 +1146,50 @@ function openAuthModal() {
     }
 }
 function closeAuthModal() {
-    document.getElementById('authOverlay').style.display = 'none';
+    const overlay = document.getElementById('authOverlay');
+    if (!overlay) return;
+    overlay.style.display = 'none';
     document.body.classList.remove('no-scroll');
 }
 
-document.getElementById('authCloseBtn').addEventListener('click', closeAuthModal);
-document.getElementById('authOverlay').addEventListener('click', function(e) {
+document.getElementById('authCloseBtn')?.addEventListener('click', closeAuthModal);
+document.getElementById('authOverlay')?.addEventListener('click', function(e) {
     if (e.target === this) closeAuthModal();
 });
 
 function showAuthForms() {
-    document.getElementById('authForms').style.display = 'block';
-    document.getElementById('authLoggedIn').style.display = 'none';
-    document.getElementById('authModalTitle').textContent = 'Account';
+    const forms = document.getElementById('authForms');
+    const loggedIn = document.getElementById('authLoggedIn');
+    const title = document.getElementById('authModalTitle');
+    if (forms) forms.style.display = 'block';
+    if (loggedIn) loggedIn.style.display = 'none';
+    if (title) title.textContent = 'Account';
     document.querySelectorAll('.auth-tabs button').forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-tab="login"]').classList.add('active');
-    document.getElementById('loginForm').style.display = 'flex';
-    document.getElementById('registerForm').style.display = 'none';
+    document.querySelector('[data-tab="login"]')?.classList.add('active');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    if (loginForm) loginForm.style.display = 'flex';
+    if (registerForm) registerForm.style.display = 'none';
 }
 
 function showDashboard(user) {
-    document.getElementById('authForms').style.display = 'none';
-    document.getElementById('authLoggedIn').style.display = 'block';
-    document.getElementById('authModalTitle').textContent = 'My Account';
-    document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
-    document.getElementById('userDisplayName').textContent = user.name;
-    document.getElementById('userDisplayEmail').textContent = user.email;
-    document.getElementById('profileName').value = user.name || '';
-    document.getElementById('profileEmail').value = user.email || '';
+    if (!user) return;
+    const forms = document.getElementById('authForms');
+    const loggedIn = document.getElementById('authLoggedIn');
+    const title = document.getElementById('authModalTitle');
+    const avatar = document.getElementById('userAvatar');
+    const displayName = document.getElementById('userDisplayName');
+    const displayEmail = document.getElementById('userDisplayEmail');
+    const profileName = document.getElementById('profileName');
+    const profileEmail = document.getElementById('profileEmail');
+    if (forms) forms.style.display = 'none';
+    if (loggedIn) loggedIn.style.display = 'block';
+    if (title) title.textContent = 'My Account';
+    if (avatar) avatar.textContent = user.name.charAt(0).toUpperCase();
+    if (displayName) displayName.textContent = user.name;
+    if (displayEmail) displayEmail.textContent = user.email;
+    if (profileName) profileName.value = user.name || '';
+    if (profileEmail) profileEmail.value = user.email || '';
 }
 
 // Auth tabs
@@ -1178,16 +1198,19 @@ document.querySelectorAll('.auth-tabs button').forEach(tab => {
         document.querySelectorAll('.auth-tabs button').forEach(t => t.classList.remove('active'));
         this.classList.add('active');
         const tabName = this.dataset.tab;
-        document.getElementById('loginForm').style.display = tabName === 'login' ? 'flex' : 'none';
-        document.getElementById('registerForm').style.display = tabName === 'register' ? 'flex' : 'none';
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        if (loginForm) loginForm.style.display = tabName === 'login' ? 'flex' : 'none';
+        if (registerForm) registerForm.style.display = tabName === 'register' ? 'flex' : 'none';
     });
 });
 
 // Login
-document.getElementById('loginForm').addEventListener('submit', async function(e) {
+document.getElementById('loginForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
+    const email = document.getElementById('loginEmail')?.value.trim();
+    const password = document.getElementById('loginPassword')?.value.trim();
+    if (!email || !password) { showToast('Please fill all fields', 'error'); return; }
     try {
         const res = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
@@ -1207,12 +1230,12 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 });
 
 // Register
-document.getElementById('registerForm').addEventListener('submit', async function(e) {
+document.getElementById('registerForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    const name = document.getElementById('registerName').value.trim();
-    const email = document.getElementById('registerEmail').value.trim();
-    const password = document.getElementById('registerPassword').value.trim();
-    const confirm = document.getElementById('registerConfirm').value.trim();
+    const name = document.getElementById('registerName')?.value.trim();
+    const email = document.getElementById('registerEmail')?.value.trim();
+    const password = document.getElementById('registerPassword')?.value.trim();
+    const confirm = document.getElementById('registerConfirm')?.value.trim();
     if (password !== confirm) { showToast('Passwords do not match', 'error'); return; }
     try {
         const res = await fetch(`${API_URL}/auth/register`, {
@@ -1231,7 +1254,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
 });
 
 // Logout
-document.getElementById('logoutBtn').addEventListener('click', function() {
+document.getElementById('logoutBtn')?.addEventListener('click', function() {
     clearAuth();
     closeAuthModal();
     showToast('Logged out', 'info');
@@ -1859,4 +1882,119 @@ document.addEventListener('DOMContentLoaded', () => {
     loadWishlist();
     updateCartBadge();
     init();
+    initMobileBottomNav();
+    initVirtualKeyboardHandler();
+    startMobileCartBadgeSync();
 });
+
+// ============================================================
+// MOBILE BOTTOM NAV
+// ============================================================
+function initMobileBottomNav() {
+    var mql = window.matchMedia('(max-width: 768px)');
+    var nav = document.getElementById('mobileBottomNav');
+    function applyMobileNav(e) {
+        if (nav) nav.style.display = e.matches ? 'flex' : 'none';
+    }
+    mql.addEventListener('change', applyMobileNav);
+    applyMobileNav(mql);
+
+    var navBtns = nav ? nav.querySelectorAll('[data-nav]') : [];
+    var currentActive = null;
+    function setActive(key) {
+        if (currentActive === key) return;
+        navBtns.forEach(function(b) { b.classList.remove('active'); });
+        currentActive = key;
+        var btn = nav ? nav.querySelector('[data-nav="' + key + '"]') : null;
+        if (btn) btn.classList.add('active');
+    }
+    function clearActive() {
+        navBtns.forEach(function(b) { b.classList.remove('active'); });
+        currentActive = null;
+    }
+
+    var bottomSearchBtn = document.getElementById('bottomNavSearchBtn');
+    if (bottomSearchBtn) {
+        bottomSearchBtn.addEventListener('click', function() {
+            var so = document.getElementById('searchOverlay');
+            var soInput = document.getElementById('searchOverlayInput');
+            if (so) {
+                so.classList.add('open');
+                document.body.classList.add('no-scroll');
+                setTimeout(function() { if (soInput) soInput.focus(); }, 100);
+            }
+        });
+    }
+
+    var searchOverlay = document.getElementById('searchOverlay');
+    if (searchOverlay && typeof MutationObserver !== 'undefined') {
+        var searchObs = new MutationObserver(function() {
+            if (searchOverlay.classList.contains('open')) setActive('search');
+            else if (currentActive === 'search') clearActive();
+        });
+        searchObs.observe(searchOverlay, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    var cartOverlay = document.getElementById('miniCartOverlay');
+    if (cartOverlay && typeof MutationObserver !== 'undefined') {
+        var cartObs = new MutationObserver(function() {
+            if (cartOverlay.classList.contains('show')) setActive('cart');
+            else if (currentActive === 'cart') clearActive();
+        });
+        cartObs.observe(cartOverlay, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    var authOverlay = document.getElementById('authOverlay');
+    if (authOverlay && typeof MutationObserver !== 'undefined') {
+        var authObs = new MutationObserver(function() {
+            if (authOverlay.style.display === 'flex') {
+                var activeTab = document.querySelector('.dashboard-tabs button.active');
+                if (activeTab && activeTab.dataset.tab === 'wishlist') setActive('wishlist');
+                else setActive('account');
+            } else if (currentActive === 'wishlist' || currentActive === 'account') {
+                clearActive();
+            }
+        });
+        authObs.observe(authOverlay, { attributes: true, attributeFilter: ['style'] });
+    }
+}
+
+// ============================================================
+// VIRTUAL KEYBOARD HANDLER
+// ============================================================
+function initVirtualKeyboardHandler() {
+    if (!window.visualViewport) return;
+    var fixedEls = [
+        document.getElementById('mobileBottomNav'),
+        document.querySelector('.floating-whatsapp'),
+        document.querySelector('.back-to-top'),
+        document.getElementById('backToTop')
+    ].filter(Boolean);
+    function onResize() {
+        var vh = window.visualViewport.height;
+        var isKeyboard = vh < window.innerHeight * 0.75;
+        fixedEls.forEach(function(el) {
+            el.style.transform = isKeyboard ? 'translateY(100vh)' : '';
+            el.style.transition = 'transform 0.2s ease';
+        });
+    }
+    window.visualViewport.addEventListener('resize', onResize);
+    window.visualViewport.addEventListener('focusout', function() {
+        fixedEls.forEach(function(el) { el.style.transform = ''; });
+    });
+}
+
+// ============================================================
+// MOBILE CART BADGE SYNC
+// ============================================================
+function startMobileCartBadgeSync() {
+    setInterval(function() {
+        var badge = document.getElementById('mobileCartBadge');
+        if (badge) {
+            var items = getCart();
+            var count = items.reduce(function(sum, i) { return sum + (i.quantity || 1); }, 0);
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }, 2000);
+}
