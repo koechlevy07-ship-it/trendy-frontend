@@ -16,8 +16,14 @@ function getImageUrl(path, width) {
     if (!url.includes('/upload/')) return url;
     const parts = url.split('/upload/');
     if (parts.length !== 2) return url;
+    let remainder = parts[1];
     const w = width || 800;
-    return parts[0] + '/upload/f_auto,q_auto,w_' + w + '/' + parts[1];
+    const versionMatch = remainder.match(/^(v\d+\/)/);
+    const version = versionMatch ? versionMatch[1] : '';
+    if (versionMatch) remainder = remainder.substring(version.length);
+    const firstSlash = remainder.indexOf('/');
+    if (firstSlash > 0) remainder = remainder.substring(firstSlash + 1);
+    return parts[0] + '/upload/' + version + 'f_auto,q_auto,w_' + w + '/' + remainder;
 }
 
 function getOptimizedImage(url, size) {

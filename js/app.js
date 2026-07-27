@@ -1433,9 +1433,11 @@
         function buildHeroIndicators() {
             const container = document.getElementById('heroIndicators');
             if (!container || heroSlides.length < 2) { if (container) container.innerHTML = ''; return; }
-            container.innerHTML = heroSlides.map((_, i) =>
-                `<button class="hero-dot${i === 0 ? ' active' : ''}" data-slide="${i}" aria-label="Go to slide ${i + 1}"></button>`
-            ).join('');
+            container.innerHTML = heroSlides.map((_, i) => {
+                const num = String(i + 1).padStart(2, '0');
+                const line = i < heroSlides.length - 1 ? '<span class="dot-line"></span>' : '';
+                return '<button class="hero-dot' + (i === 0 ? ' active' : '') + '" data-slide="' + i + '" aria-label="Go to slide ' + (i + 1) + '"><span class="dot-num">' + num + '</span>' + line + '</button>';
+            }).join('');
             container.querySelectorAll('.hero-dot').forEach(dot => {
                 dot.addEventListener('click', () => {
                     const idx = parseInt(dot.dataset.slide);
@@ -1450,16 +1452,16 @@
         }
 
         function animateHeroContent() {
-            const elements = ['#heroEyebrow', '.gold-line', '#heroHeading', '#heroSecondary', '#heroSubheading', '.hero-ctas'];
+            const elements = ['#heroEyebrow', '#heroHeading', '.gold-line', '#heroSubheading', '.hero-ctas'];
             elements.forEach((sel, i) => {
                 const el = document.querySelector(sel);
                 if (!el) return;
                 el.style.animation = 'none';
                 el.offsetHeight;
                 el.style.opacity = '0';
-                el.style.transform = 'translateY(20px)';
+                el.style.transform = 'translateY(25px)';
                 setTimeout(() => {
-                    el.style.transition = `opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.12}s, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.12}s`;
+                    el.style.transition = 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) ' + (i * 0.15) + 's, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) ' + (i * 0.15) + 's';
                     el.style.opacity = '1';
                     el.style.transform = 'translateY(0)';
                 }, 50);
@@ -1551,47 +1553,41 @@
             // --- Text content ---
             const eyebrow = document.getElementById('heroEyebrow');
             const heading = document.getElementById('heroHeading');
-            const secondary = document.getElementById('heroSecondary');
             const subheading = document.getElementById('heroSubheading');
             const shopBtn = document.getElementById('shopNowBtn');
             const secondaryCta = document.getElementById('heroSecondaryCta');
 
             // Eyebrow
             if (eyebrow) {
-                const season = slide.season || 'NEW SEASON \u2022 2026';
+                const season = slide.season || 'THE ART OF ELEGANCE';
                 eyebrow.textContent = season;
             }
 
-            // Heading — new format: two lines LUXURY / FASHION
+            // Heading — two lines: TIMELESS / STYLE
             if (heading) {
                 const lines = heading.querySelectorAll('.hero-title-line');
                 if (lines.length >= 2) {
-                    const parts = (slide.heading || 'LUXURY FASHION').split(/\s+/);
+                    const parts = (slide.heading || 'TIMELESS STYLE').split(/\s+/);
                     if (parts.length >= 2) {
                         lines[0].textContent = parts[0];
                         lines[1].textContent = parts.slice(1).join(' ');
                     } else {
-                        lines[0].textContent = slide.heading || 'LUXURY';
-                        lines[1].textContent = 'FASHION';
+                        lines[0].textContent = slide.heading || 'TIMELESS';
+                        lines[1].textContent = 'STYLE';
                     }
                 } else {
-                    heading.textContent = slide.heading || 'LUXURY FASHION';
+                    heading.textContent = slide.heading || 'TIMELESS STYLE';
                 }
-            }
-
-            // Secondary
-            if (secondary) {
-                secondary.textContent = slide.subheading || 'NEW COLLECTION 2026';
             }
 
             // Description
             if (subheading) {
-                subheading.textContent = slide.description || slide.subheading || 'Discover timeless pieces designed for your signature style.';
+                subheading.textContent = slide.description || slide.subheading || 'Effortless sophistication for every season.';
             }
 
             // Primary CTA
             if (shopBtn) {
-                const ctaText = slide.primaryCtaText || slide.buttonText || 'SHOP THE COLLECTION';
+                const ctaText = slide.primaryCtaText || slide.buttonText || 'SHOP TRENDY TRENCH COATS';
                 const ctaLink = slide.primaryCtaUrl || slide.buttonLink || '/collections';
                 shopBtn.textContent = ctaText;
                 shopBtn.onclick = () => handleCtaClick(ctaLink);
@@ -3836,7 +3832,7 @@
         // PERFORMANCE: Scroll-reveal animations (IntersectionObserver)
         // ============================================================
         (function() {
-            const revealSections = document.querySelectorAll('.products-section, .trust-badges, .category-grid, .footer');
+            const revealSections = document.querySelectorAll('.products-section, .benefit-strip, .category-grid, .footer');
             revealSections.forEach(sec => sec.classList.add('reveal-up'));
 
             const observer = new IntersectionObserver((entries) => {

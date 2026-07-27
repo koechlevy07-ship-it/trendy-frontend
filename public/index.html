@@ -385,6 +385,7 @@
                         <div class="dropdown-banner"><img src="https://placehold.co/400x180/FAF9F6/C8A35A?text=SHOES" alt="Shoes" loading="lazy" /><div class="banner-text">Step in Luxury</div><div class="banner-sub">Premium footwear</div></div>
                     </div>
                 </div>
+                <a href="#" data-filter="new-arrivals" id="newArrivalsNav">NEW ARRIVALS</a>
                 <a href="#" id="contactNav">CONTACT US</a>
                 <a href="/about">ABOUT US</a>
             </nav>
@@ -488,53 +489,55 @@
            ============================================================ -->
 <main id="mainContent">
          <section class="hero" id="heroSection" aria-label="Trendy Wardrobe Hero">
-             <!-- Video background (from API hero slides) -->
              <video class="hero-video hidden-video" id="heroVideo" autoplay muted loop playsinline aria-hidden="true"></video>
-
-             <!-- Parallax background layer (GPU accelerated) -->
              <div class="hero-bg" id="heroBg" aria-hidden="true"></div>
-
-             <!-- Cinematic gradient overlay -->
              <div class="hero-overlay" aria-hidden="true"></div>
-
-             <!-- Hero Content -->
              <div class="hero-content" id="heroContent">
-                <span class="hero-eyebrow" id="heroEyebrow">NEW SEASON &bull; 2026</span>
-                <span class="gold-line" aria-hidden="true"></span>
+                <span class="hero-eyebrow" id="heroEyebrow">THE ART OF ELEGANCE</span>
                 <h1 id="heroHeading">
-                    <span class="hero-title-line">LUXURY</span>
-                    <span class="hero-title-line hero-title-accent">FASHION</span>
+                    <span class="hero-title-line">TIMELESS</span>
+                    <span class="hero-title-line hero-title-accent">STYLE</span>
                 </h1>
-                <p class="hero-secondary" id="heroSecondary">NEW COLLECTION 2026</p>
-                <p class="hero-sub" id="heroSubheading">Discover timeless pieces designed for your signature style.</p>
+                <span class="gold-line" aria-hidden="true"></span>
+                <p class="hero-sub" id="heroSubheading">Effortless sophistication for every season.</p>
                 <div class="hero-ctas">
-                    <button class="btn-shop btn-primary-cta" id="shopNowBtn" aria-label="Shop our latest collection">SHOP THE COLLECTION</button>
-                    <button class="btn-secondary-cta" id="heroSecondaryCta" aria-label="Explore trench coats" style="display:none;">EXPLORE TRENDY TRENCH COATS</button>
+                    <button class="btn-shop btn-primary-cta" id="shopNowBtn" aria-label="Shop trench coats">SHOP TRENDY TRENCH COATS</button>
+                    <button class="btn-secondary-cta" id="heroSecondaryCta" aria-label="Explore the collection" style="display:none;">EXPLORE THE COLLECTION</button>
                 </div>
             </div>
-
-             <!-- Slide indicators -->
              <div class="hero-indicators" id="heroIndicators" aria-label="Slide navigation"></div>
          </section>
 
-    <!-- TRUST BADGES -->
-    <section class="trust-badges" style="background:var(--bg-primary);padding:20px 0;border-bottom:1px solid var(--border-light);">
-        <div class="container" style="display:flex;justify-content:center;gap:32px;flex-wrap:wrap;padding:0 20px;">
-            <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:var(--text-secondary);">
-                <i class="fas fa-truck" style="color:var(--color-gold);font-size:1.1rem;"></i>
-                <span><strong>Free Delivery</strong><br/>On orders over Ksh 15,000</span>
+    <!-- BENEFIT STRIP -->
+    <section class="benefit-strip" aria-label="Benefits">
+        <div class="benefit-strip-inner">
+            <div class="benefit-item">
+                <i class="fas fa-truck benefit-icon"></i>
+                <div class="benefit-text">
+                    <strong>FREE SHIPPING</strong>
+                    <span>On all orders over Ksh 10,000</span>
+                </div>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:var(--text-secondary);">
-                <i class="fas fa-shield-alt" style="color:var(--color-gold);font-size:1.1rem;"></i>
-                <span><strong>Secure Payment</strong><br/>100% secure checkout</span>
+            <div class="benefit-item">
+                <i class="fas fa-shield-alt benefit-icon"></i>
+                <div class="benefit-text">
+                    <strong>SECURE PAYMENT</strong>
+                    <span>100% secure &amp; trusted</span>
+                </div>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:var(--text-secondary);">
-                <i class="fas fa-undo" style="color:var(--color-gold);font-size:1.1rem;"></i>
-                <span><strong>Easy Returns</strong><br/>7-day return policy</span>
+            <div class="benefit-item">
+                <i class="fas fa-undo benefit-icon"></i>
+                <div class="benefit-text">
+                    <strong>EASY RETURNS</strong>
+                    <span>30-day return policy</span>
+                </div>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;font-size:0.8rem;color:var(--text-secondary);">
-                <i class="fas fa-headset" style="color:var(--color-gold);font-size:1.1rem;"></i>
-                <span><strong>24/7 Support</strong><br/>WhatsApp: +254 728 985 417</span>
+            <div class="benefit-item">
+                <i class="fas fa-headset benefit-icon"></i>
+                <div class="benefit-text">
+                    <strong>CUSTOMER SUPPORT</strong>
+                    <span>We're here to help you</span>
+                </div>
             </div>
         </div>
     </section>
