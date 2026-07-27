@@ -998,6 +998,7 @@ $('checkoutForm')?.addEventListener('submit', async function(e) {
 
     try {
         for (const item of items) {
+            if (!item.id) continue;
             const res = await fetch(`${API_URL}/products/${item.id}`);
             const raw = await res.json();
             const p = raw.data || raw;

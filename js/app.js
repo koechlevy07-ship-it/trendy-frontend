@@ -780,7 +780,7 @@
                 const guest = getGuestWishlist();
                 if (guest.length === 0) { renderWishlistEmpty(container, true); return; }
                 container.innerHTML = '<div style="text-align:center;padding:24px;"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;color:var(--color-gold);"></i></div>';
-                const products = await Promise.all(guest.map(async id => {
+                const products = await Promise.all(guest.filter(Boolean).map(async id => {
                     try { const r = await fetch(`${API_URL}/products/${id}`); const d = await r.json(); return d.data || d; } catch(e) { return null; }
                 }));
                 const valid = products.filter(Boolean);
@@ -1339,6 +1339,7 @@
             }
             try {
                 for (const item of cartItems) {
+                    if (!item.id) continue;
                     const res = await fetch(`${API_URL}/products/${item.id}`);
                     const product = await res.json();
                     const prod = product.data || product;
