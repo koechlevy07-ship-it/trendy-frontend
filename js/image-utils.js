@@ -9,11 +9,24 @@ const IMAGE_BASE = API_URL.replace('/api', '');
 
 function getImageUrl(path, width) {
     if (!path) return '';
-    let url = (typeof path === 'string' && (path.startsWith('http://') || path.startsWith('https://')))
-        ? path
-        : IMAGE_BASE + path;
-    if (!url.includes('res.cloudinary.com')) return url;
-    if (!url.includes('/upload/')) return url;
+    if (typeof path !== 'string') return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+        // Already a full URL — add transformations if Cloudinary
+        return applyCloudinaryTransform(path, width);
+    }
+    // Non-URL path — construct Cloudinary URL
+    const cloudName = 'vbnlibtl';
+    const folder = 'trendy-wardrobe';
+    const w = width || 800;
+    const clean = path.replace(/^\/+/, '');
+    if (clean.startsWith(folder + '/')) {
+        return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_${w}/${clean}`;
+    }
+    return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_${w}/${folder}/${clean}`;
+}
+
+function applyCloudinaryTransform(url, width) {
+    if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) return url;
     const parts = url.split('/upload/');
     if (parts.length !== 2) return url;
     let remainder = parts[1];
