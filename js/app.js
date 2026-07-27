@@ -2866,20 +2866,32 @@
         });
 
         // ============================================================
-        // HERO TOUCH SWIPE
+        // HERO TOUCH SWIPE — horizontal swipe only, ignores vertical scroll
         // ============================================================
         (function initHeroTouchSwipe() {
             const hero = document.getElementById('heroSection');
             if (!hero) return;
-            let startX = 0;
-            hero.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+            let startX = 0, startY = 0, swiping = false;
+            hero.addEventListener('touchstart', e => {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                swiping = true;
+            }, { passive: true });
+            hero.addEventListener('touchmove', e => {
+                if (!swiping) return;
+                const dx = Math.abs(e.touches[0].clientX - startX);
+                const dy = Math.abs(e.touches[0].clientY - startY);
+                if (dy > dx && dy > 10) { swiping = false; return; }
+            }, { passive: true });
             hero.addEventListener('touchend', e => {
-                if (!heroSlides.length || heroSlides.length < 2) return;
+                if (!swiping || !heroSlides.length || heroSlides.length < 2) { swiping = false; return; }
+                swiping = false;
                 const diff = startX - e.changedTouches[0].clientX;
                 if (Math.abs(diff) > 60) {
                     if (diff > 0) { heroIndex = (heroIndex + 1) % heroSlides.length; }
                     else { heroIndex = (heroIndex - 1 + heroSlides.length) % heroSlides.length; }
-                    setHeroSlide(heroSlides[heroIndex]);
+                    setHeroSlide(heroSlides[heroIndex], true);
+                    resetHeroAutoplay();
                 }
             }, { passive: true });
         })();

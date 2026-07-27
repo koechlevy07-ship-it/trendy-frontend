@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v28';
+const CACHE_VERSION = 'v29';
 const STATIC_CACHE = 'trendy-static-' + CACHE_VERSION;
 const DYNAMIC_CACHE = 'trendy-dynamic-' + CACHE_VERSION;
 const IMAGE_CACHE = 'trendy-images-' + CACHE_VERSION;

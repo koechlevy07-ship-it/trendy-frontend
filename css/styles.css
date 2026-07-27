@@ -56,6 +56,7 @@
             line-height: 1.6;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+            -webkit-overflow-scrolling: touch;
         }
         a { text-decoration: none; color: inherit; }
         ul { list-style: none; }
@@ -750,17 +751,18 @@
 /* ============================================================
    HERO — Luxury Fashion Editorial (Cinematic)
    ============================================================ */
-   .hero {
-       position: relative;
-       width: 100%;
-       height: clamp(580px, 85vh, 750px);
-       min-height: 550px;
-       display: flex;
-       align-items: center;
-       justify-content: flex-start;
-       overflow: hidden;
-       background: #0a0a0a;
-   }
+    .hero {
+        position: relative;
+        width: 100%;
+        height: clamp(580px, 85vh, 750px);
+        min-height: 550px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        overflow: hidden;
+        background: #0a0a0a;
+        touch-action: pan-y;
+    }
 
 /* Cinematic gradient overlay — dark left for text, light right for image */
    .hero-overlay {
@@ -813,7 +815,6 @@
          background-position: center right;
          background-repeat: no-repeat;
          z-index: 0;
-         will-change: transform;
          transform: translateZ(0) scale(1);
          backface-visibility: hidden;
          opacity: 0;
@@ -1065,7 +1066,7 @@
         background: rgba(255, 255, 255, 0.3);
         border: none;
         cursor: pointer;
-        padding: 0;
+        padding: 10px 0;
         transition: background 0.4s, width 0.4s;
     }
     .hero-dot.active {
@@ -1075,6 +1076,9 @@
     .hero-dot:focus-visible {
         outline: 2px solid var(--color-gold);
         outline-offset: 3px;
+    }
+    .hero-indicators {
+        padding-bottom: 10px;
     }
 
     /* Slide crossfade transition */
@@ -1180,8 +1184,8 @@
         .hero-content .hero-sub { font-size: 0.78rem; margin-bottom: 24px; }
         .hero-eyebrow { font-size: 0.6rem; letter-spacing: 3px; margin-bottom: 10px; }
         .hero-content .btn-primary-cta,
-        .hero-content .btn-shop { padding: 12px 24px; font-size: 0.7rem; }
-        .hero-content .btn-secondary-cta { padding: 10px 22px; font-size: 0.65rem; }
+        .hero-content .btn-shop { padding: 12px 24px; font-size: 0.7rem; min-height: 48px; }
+        .hero-content .btn-secondary-cta { padding: 10px 22px; font-size: 0.65rem; min-height: 44px; }
     }
 
     /* ============================================================
@@ -1192,7 +1196,8 @@
         .hero-secondary { font-size: 0.65rem; letter-spacing: 2px; }
         .hero-content .hero-sub { font-size: 0.7rem; }
         .hero-content .btn-primary-cta,
-        .hero-content .btn-shop { padding: 10px 20px; font-size: 0.65rem; letter-spacing: 1.5px; }
+        .hero-content .btn-shop { padding: 11px 22px; font-size: 0.65rem; letter-spacing: 1.5px; min-height: 46px; }
+        .hero-content .btn-secondary-cta { padding: 9px 20px; font-size: 0.6rem; min-height: 44px; }
     }
 
     /* Mobile landscape override */
@@ -1235,10 +1240,9 @@
     }
 
     /* Performance: GPU acceleration for parallax */
-    .hero, .hero-bg {
+    .hero-bg {
         transform: translateZ(0);
         backface-visibility: hidden;
-        perspective: 1000px;
     }
 
         /* ============================================================
@@ -2539,7 +2543,7 @@
 
         .hero-content h1 { font-size: clamp(1.1rem, 4vw, 1.5rem); }
         .hero-content .hero-sub { font-size: 0.6rem; letter-spacing: 1.5px; }
-        .hero-content .btn-shop { padding: 6px 16px; font-size: 0.6rem; }
+        .hero-content .btn-shop { padding: 10px 20px; font-size: 0.6rem; min-height: 44px; }
         .products-section .container { padding: 0 6px; }
         .products-grid { gap: 6px; }
         .category-card .card-overlay h3 { font-size: 1.6rem; }
