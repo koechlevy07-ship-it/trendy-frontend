@@ -31,12 +31,15 @@ function applyCloudinaryTransform(url, width) {
     if (parts.length !== 2) return url;
     let remainder = parts[1];
     const w = width || 800;
+    // Strip existing transformations (everything before version or public ID)
     const versionMatch = remainder.match(/^(v\d+\/)/);
     const version = versionMatch ? versionMatch[1] : '';
     if (versionMatch) remainder = remainder.substring(version.length);
+    // Strip existing folder like "trendy-wardrobe/"
     const firstSlash = remainder.indexOf('/');
     if (firstSlash > 0) remainder = remainder.substring(firstSlash + 1);
-    return parts[0] + '/upload/' + version + 'f_auto,q_auto,w_' + w + '/' + remainder;
+    // Correct order: transformations THEN version THEN public ID
+    return parts[0] + '/upload/f_auto,q_auto,w_' + w + '/' + version + 'trendy-wardrobe/' + remainder;
 }
 
 function getOptimizedImage(url, size) {
