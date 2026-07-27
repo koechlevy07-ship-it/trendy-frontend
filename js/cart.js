@@ -303,38 +303,41 @@ function renderCartItem(item, idx) {
 
     return `
         <div class="cart-item" data-item-id="${itemId}" data-product-id="${pId}" data-idx="${idx}">
-            <a href="/product-details.html?id=${pId}" class="cart-item-img-wrap">
-                <img src="${imgUrl || 'https://placehold.co/300x400/FAF9F6/C8A35A?text=Product'}" alt="${escHtml(name)}" loading="lazy" />
-            </a>
-            <div class="cart-item-details">
-                ${brand ? `<div class="cart-item-brand">${escHtml(brand)}</div>` : ''}
-                <a href="/product-details.html?id=${pId}" class="cart-item-name">${escHtml(name)}</a>
-                <div class="cart-item-meta">
-                    ${sku ? `<span><strong>SKU:</strong> ${escHtml(sku)}</span>` : ''}
-                    ${category ? `<span><strong>Category:</strong> ${escHtml(category)}</span>` : ''}
-                    ${size ? `<span><strong>Size:</strong> ${escHtml(size)}</span>` : ''}
-                    ${color ? `<span><strong>Color:</strong> ${escHtml(color)}</span>` : ''}
+            <div class="cart-item-swipe-delete"><i class="fas fa-trash-alt"></i></div>
+            <div class="cart-item-inner">
+                <a href="/product-details.html?id=${pId}" class="cart-item-img-wrap">
+                    <img src="${imgUrl || 'https://placehold.co/300x400/FAF9F6/C8A35A?text=Product'}" alt="${escHtml(name)}" loading="lazy" />
+                </a>
+                <div class="cart-item-details">
+                    ${brand ? `<div class="cart-item-brand">${escHtml(brand)}</div>` : ''}
+                    <a href="/product-details.html?id=${pId}" class="cart-item-name">${escHtml(name)}</a>
+                    <div class="cart-item-meta">
+                        ${sku ? `<span><strong>SKU:</strong> ${escHtml(sku)}</span>` : ''}
+                        ${category ? `<span><strong>Category:</strong> ${escHtml(category)}</span>` : ''}
+                        ${size ? `<span><strong>Size:</strong> ${escHtml(size)}</span>` : ''}
+                        ${color ? `<span><strong>Color:</strong> ${escHtml(color)}</span>` : ''}
+                    </div>
+                    ${stockHtml}
+                    <div class="cart-item-delivery"><i class="fas fa-truck"></i> Est. delivery: ${escHtml(delivery)}</div>
+                    <div class="cart-item-actions">
+                        <button class="cart-item-action-btn save" data-action="save-for-later"><i class="far fa-bookmark"></i> Save for Later</button>
+                        <button class="cart-item-action-btn wishlist" data-action="move-to-wishlist"><i class="far fa-heart"></i> Move to Wishlist</button>
+                        <button class="cart-item-action-btn remove" data-action="remove"><i class="far fa-trash-alt"></i> Remove</button>
+                    </div>
                 </div>
-                ${stockHtml}
-                <div class="cart-item-delivery"><i class="fas fa-truck"></i> Est. delivery: ${escHtml(delivery)}</div>
-                <div class="cart-item-actions">
-                    <button class="cart-item-action-btn save" data-action="save-for-later"><i class="far fa-bookmark"></i> Save for Later</button>
-                    <button class="cart-item-action-btn wishlist" data-action="move-to-wishlist"><i class="far fa-heart"></i> Move to Wishlist</button>
-                    <button class="cart-item-action-btn remove" data-action="remove"><i class="far fa-trash-alt"></i> Remove</button>
+                <div class="cart-item-right">
+                    <div class="cart-item-price">
+                        Ksh ${price.toLocaleString()}
+                        ${hasDiscount ? `<span class="original">Ksh ${origPrice.toLocaleString()}</span>` : ''}
+                        ${discountPct ? `<span class="cart-item-discount">-${discountPct}%</span>` : ''}
+                    </div>
+                    <div class="cart-qty-selector">
+                        <button class="cart-qty-btn cart-qty-minus" ${qty <= 1 ? 'disabled' : ''}>−</button>
+                        <input type="number" class="cart-qty-input" value="${qty}" min="1" max="${stock}" readonly />
+                        <button class="cart-qty-btn cart-qty-plus" ${qty >= stock ? 'disabled' : ''}>+</button>
+                    </div>
+                    <div class="cart-item-subtotal"><strong>Ksh ${lineTotal.toLocaleString()}</strong></div>
                 </div>
-            </div>
-            <div class="cart-item-right">
-                <div class="cart-item-price">
-                    Ksh ${price.toLocaleString()}
-                    ${hasDiscount ? `<span class="original">Ksh ${origPrice.toLocaleString()}</span>` : ''}
-                    ${discountPct ? `<span class="cart-item-discount">-${discountPct}%</span>` : ''}
-                </div>
-                <div class="cart-qty-selector">
-                    <button class="cart-qty-btn cart-qty-minus" ${qty <= 1 ? 'disabled' : ''}>−</button>
-                    <input type="number" class="cart-qty-input" value="${qty}" min="1" max="${stock}" readonly />
-                    <button class="cart-qty-btn cart-qty-plus" ${qty >= stock ? 'disabled' : ''}>+</button>
-                </div>
-                <div class="cart-item-subtotal"><strong>Ksh ${lineTotal.toLocaleString()}</strong></div>
             </div>
         </div>`;
 }
@@ -498,6 +501,42 @@ function bindCartItemEvents() {
             else if (action === 'remove') removeItem(itemId);
         });
     });
+
+    // Swipe-to-delete on mobile
+    if (window.innerWidth <= 768) {
+        document.querySelectorAll('.cart-item').forEach(item => {
+            const inner = item.querySelector('.cart-item-inner');
+            const deleteBtn = item.querySelector('.cart-item-swipe-delete');
+            if (!inner || !deleteBtn) return;
+            let startX = 0, currentX = 0, swiping = false;
+            inner.addEventListener('touchstart', e => {
+                startX = e.touches[0].clientX;
+                currentX = 0;
+                swiping = false;
+            }, { passive: true });
+            inner.addEventListener('touchmove', e => {
+                currentX = e.touches[0].clientX - startX;
+                if (currentX < -10) {
+                    swiping = true;
+                    item.classList.add('swiping');
+                    const x = Math.max(currentX, -80);
+                    inner.style.transform = `translateX(${x}px)`;
+                }
+            }, { passive: true });
+            inner.addEventListener('touchend', () => {
+                item.classList.remove('swiping');
+                if (currentX < -60) {
+                    inner.style.transform = 'translateX(-72px)';
+                } else {
+                    inner.style.transform = '';
+                }
+                swiping = false;
+            }, { passive: true });
+            deleteBtn.addEventListener('click', () => {
+                removeItem(item.dataset.itemId);
+            });
+        });
+    }
 }
 
 // ============================================================
