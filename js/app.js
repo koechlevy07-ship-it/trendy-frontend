@@ -725,7 +725,7 @@
                 `).join('');
                 const itemsHtml = (order.items || []).map(i => `
                     <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-color);">
-                        ${i.image ? `<img src="${i.image}" alt="${escHtml(i.name || 'Order item')}" style="width:40px;height:40px;border-radius:6px;object-fit:cover;" loading="lazy" />` : ''}
+                        ${i.image ? `<img src="${getImageUrl(i.image, 100)}" alt="${escHtml(i.name || 'Order item')}" style="width:40px;height:40px;border-radius:6px;object-fit:cover;" loading="lazy" width="40" height="40" />` : ''}
                         <div style="flex:1;font-size:0.85rem;">${i.name} x${i.quantity}</div>
                         <div style="font-size:0.85rem;font-weight:600;">Ksh ${(i.price * i.quantity).toLocaleString()}</div>
                     </div>
@@ -1723,7 +1723,7 @@
                         div.className = 'dropdown';
                         div.dataset.category = cat.slug;
                         const name = cat.name.toUpperCase();
-                        const imgSrc = cat.image || `https://placehold.co/400x180/FAF9F6/C8A35A?text=${encodeURIComponent(cat.name)}`;
+                        const imgSrc = cat.image ? getImageUrl(cat.image, 400) : `https://placehold.co/400x180/FAF9F6/C8A35A?text=${encodeURIComponent(cat.name)}`;
                         div.innerHTML =
                             `<a href="#" class="dropdown-toggle">${name} <span class="plus-icon">+</span></a>` +
                             `<div class="dropdown-content">` +

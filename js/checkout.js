@@ -1153,4 +1153,24 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSocialLinks();
     updateUI();
     initCheckout();
+    initMobileBottomNav();
+    initVirtualKeyboardHandler();
 });
+
+function initMobileBottomNav() {
+    var mql = window.matchMedia('(max-width: 768px)');
+    var nav = document.getElementById('mobileBottomNav');
+    function applyMobileNav(e) { if (nav) nav.style.display = e.matches ? 'flex' : 'none'; }
+    mql.addEventListener('change', applyMobileNav);
+    applyMobileNav(mql);
+}
+
+function initVirtualKeyboardHandler() {
+    if (!window.visualViewport) return;
+    var fixedEls = [document.getElementById('mobileBottomNav'), document.querySelector('.floating-whatsapp'), document.getElementById('backToTop')].filter(Boolean);
+    window.visualViewport.addEventListener('resize', function() {
+        var isKeyboard = window.visualViewport.height < window.innerHeight * 0.75;
+        fixedEls.forEach(function(el) { el.style.transform = isKeyboard ? 'translateY(100vh)' : ''; el.style.transition = 'transform 0.2s ease'; });
+    });
+    window.visualViewport.addEventListener('focusout', function() { fixedEls.forEach(function(el) { el.style.transform = ''; }); });
+}

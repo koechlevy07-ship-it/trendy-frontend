@@ -598,6 +598,8 @@ function setupFilters() {
             renderWishlistItems();
         });
     }
+    initMobileBottomNav();
+    initVirtualKeyboardHandler();
 }
 
 // ---- Auth Modal (from SPA) ----
@@ -670,6 +672,85 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 });
+
+// ---- Shared UI: sticky header, hamburger, drawer, back-to-top, scroll ----
+window.addEventListener('scroll', () => {
+    var scrollY = window.scrollY;
+    var stickyHeader = document.getElementById('stickyHeader');
+    if (stickyHeader) {
+        stickyHeader.classList.toggle('shrink', scrollY > 60);
+        if (Math.abs(scrollY - (window._lastScrollY || 0)) > 10) {
+            if (scrollY > (window._lastScrollY || 0) && scrollY > 100) stickyHeader.classList.add('hidden');
+            else stickyHeader.classList.remove('hidden');
+        }
+    }
+    window._lastScrollY = scrollY;
+    var wa = document.getElementById('floatingWhatsApp');
+    if (wa) wa.classList.toggle('hidden-wa', scrollY < 200);
+    var btt = document.getElementById('backToTop');
+    if (btt) btt.style.display = scrollY > 300 ? 'flex' : 'none';
+}, { passive: true });
+
+document.getElementById('hamburgerBtnDesktop')?.addEventListener('click', () => {
+    document.getElementById('drawer')?.classList.toggle('open');
+    document.getElementById('drawerOverlay')?.classList.toggle('open');
+});
+document.getElementById('hamburgerBtn')?.addEventListener('click', function() {
+    var drawer = document.getElementById('drawer');
+    var overlay = document.getElementById('drawerOverlay');
+    if (drawer) drawer.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('open');
+    this.setAttribute('aria-expanded', drawer?.classList.contains('open'));
+});
+document.getElementById('drawerOverlay')?.addEventListener('click', () => {
+    document.getElementById('drawer')?.classList.remove('open');
+    document.getElementById('drawerOverlay')?.classList.remove('open');
+});
+document.getElementById('backToTop')?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+document.getElementById('drawerHome')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/'; });
+document.getElementById('drawerContact')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/contact.html'; });
+
+function initMobileBottomNav() {
+    var mql = window.matchMedia('(max-width: 768px)');
+    var nav = document.getElementById('mobileBottomNav');
+    function applyMobileNav(e) { if (nav) nav.style.display = e.matches ? 'flex' : 'none'; }
+    mql.addEventListener('change', applyMobileNav);
+    applyMobileNav(mql);
+    var navBtns = nav ? nav.querySelectorAll('[data-nav]') : [];
+    var currentActive = null;
+    function setActive(key) {
+        if (currentActive === key) return;
+        navBtns.forEach(function(b) { b.classList.remove('active'); });
+        currentActive = key;
+        var btn = nav ? nav.querySelector('[data-nav="' + key + '"]') : null;
+        if (btn) btn.classList.add('active');
+    }
+    function clearActive() { navBtns.forEach(function(b) { b.classList.remove('active'); }); currentActive = null; }
+    var cartOverlay = document.getElementById('miniCartOverlay');
+    if (cartOverlay && typeof MutationObserver !== 'undefined') {
+        new MutationObserver(function() {
+            if (cartOverlay.classList.contains('show')) setActive('cart');
+            else if (currentActive === 'cart') clearActive();
+        }).observe(cartOverlay, { attributes: true, attributeFilter: ['class'] });
+    }
+    var authOverlay = document.getElementById('authOverlay');
+    if (authOverlay && typeof MutationObserver !== 'undefined') {
+        new MutationObserver(function() {
+            if (authOverlay.style.display === 'flex') setActive('account');
+            else if (currentActive === 'account') clearActive();
+        }).observe(authOverlay, { attributes: true, attributeFilter: ['style'] });
+    }
+}
+
+function initVirtualKeyboardHandler() {
+    if (!window.visualViewport) return;
+    var fixedEls = [document.getElementById('mobileBottomNav'), document.querySelector('.floating-whatsapp'), document.getElementById('backToTop')].filter(Boolean);
+    window.visualViewport.addEventListener('resize', function() {
+        var isKeyboard = window.visualViewport.height < window.innerHeight * 0.75;
+        fixedEls.forEach(function(el) { el.style.transform = isKeyboard ? 'translateY(100vh)' : ''; el.style.transition = 'transform 0.2s ease'; });
+    });
+    window.visualViewport.addEventListener('focusout', function() { fixedEls.forEach(function(el) { el.style.transform = ''; }); });
+}
 
 // Export functions for use from other pages
 window.addToWishlistAPI = addToWishlistAPI;

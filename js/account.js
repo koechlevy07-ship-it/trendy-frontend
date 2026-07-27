@@ -355,9 +355,9 @@ function renderWishlist() {
     container.innerHTML = `<div class="acc-wishlist-grid">${items.map(item => {
         const p = item.productId;
         if (!p) return '';
-        const img = (p.images && p.images[0]) ? p.images[0] : 'https://placehold.co/200x240/FAF9F6/C8A35A?text=P';
+        const img = (p.images && p.images[0]) ? getImageUrl(p.images[0], 400) : 'https://placehold.co/200x240/FAF9F6/C8A35A?text=P';
         return `<div class="acc-wishlist-item">
-            <img src="${img}" alt="${escHtml(p.name)}" loading="lazy" />
+            <img src="${img}" alt="${escHtml(p.name)}" loading="lazy" width="200" height="240" />
             <div class="acc-wishlist-item-info">
                 <div class="acc-wishlist-item-name">${escHtml(p.name)}</div>
                 <div class="acc-wishlist-item-price">Ksh ${(p.price || 0).toLocaleString()}</div>
@@ -753,12 +753,12 @@ function renderCart() {
     container.innerHTML = cartItems.map(item => {
         const p = item.productId;
         if (!p) return '';
-        const img = (p.images && p.images[0]) ? p.images[0] : 'https://placehold.co/200x240/FAF9F6/C8A35A?text=P';
+        const img = (p.images && p.images[0]) ? getImageUrl(p.images[0], 200) : 'https://placehold.co/200x240/FAF9F6/C8A35A?text=P';
         const price = p.price || 0;
         const originalPrice = p.originalPrice || price;
         const discount = originalPrice > price ? Math.round((1 - price/originalPrice) * 100) : 0;
         return `<div class="acc-cart-item" style="display:flex;gap:16px;padding:16px;background:#fff;border:1px solid var(--border-light);border-radius:12px;margin-bottom:12px;align-items:center;">
-            <img src="${img}" alt="${escHtml(p.name)}" style="width:80px;height:100px;object-fit:cover;border-radius:8px;" loading="lazy" />
+            <img src="${img}" alt="${escHtml(p.name)}" style="width:80px;height:100px;object-fit:cover;border-radius:8px;" loading="lazy" width="80" height="100" />
             <div style="flex:1;">
                 <div style="font-weight:600;font-size:0.9rem;">${escHtml(p.name)}</div>
                 <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:4px;">Color: ${escHtml(item.color || 'N/A')} | Size: ${escHtml(item.size || 'N/A')}</div>
@@ -965,7 +965,7 @@ function renderAvailableRewards(rewards) {
     
     container.innerHTML = rewards.map(r => `
         <div class="acc-reward-card" style="display:flex;gap:16px;padding:16px;background:#fff;border:1px solid var(--border-light);border-radius:12px;margin-bottom:12px;position:relative;">
-            ${r.image ? `<img src="${r.image}" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:8px;" loading="lazy" />` : ''}
+            ${r.image ? `<img src="${getImageUrl(r.image, 200)}" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:8px;" loading="lazy" width="80" height="80" />` : ''}
             <div style="flex:1;">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
                     <div>
