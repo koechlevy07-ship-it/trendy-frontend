@@ -761,7 +761,6 @@
         justify-content: flex-start;
         overflow: hidden;
         background: #0a0a0a;
-        touch-action: pan-y;
     }
 
 /* Cinematic gradient overlay — dark left for text, light right for image */
@@ -3235,11 +3234,11 @@
         ============================================================ */
         @media (max-width: 768px) {
             html {
-                scroll-behavior: smooth;
+                scroll-behavior: auto;
                 -webkit-overflow-scrolling: touch;
             }
             body {
-                overscroll-behavior-y: contain;
+                overscroll-behavior-y: auto;
             }
         }
 

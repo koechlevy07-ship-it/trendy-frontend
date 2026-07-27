@@ -3727,56 +3727,54 @@
             const isLowEndDevice = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
             const isMobile = window.innerWidth <= 768;
             const isTouch = 'ontouchstart' in window;
-            const disableParallax = prefersReducedMotion || isLowEndDevice;
+            const disableParallax = prefersReducedMotion || isLowEndDevice || isMobile;
 
             if (disableParallax) {
                 heroBg.classList.add('parallax-disabled');
                 return;
             }
 
-            // Scroll parallax
-            const SCROLL_FACTOR = isMobile ? 0.12 : 0.2;
+            const SCROLL_FACTOR = 0.2;
             let currentY = 0, targetY = 0, rafId = null;
-
-            // Mouse parallax (desktop only)
             let mouseX = 0, mouseY = 0, currentMouseX = 0, currentMouseY = 0;
-            const MOUSE_FACTOR = isMobile ? 0 : 6;
-            let mouseActive = false;
+            const MOUSE_FACTOR = 6;
+            let running = false;
 
-            if (!isMobile && !isTouch) {
-                hero.addEventListener('mousemove', (e) => {
-                    const rect = hero.getBoundingClientRect();
-                    mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-                    mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-                    mouseActive = true;
-                }, { passive: true });
-                hero.addEventListener('mouseleave', () => {
-                    mouseX = 0;
-                    mouseY = 0;
-                }, { passive: true });
-            }
+            hero.addEventListener('mousemove', (e) => {
+                const rect = hero.getBoundingClientRect();
+                mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+                mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+            }, { passive: true });
+            hero.addEventListener('mouseleave', () => { mouseX = 0; mouseY = 0; }, { passive: true });
 
             function updateParallax() {
-                const scrollY = window.scrollY;
                 const heroRect = hero.getBoundingClientRect();
-
-                if (heroRect.bottom > 0 && heroRect.top < window.innerHeight) {
-                    targetY = scrollY * SCROLL_FACTOR;
+                if (heroRect.bottom < -200 || heroRect.top > window.innerHeight + 200) {
+                    running = false;
+                    return;
                 }
 
+                targetY = window.scrollY * SCROLL_FACTOR;
                 currentY += (targetY - currentY) * 0.12;
                 currentMouseX += (mouseX * MOUSE_FACTOR - currentMouseX) * 0.08;
                 currentMouseY += (mouseY * MOUSE_FACTOR - currentMouseY) * 0.08;
 
-                const tx = currentMouseX;
-                const ty = currentY + currentMouseY;
-
-                heroBg.style.transform = `translateZ(0) translate(${tx}px, ${ty}px)`;
-
+                heroBg.style.transform = `translateZ(0) translate(${currentMouseX}px, ${currentY + currentMouseY}px)`;
                 rafId = requestAnimationFrame(updateParallax);
             }
 
-            rafId = requestAnimationFrame(updateParallax);
+            function startLoop() {
+                if (!running) { running = true; rafId = requestAnimationFrame(updateParallax); }
+            }
+
+            if ('IntersectionObserver' in window) {
+                new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) startLoop();
+                    else { running = false; if (rafId) cancelAnimationFrame(rafId); }
+                }, { rootMargin: '200px' }).observe(hero);
+            } else {
+                startLoop();
+            }
 
             window.addEventListener('beforeunload', () => {
                 if (rafId) cancelAnimationFrame(rafId);
