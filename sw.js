@@ -1,11 +1,37 @@
-const CACHE_VERSION = 'v27';
+const CACHE_VERSION = 'v28';
 const STATIC_CACHE = 'trendy-static-' + CACHE_VERSION;
 const DYNAMIC_CACHE = 'trendy-dynamic-' + CACHE_VERSION;
 const IMAGE_CACHE = 'trendy-images-' + CACHE_VERSION;
+const API_STATIC_CACHE = 'trendy-api-static-' + CACHE_VERSION;
+const API_SEMI_CACHE = 'trendy-api-semi-' + CACHE_VERSION;
 
 const MAX_DYNAMIC_CACHE = 30;
-const MAX_IMAGE_CACHE = 60;
-const IMAGE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_IMAGE_CACHE = 80;
+const MAX_API_STATIC = 10;
+const MAX_API_SEMI = 20;
+const IMAGE_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
+const API_STATIC_EXPIRY_MS = 24 * 60 * 60 * 1000;
+const API_SEMI_EXPIRY_MS = 5 * 60 * 1000;
+
+const API_STATIC_PATHS = [
+    '/api/settings',
+    '/api/social-links',
+    '/api/categories',
+    '/api/homepage/hero',
+    '/api/homepage/catalogues',
+    '/api/settings/heroImages',
+    '/api/orders/shipping-options',
+    '/api/orders/payment-methods'
+];
+
+const API_SEMI_PATHS = [
+    '/api/products',
+    '/api/reviews/product/',
+    '/api/qa/product/',
+    '/api/products/flash-sale',
+    '/api/products/related/',
+    '/api/promo/banners/'
+];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(self.skipWaiting());
@@ -15,8 +41,13 @@ self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then(keys => {
             return Promise.all(
-                keys.filter(key => key !== STATIC_CACHE && key !== DYNAMIC_CACHE && key !== IMAGE_CACHE)
-                    .map(key => caches.delete(key))
+                keys.filter(key =>
+                    key !== STATIC_CACHE &&
+                    key !== DYNAMIC_CACHE &&
+                    key !== IMAGE_CACHE &&
+                    key !== API_STATIC_CACHE &&
+                    key !== API_SEMI_CACHE
+                ).map(key => caches.delete(key))
             );
         }).then(() => self.clients.claim())
     );
@@ -33,10 +64,20 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(request.url);
 
     if (request.method !== 'GET') return;
-    if (url.origin !== self.location.origin) return;
 
     if (url.pathname.startsWith('/api/')) {
-        event.respondWith(networkFirst(request));
+        if (isApiStatic(url.pathname)) {
+            event.respondWith(staleWhileRevalidate(request, API_STATIC_CACHE, API_STATIC_EXPIRY_MS));
+        } else if (isApiSemi(url.pathname)) {
+            event.respondWith(staleWhileRevalidate(request, API_SEMI_CACHE, API_SEMI_EXPIRY_MS));
+        } else {
+            event.respondWith(networkFirst(request));
+        }
+        return;
+    }
+
+    if (url.hostname === 'res.cloudinary.com') {
+        event.respondWith(cacheFirstWithExpiry(request, IMAGE_CACHE));
         return;
     }
 
@@ -50,6 +91,11 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    if (url.pathname.match(/\.(woff2?|ttf|eot)$/i)) {
+        event.respondWith(cacheFirst(request, STATIC_CACHE));
+        return;
+    }
+
     if (request.mode === 'navigate') {
         event.respondWith(networkFirst(request));
         return;
@@ -57,6 +103,29 @@ self.addEventListener('fetch', (event) => {
 
     event.respondWith(staleWhileRevalidate(request, DYNAMIC_CACHE));
 });
+
+function isApiStatic(pathname) {
+    return API_STATIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'));
+}
+
+function isApiSemi(pathname) {
+    return API_SEMI_PATHS.some(p => pathname.startsWith(p));
+}
+
+async function cacheFirst(request, cacheName) {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    try {
+        const response = await fetch(request);
+        if (response.ok) {
+            const cache = await caches.open(cacheName);
+            cache.put(request, response.clone());
+        }
+        return response;
+    } catch (err) {
+        return new Response('', { status: 503 });
+    }
+}
 
 async function cacheFirstWithExpiry(request, cacheName) {
     const cached = await caches.match(request);
@@ -89,20 +158,52 @@ async function cacheFirstWithExpiry(request, cacheName) {
     }
 }
 
-async function staleWhileRevalidate(request, cacheName = DYNAMIC_CACHE) {
+async function staleWhileRevalidate(request, cacheName = DYNAMIC_CACHE, expiryMs = 0) {
     const cached = await caches.match(request);
-    const fetchPromise = fetch(request).then(response => {
+
+    if (cached && expiryMs > 0) {
+        const header = cached.headers.get('sw-cached-at');
+        if (header && (Date.now() - parseInt(header)) > expiryMs) {
+            caches.open(cacheName).then(c => c.delete(request));
+        } else if (cached) {
+            fetchAndCache(request, cacheName);
+            return cached;
+        }
+    } else if (cached) {
+        fetchAndCache(request, cacheName);
+        return cached;
+    }
+
+    return fetchAndCache(request, cacheName);
+}
+
+async function fetchAndCache(request, cacheName) {
+    try {
+        const response = await fetch(request);
         if (response.ok) {
-            const cloned = response.clone();
-            caches.open(cacheName).then(c => {
-                c.put(request, cloned);
-                if (cacheName === DYNAMIC_CACHE) trimCache(c, MAX_DYNAMIC_CACHE);
+            const clone = response.clone();
+            const cache = await caches.open(cacheName);
+            const headers = new Headers(clone.headers);
+            headers.set('sw-cached-at', String(Date.now()));
+            const stamped = new Response(clone.body, {
+                status: clone.status,
+                statusText: clone.statusText,
+                headers: headers
             });
+            cache.put(request, stamped);
+            const max = cacheName === STATIC_CACHE ? 50 :
+                        cacheName === API_STATIC_CACHE ? MAX_API_STATIC :
+                        cacheName === API_SEMI_CACHE ? MAX_API_SEMI : MAX_DYNAMIC_CACHE;
+            trimCache(cacheName, max);
         }
         return response;
-    }).catch(() => cached || new Response('Offline', { status: 503 }));
-
-    return cached || fetchPromise;
+    } catch (err) {
+        const cached = await caches.match(request);
+        return cached || new Response(JSON.stringify({ error: 'Offline' }), {
+            headers: { 'Content-Type': 'application/json' },
+            status: 503
+        });
+    }
 }
 
 async function networkFirst(request) {
@@ -114,7 +215,7 @@ async function networkFirst(request) {
         if (response.ok && request.mode === 'navigate') {
             const cache = await caches.open(DYNAMIC_CACHE);
             cache.put(request, response.clone());
-            trimCache(cache, MAX_DYNAMIC_CACHE);
+            trimCache(DYNAMIC_CACHE, MAX_DYNAMIC_CACHE);
         }
         return response;
     } catch (err) {
@@ -132,13 +233,16 @@ async function networkFirst(request) {
 }
 
 function trimCache(cache, maxItems) {
-    if (typeof maxItems === 'number') {
-        cache.keys().then(keys => {
-            if (keys.length > maxItems) {
-                cache.delete(keys[0]).then(() => trimCache(cache, maxItems));
-            }
-        });
+    if (typeof maxItems !== 'number') return;
+    if (typeof cache === 'string') {
+        caches.open(cache).then(c => trimCache(c, maxItems));
+        return;
     }
+    cache.keys().then(keys => {
+        if (keys.length > maxItems) {
+            cache.delete(keys[0]).then(() => trimCache(cache, maxItems));
+        }
+    });
 }
 
 self.addEventListener('push', (event) => {
