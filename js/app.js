@@ -822,13 +822,13 @@
                         <i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:0.75rem;color:var(--text-secondary);"></i>
                         <input type="text" placeholder="Search by name, brand..." value="${wishlistSearchQuery}" oninput="wishlistSearchQuery=this.value;renderWishlistDashboard(document.getElementById('wishlistDashboardContainer'),${JSON.stringify(products).replace(/"/g, '&quot;')},${isGuest})" style="width:100%;padding:8px 12px 8px 30px;border:1px solid var(--border-light);border-radius:8px;font-size:0.8rem;font-family:inherit;background:var(--bg-primary);" />
                     </div>
-                    <select onchange="wishlistSortBy=this.value;renderWishlistDashboard(document.getElementById('wishlistDashboardContainer'),${JSON.stringify(products).replace(/"/g, '&quot;')},${isGuest})" style="padding:8px 12px;border:1px solid var(--border-light);border-radius:8px;font-size:0.8rem;font-family:inherit;background:var(--bg-primary);">
+                    <select onchange="wishlistSortBy=this.value;renderWishlistDashboard(document.getElementById('wishlistDashboardContainer'),${JSON.stringify(products).replace(/"/g, '&quot;')},${isGuest})" aria-label="Sort wishlist" style="padding:8px 12px;border:1px solid var(--border-light);border-radius:8px;font-size:0.8rem;font-family:inherit;background:var(--bg-primary);">
                         <option value="newest" ${wishlistSortBy==='newest'?'selected':''}>Newest</option>
                         <option value="price-low" ${wishlistSortBy==='price-low'?'selected':''}>Price Low-High</option>
                         <option value="price-high" ${wishlistSortBy==='price-high'?'selected':''}>Price High-Low</option>
                         <option value="name" ${wishlistSortBy==='name'?'selected':''}>A-Z</option>
                     </select>
-                    <select onchange="wishlistFilterCategory=this.value;renderWishlistDashboard(document.getElementById('wishlistDashboardContainer'),${JSON.stringify(products).replace(/"/g, '&quot;')},${isGuest})" style="padding:8px 12px;border:1px solid var(--border-light);border-radius:8px;font-size:0.8rem;font-family:inherit;background:var(--bg-primary);">
+                    <select onchange="wishlistFilterCategory=this.value;renderWishlistDashboard(document.getElementById('wishlistDashboardContainer'),${JSON.stringify(products).replace(/"/g, '&quot;')},${isGuest})" aria-label="Filter by category" style="padding:8px 12px;border:1px solid var(--border-light);border-radius:8px;font-size:0.8rem;font-family:inherit;background:var(--bg-primary);">
                         <option value="all" ${wishlistFilterCategory==='all'?'selected':''}>All Categories</option>
                         ${cats.map(c => `<option value="${c}" ${wishlistFilterCategory===c?'selected':''}>${escHtml(c)}</option>`).join('')}
                     </select>
@@ -866,8 +866,8 @@
                                 </div>
                                 <div style="display:flex;gap:6px;margin-top:8px;">
                                     <button onclick="moveToCart('${p._id}')" ${outOfStock ? 'disabled style="flex:1;padding:7px;border:none;border-radius:6px;font-size:0.72rem;font-weight:600;cursor:not-allowed;background:#E5E7EB;color:#9CA3AF;"' : 'style="flex:1;padding:7px;border:1px solid var(--text-primary);border-radius:6px;font-size:0.72rem;font-weight:600;cursor:pointer;background:var(--text-primary);color:#fff;"'}><i class="fas fa-cart-plus" style="margin-right:3px;"></i>${outOfStock ? 'Unavailable' : 'Move to Cart'}</button>
-                                    <button onclick="removeFromWishlistDashboard('${p._id}')" style="padding:7px 10px;border:1px solid var(--border-light);border-radius:6px;font-size:0.72rem;cursor:pointer;background:var(--bg-primary);color:#DC2626;" title="Remove"><i class="fas fa-trash-alt"></i></button>
-                                    <button onclick="openQuickView('${p._id}')" style="padding:7px 10px;border:1px solid var(--border-light);border-radius:6px;font-size:0.72rem;cursor:pointer;background:var(--bg-primary);" title="Quick View"><i class="fas fa-eye"></i></button>
+                                    <button onclick="removeFromWishlistDashboard('${p._id}')" aria-label="Remove from wishlist" style="padding:7px 10px;border:1px solid var(--border-light);border-radius:6px;font-size:0.72rem;cursor:pointer;background:var(--bg-primary);color:#DC2626;" title="Remove"><i class="fas fa-trash-alt"></i></button>
+                                    <button onclick="openQuickView('${p._id}')" aria-label="Quick view" style="padding:7px 10px;border:1px solid var(--border-light);border-radius:6px;font-size:0.72rem;cursor:pointer;background:var(--bg-primary);" title="Quick View"><i class="fas fa-eye"></i></button>
                                 </div>
                             </div>
                         </div>`;
@@ -1399,7 +1399,7 @@
             }
         });
 
-        orderSuccessDashboard.addEventListener('click', function() {
+        if (orderSuccessDashboard) orderSuccessDashboard.addEventListener('click', function() {
             orderSuccessOverlay.classList.remove('show');
             document.body.classList.remove('no-scroll');
             openAuthModal();
@@ -1446,8 +1446,8 @@
             const isMobile = window.innerWidth <= 768;
 
             if (slide.videoUrl) {
-                heroBg.style.backgroundImage = '';
-                heroVideo.classList.remove('hidden-video');
+                if (heroBg) heroBg.style.backgroundImage = '';
+                if (heroVideo) heroVideo.classList.remove('hidden-video');
                 if (heroVideo.src !== slide.videoUrl) {
                     heroVideo.src = slide.videoUrl;
                     heroVideo.load();
@@ -2126,15 +2126,15 @@
             isLoadingMore = true;
             const btn = document.getElementById('loadMoreBtn');
             const spinner = document.getElementById('loadMoreSpinner');
-            btn.style.display = 'none';
-            spinner.style.display = 'block';
+            if (btn) btn.style.display = 'none';
+            if (spinner) spinner.style.display = 'block';
             const nextPage = currentPage + 1;
             const { products, pagination } = await fetchProducts(lastFetchFilter, lastFetchGender, lastFetchSearch, nextPage, 20, currentSort);
             currentPage = pagination.page;
             totalPages = pagination.pages;
             renderProducts(products, true);
             isLoadingMore = false;
-            spinner.style.display = 'none';
+            if (spinner) spinner.style.display = 'none';
         }
 
         var loadMoreBtnEl = document.getElementById('loadMoreBtn');
@@ -2230,7 +2230,7 @@
                         ${p.colors && p.colors.length ? `
                             <div class="qv-colors">
                                 <label>Color</label>
-                                <div class="color-chips">${p.colors.map(c => `<button class="color-chip" data-color="${escHtml(c)}" style="background:${escHtml(c)}"></button>`).join('')}</div>
+                                <div class="color-chips">${p.colors.map(c => `<button class="color-chip" data-color="${escHtml(c)}" aria-label="Color: ${escHtml(c)}" style="background:${escHtml(c)}"></button>`).join('')}</div>
                             </div>` : ''}
                         <div class="qv-qty">
                             <label>Quantity</label>
@@ -2243,8 +2243,8 @@
                         <div class="qv-actions">
                             <button class="qv-btn add-to-cart" ${!inStock ? 'disabled' : ''} data-id="${p._id}"><i class="fas fa-shopping-bag"></i> Add to Cart</button>
                             <button class="qv-btn buy-now" ${!inStock ? 'disabled' : ''} data-id="${p._id}">Buy Now</button>
-                            <button class="qv-btn wishlist ${isInWishlist(p._id) ? 'liked' : ''}" data-id="${p._id}"><i class="fa${isInWishlist(p._id) ? 's' : 'r'} fa-heart"></i></button>
-                            <button class="qv-btn share"><i class="fas fa-share-alt"></i></button>
+                            <button class="qv-btn wishlist ${isInWishlist(p._id) ? 'liked' : ''}" data-id="${p._id}" aria-label="${isInWishlist(p._id) ? 'Remove from wishlist' : 'Add to wishlist'}"><i class="fa${isInWishlist(p._id) ? 's' : 'r'} fa-heart"></i></button>
+                            <button class="qv-btn share" aria-label="Share product"><i class="fas fa-share-alt"></i></button>
                         </div>
                         ${p.tags && p.tags.length ? `<div style="margin-top:12px;font-size:0.8rem;color:var(--text-secondary);"><strong>Tags:</strong> ${escHtml(p.tags.join(', '))}</div>` : ''}
                         <div class="qv-meta">
@@ -2548,7 +2548,7 @@
                 if (q) { addRecentSearch(q); performSearch(q); }
             }
         });
-        searchOverlayInput.addEventListener('input', function() {
+        if (searchOverlayInput) searchOverlayInput.addEventListener('input', function() {
             const q = this.value.trim();
             const liveResults = document.getElementById('searchLiveResults');
             const suggestions = document.getElementById('searchSuggestions');
@@ -3397,9 +3397,9 @@
                     showDashboard(getUser());
                     switchDashboardTab('wishlist');
                 } else {
-                    authForms.style.display = 'none';
-                    authLoggedIn.style.display = 'block';
-                    authModalTitle.textContent = 'My Wishlist';
+                if (authForms) authForms.style.display = 'none';
+                if (authLoggedIn) authLoggedIn.style.display = 'block';
+                if (authModalTitle) authModalTitle.textContent = 'My Wishlist';
                     document.getElementById('authLoggedIn').querySelectorAll('.dashboard-tabs button').forEach(b => b.style.display = b.dataset.tab === 'wishlist' ? '' : 'none');
                     const wishTab = document.getElementById('tab-wishlist');
                     if (wishTab) { wishTab.classList.add('active'); wishTab.style.display = 'block'; }

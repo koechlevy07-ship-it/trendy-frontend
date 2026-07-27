@@ -270,23 +270,23 @@
     MOBILE SEARCH OVERLAY
     ============================================================ -->
     <div class="search-overlay" id="searchOverlay">
-        <button class="search-close" id="searchClose"><i class="fas fa-times"></i></button>
+        <button class="search-close" id="searchClose" aria-label="Close search"><i class="fas fa-times"></i></button>
         <div class="search-panel">
             <div class="search-input-wrap">
                 <i class="fas fa-search search-input-icon"></i>
                 <input type="text" id="searchOverlayInput" placeholder="Search trench coats, shoes, wardrobe..." autocomplete="off" />
-                <button class="search-submit" id="searchOverlaySubmit"><i class="fas fa-arrow-right"></i></button>
+                <button class="search-submit" id="searchOverlaySubmit" aria-label="Submit search"><i class="fas fa-arrow-right"></i></button>
             </div>
         </div>
         <div class="search-results-area" id="searchResultsArea">
             <div class="search-suggestions" id="searchSuggestions">
                 <div class="search-section">
-                    <h4>Popular Searches</h4>
+                    <p class="search-section-title">Popular Searches</p>
                     <div class="search-tags" id="popularSearchTags">
                     </div>
                 </div>
                 <div class="search-section" id="recentSearchSection" style="display:none;">
-                    <h4>Recent Searches</h4>
+                    <p class="search-section-title">Recent Searches</p>
                     <div id="recentSearches"></div>
                 </div>
             </div>
@@ -303,15 +303,15 @@
             <a href="/" class="logo-link" aria-label="Trendy Wardrobe — Home">
                 <svg class="logo-svg" viewBox="0 0 320 100" width="240" height="48" alt="Trendy Wardrobe Luxury Fashion Logo" aria-hidden="true" role="img">
                     <defs>
-                        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <linearGradient id="goldGradientDrawer" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#D4AF37"/>
                             <stop offset="50%" stop-color="#F0D87A"/>
                             <stop offset="100%" stop-color="#D4AF37"/>
                         </linearGradient>
                     </defs>
                     <g class="icon-part" transform="translate(0, 0)">
-                        <polygon points="28,0 56,28 28,56 0,28" fill="none" stroke="url(#goldGradient)" stroke-width="1.5"/>
-                        <text x="28" y="36" text-anchor="middle" font-family="Georgia, serif" font-size="24" font-weight="400" fill="url(#goldGradient)" letter-spacing="1">T<tspan baseline-shift="-6" font-size="20">W</tspan></text>
+                        <polygon points="28,0 56,28 28,56 0,28" fill="none" stroke="url(#goldGradientDrawer)" stroke-width="1.5"/>
+                        <text x="28" y="36" text-anchor="middle" font-family="Georgia, serif" font-size="24" font-weight="400" fill="url(#goldGradientDrawer)" letter-spacing="1">T<tspan baseline-shift="-6" font-size="20">W</tspan></text>
                     </g>
                     <text x="66" y="28" font-family="Georgia, serif" font-size="18" font-weight="300" fill="#1A1A1A" letter-spacing="3">TRENDY</text>
                     <text x="66" y="50" font-family="Georgia, serif" font-size="13" font-weight="300" fill="#888" letter-spacing="6">WARDROBE</text>
@@ -398,15 +398,15 @@
     <div class="contact-panel" id="contactPanel">
         <div class="contact-panel-header">
             <div>
-                <h2>Get In Touch</h2>
+                <strong class="contact-panel-title">Get In Touch</strong>
                 <span class="panel-subtitle">We'd love to hear from you</span>
             </div>
-            <button class="contact-panel-close" id="contactPanelClose"><i class="fas fa-times"></i></button>
+            <button class="contact-panel-close" id="contactPanelClose" aria-label="Close contact panel"><i class="fas fa-times"></i></button>
         </div>
         <div class="contact-panel-body">
             <!-- Column 1: Contact Details -->
             <div class="cp-col">
-                <h3>Contact Details</h3>
+                <strong class="contact-col-title">Contact Details</strong>
                 <div class="cp-info-item">
                     <div class="cp-icon"><i class="fas fa-store"></i></div>
                     <div class="cp-text">
@@ -446,7 +446,7 @@
 
             <!-- Column 2: Quick Contact Form -->
             <div class="cp-col">
-                <h3>Quick Message</h3>
+                <strong class="contact-col-title">Quick Message</strong>
                 <form class="cp-form-mini" id="cpContactForm">
                     <input type="text" id="cpName" placeholder="Your Name" required />
                     <input type="email" id="cpEmail" placeholder="Your Email" required />
@@ -455,13 +455,13 @@
                     <button type="submit">Send Message</button>
                 </form>
                 <div class="cp-map">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15955.421182723455!2d36.8009946!3d-1.2676171!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f1746625d9ddb%3A0xcf8d1ba64ec65fbc!2sWestlands%2C%20Nairobi!5e0!3m2!1sen!2ske!4v1710000000000" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15955.421182723455!2d36.8009946!3d-1.2676171!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f1746625d9ddb%3A0xcf8d1ba64ec65fbc!2sWestlands%2C%20Nairobi!5e0!3m2!1sen!2ske!4v1710000000000" title="Trendy Wardrobe store location on Google Maps" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </div>
 
             <!-- Column 3: Quick Links + Social -->
             <div class="cp-col">
-                <h3>Quick Links</h3>
+                <strong class="contact-col-title">Quick Links</strong>
                 <ul class="cp-quick-links">
                     <li><a href="/"><i class="fas fa-chevron-right"></i> Home</a></li>
                     <li><a href="/about.html"><i class="fas fa-chevron-right"></i> About Us</a></li>
@@ -470,7 +470,7 @@
                     <li><a href="/contact.html"><i class="fas fa-chevron-right"></i> Full Contact Page</a></li>
                 </ul>
 
-                <h3 style="margin-top:28px;">Follow Us</h3>
+                <strong class="contact-col-title" style="margin-top:28px;">Follow Us</strong>
                 <div class="cp-social-row" id="cpSocialLinks"></div>
 
                 <div style="margin-top:28px; padding:20px; background:var(--bg-primary); border-radius:12px; border:1px solid var(--border-light);">
@@ -598,7 +598,7 @@
                 </div>
                 <div class="filter-group">
                     <span class="filter-label">Sort:</span>
-                    <select class="sort-select" id="sortSelect">
+                    <select class="sort-select" id="sortSelect" aria-label="Sort products">
                         <option value="newest">Newest</option>
                         <option value="price-low">Price: Low to High</option>
                         <option value="price-high">Price: High to Low</option>
@@ -632,7 +632,7 @@
     ============================================================ -->
     <div class="modal-overlay" id="authOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;justify-content:center;align-items:center;backdrop-filter:blur(4px);">
         <div class="modal-content" style="background:#FFFFFF;max-width:750px;width:90%;max-height:85vh;overflow-y:auto;padding:30px;border-radius:8px;position:relative;border-top:4px solid var(--color-gold);">
-            <button class="close-btn" id="authCloseBtn" style="position:absolute;top:16px;right:20px;font-size:1.8rem;cursor:pointer;background:none;border:none;color:var(--text-secondary);">&times;</button>
+            <button class="close-btn" id="authCloseBtn" aria-label="Close account dialog" style="position:absolute;top:16px;right:20px;font-size:1.8rem;cursor:pointer;background:none;border:none;color:var(--text-secondary);">&times;</button>
             <h2 id="authModalTitle">Account</h2>
 
             <!-- Login/Register Forms -->
@@ -715,7 +715,7 @@
     ============================================================ -->
     <div class="checkout-modal-overlay" id="checkoutOverlay">
         <div class="checkout-modal">
-            <button class="close-checkout" id="checkoutCloseBtn"><i class="fas fa-times"></i></button>
+            <button class="close-checkout" id="checkoutCloseBtn" aria-label="Close checkout"><i class="fas fa-times"></i></button>
             <h2>Checkout</h2>
             <form id="checkoutForm">
                 <div class="form-group">
@@ -739,7 +739,7 @@
                     <input type="text" id="checkoutPostcode" placeholder="e.g. 00100" style="padding:14px 16px;font-size:1rem;border-radius:8px;" />
                 </div>
                 <div class="form-group">
-                    <label>Payment Method</label>
+                    <label for="checkoutPayment">Payment Method</label>
                     <select id="checkoutPayment" style="padding:14px 16px;font-size:1rem;border-radius:8px;">
                         <option value="cash">Cash on Delivery</option>
                         <option value="mpesa">M-Pesa</option>
@@ -799,7 +799,7 @@
     ============================================================ -->
     <div class="mini-cart-overlay" id="miniCartOverlay">
         <div class="mini-cart">
-            <div class="cart-header"><h2>Your Cart</h2><button class="close-cart" id="closeCart"><i class="fas fa-times"></i></button></div>
+            <div class="cart-header"><h2>Your Cart</h2><button class="close-cart" id="closeCart" aria-label="Close cart"><i class="fas fa-times"></i></button></div>
             <div id="cartItemsContainer"></div>
             <div id="cartTotalContainer" style="display:none;">
                 <div class="cart-total"><span>Total</span><span class="total-price" id="cartTotalPrice">Ksh 0</span></div>
@@ -851,8 +851,8 @@
                         <li><a href="/contact">Contact Us</a></li>
                         <li><a href="/about">About Us</a></li>
                         <li><a href="#" onclick="document.getElementById('sizeGuideModal').style.display='flex';return false;">Size Guide</a></li>
-                        <li><a href="/contact">Shipping</a></li>
-                        <li><a href="/contact">Returns</a></li>
+                        <li><a href="/contact" aria-label="Shipping information">Shipping</a></li>
+                        <li><a href="/contact" aria-label="Returns policy">Returns</a></li>
                         <li><a href="/terms">Terms of Service</a></li>
                         <li><a href="/privacy">Privacy Policy</a></li>
                     </ul>
@@ -886,8 +886,8 @@
     <!-- SIZE GUIDE MODAL -->
     <div id="sizeGuideModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;justify-content:center;align-items:center;backdrop-filter:blur(4px);" onclick="if(event.target===this)this.style.display='none'">
         <div style="background:var(--bg-secondary);border-radius:16px;padding:32px;max-width:700px;width:90%;max-height:85vh;overflow-y:auto;position:relative;">
-            <button onclick="document.getElementById('sizeGuideModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-primary);">&times;</button>
-            <h2 style="font-size:1.2rem;margin-bottom:20px;text-align:center;">Size Guide</h2>
+            <button onclick="document.getElementById('sizeGuideModal').style.display='none'" aria-label="Close size guide" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-primary);">&times;</button>
+            <strong style="font-size:1.2rem;margin-bottom:20px;text-align:center;display:block;">Size Guide</strong>
             <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;">
                 <button onclick="showSizeTab('men')" class="size-tab active" style="padding:6px 20px;border:1px solid var(--color-gold);background:var(--color-gold);color:#fff;border-radius:20px;font-size:0.75rem;cursor:pointer;">Men</button>
                 <button onclick="showSizeTab('women')" class="size-tab" style="padding:6px 20px;border:1px solid var(--border-light);background:transparent;color:var(--text-secondary);border-radius:20px;font-size:0.75rem;cursor:pointer;">Women</button>

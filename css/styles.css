@@ -2318,7 +2318,7 @@
             padding: 20px 40px; border-bottom: 1px solid var(--border-light);
             background: var(--text-primary); color: #fff;
         }
-        .contact-panel-header h2 {
+        .contact-panel-header .contact-panel-title {
             font-family: 'Great Vibes', cursive; font-size: 1.8rem; font-weight: 400;
             color: var(--color-gold);
         }
@@ -2340,7 +2340,7 @@
             padding: 40px; max-width: 1400px; margin: 0 auto;
         }
 
-        .cp-col h3 {
+        .cp-col .contact-col-title {
             font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
             letter-spacing: 2px; color: var(--color-gold); margin-bottom: 20px;
             padding-bottom: 10px; border-bottom: 2px solid var(--color-gold);
@@ -2430,7 +2430,7 @@
         }
         @media (max-width: 576px) {
             .contact-panel { max-height: 100vh; overflow-y: auto; }
-            .contact-panel-header h2 { font-size: 1.4rem; }
+            .contact-panel-header .contact-panel-title { font-size: 1.4rem; }
             .contact-panel-body { padding: 16px; gap: 20px; }
             .cp-map { height: 150px; }
         }
@@ -2546,7 +2546,7 @@
             padding: 20px 24px; overflow-y: auto; flex: 1;
         }
         .search-section { margin-bottom: 24px; }
-        .search-section h4 {
+        .search-section .search-section-title {
             font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
             letter-spacing: 1.5px; color: var(--text-secondary); margin-bottom: 12px;
         }
@@ -3185,7 +3185,7 @@
 
         /* MOBILE: Contact panel adjustments */
         @media (max-width: 576px) {
-            .contact-panel-header h2 { font-size: 1.3rem; }
+            .contact-panel-header .contact-panel-title { font-size: 1.3rem; }
             .contact-panel-body { padding: 16px; }
         }
 
