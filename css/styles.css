@@ -1398,8 +1398,8 @@
         }
 
         @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         /* ============================================================
@@ -1414,8 +1414,15 @@
         }
         .skeleton-card .skeleton-image {
             aspect-ratio: 4 / 5;
-            background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
+            background: #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+        .skeleton-card .skeleton-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.5) 50%, transparent 75%);
             animation: shimmer 1.5s infinite;
         }
         .skeleton-card .skeleton-info {
@@ -2054,9 +2061,9 @@
         .floating-whatsapp:hover { transform: scale(1.1); box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6); color: #fff; }
         .floating-whatsapp.hidden-wa { display: none; }
         @keyframes whatsappPulse {
-            0% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
-            50% { box-shadow: 0 4px 30px rgba(37, 211, 102, 0.7); }
-            100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+            100% { transform: scale(1); }
         }
 
         /* ============================================================
@@ -2773,7 +2780,7 @@
         }
 
         /* GPU acceleration for animations */
-        .product-card, .category-card, .hero-content, .drawer, .mini-cart, .search-overlay {
+        .drawer, .mini-cart, .search-overlay {
             will-change: transform;
         }
 
@@ -2823,14 +2830,20 @@
            DESIGN: Skeleton loading placeholder
         ============================================================ */
         .skeleton {
-            background: linear-gradient(90deg, var(--bg-primary) 25%, #EDEDED 50%, var(--bg-primary) 75%);
-            background-size: 200% 100%;
-            animation: skeletonShimmer 1.5s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
             border-radius: var(--radius-card);
         }
+        .skeleton::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.5) 50%, transparent 75%);
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
         @keyframes skeletonShimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         /* ============================================================
@@ -3225,7 +3238,7 @@
         .skeleton-text { height: 14px; margin-bottom: 8px; border-radius: 4px; }
         .skeleton-text-sm { height: 10px; width: 60%; border-radius: 4px; }
         .skeleton-text-lg { height: 20px; width: 80%; border-radius: 4px; }
-        @keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        @keyframes skeleton-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
         /* BACK TO TOP */
         #backToTop { display: none; position: fixed; bottom: 80px; right: 20px; z-index: 999; width: 44px; height: 44px; border-radius: 50%; background: var(--gold, #C8A35A); color: #000; border: none; cursor: pointer; font-size: 1.2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.2); transition: transform 0.2s, opacity 0.2s; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
