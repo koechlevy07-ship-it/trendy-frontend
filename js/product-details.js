@@ -1638,8 +1638,14 @@ async function loadSocialLinks() {
                 if (!/^https?:\/\//i.test(url)) return '';
                 return `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer" aria-label="${escHtml(k)}"><i class="${iconMap[k] || 'fas fa-link'}"></i></a>`;
             }).filter(Boolean).join('');
-        document.getElementById('footerSocialLinks').innerHTML = html;
-        document.getElementById('drawerSocialLinks').innerHTML = html;
+        const footerEl = document.getElementById('footerSocialLinks');
+        const drawerEl = document.getElementById('drawerSocialLinks');
+        if (footerEl) footerEl.innerHTML = html;
+        if (drawerEl) drawerEl.innerHTML = html;
+        if (links.whatsapp && links.whatsapp.enabled && links.whatsapp.url) {
+            const floater = document.getElementById('floatingWhatsApp');
+            if (floater) { floater.href = links.whatsapp.url; floater.classList.remove('hidden-wa'); }
+        }
     } catch(e) {}
 }
 loadSocialLinks();

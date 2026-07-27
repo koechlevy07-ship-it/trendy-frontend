@@ -268,6 +268,9 @@
         </div>
     </footer>
 
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/254728985417" target="_blank" class="floating-whatsapp hidden-wa" id="floatingWhatsApp" aria-label="Chat on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+
     <script>
         window.addEventListener('scroll', function() {
             var h = document.getElementById('stickyHeader');
@@ -275,6 +278,14 @@
                 if (window.scrollY > 60) h.classList.add('shrink');
                 else h.classList.remove('shrink');
             }
+            var wa = document.getElementById('floatingWhatsApp');
+            if (wa) wa.classList.toggle('hidden-wa', window.scrollY < 200);
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                var wa = document.getElementById('floatingWhatsApp');
+                if (wa) wa.classList.remove('hidden-wa');
+            }, 800);
         });
     </script>
 </body>

@@ -1153,6 +1153,10 @@ async function loadSocialLinks() {
         const drawerEl = $('drawerSocialLinks');
         if (footerEl) footerEl.innerHTML = html;
         if (drawerEl) drawerEl.innerHTML = html;
+        if (links.whatsapp && links.whatsapp.enabled && links.whatsapp.url) {
+            const floater = document.getElementById('floatingWhatsApp');
+            if (floater) { floater.href = links.whatsapp.url; floater.classList.remove('hidden-wa'); }
+        }
     } catch(e) {}
 }
 

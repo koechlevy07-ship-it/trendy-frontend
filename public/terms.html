@@ -770,9 +770,15 @@
     </footer>
 
     <!-- WhatsApp Floating Button -->
-    <a href="https://wa.me/254728985417" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
-        <i class="fab fa-whatsapp"></i>
-    </a>
+    <a href="https://wa.me/254728985417" target="_blank" class="floating-whatsapp hidden-wa" id="floatingWhatsApp" aria-label="Chat on WhatsApp"><i class="fab fa-whatsapp"></i></a>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                var wa = document.getElementById('floatingWhatsApp');
+                if (wa) wa.classList.remove('hidden-wa');
+            }, 800);
+        });
+    </script>
 </body>
 </html>
