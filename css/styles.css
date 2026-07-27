@@ -1181,7 +1181,7 @@
         .hero-content h1 { font-size: clamp(1.8rem, 8vw, 2.8rem); letter-spacing: 1px; }
         .hero-secondary { font-size: 0.75rem; letter-spacing: 3px; margin-bottom: 10px; }
         .hero-content .hero-sub { font-size: 0.78rem; margin-bottom: 24px; }
-        .hero-eyebrow { font-size: 0.6rem; letter-spacing: 3px; margin-bottom: 10px; }
+        .hero-eyebrow { font-size: 0.65rem; letter-spacing: 3px; margin-bottom: 10px; }
         .hero-content .btn-primary-cta,
         .hero-content .btn-shop { padding: 12px 24px; font-size: 0.7rem; min-height: 48px; }
         .hero-content .btn-secondary-cta { padding: 10px 22px; font-size: 0.65rem; min-height: 44px; }
@@ -1609,7 +1609,7 @@
         .product-card .product-info .product-rating .stars i.empty { color: #E5E7EB; }
         .product-card .product-info .product-rating .count {
             font-weight: 400;
-            font-size: 0.55rem;
+            font-size: 0.7rem;
             color: var(--text-secondary);
         }
         .product-card .product-info .product-price-row {
@@ -2446,13 +2446,13 @@
 
         /* Wishlist button on card */
         .product-image-wrap .wishlist-btn {
-            width: 32px; height: 32px; font-size: 0.65rem;
+            width: 40px; height: 40px; font-size: 0.7rem;
             top: 8px; right: 8px;
         }
 
         /* Badge on card */
         .badge-discount, .badge-out, .badge-new, .badge-flash, .badge-limited {
-            font-size: 0.5rem; padding: 2px 7px;
+            font-size: 0.65rem; padding: 2px 7px;
         }
 
         /* Card info section */
@@ -2461,7 +2461,7 @@
             gap: 2px;
         }
         .product-card .product-info .product-brand {
-            font-size: 0.5rem; letter-spacing: 0.8px;
+            font-size: 0.65rem; letter-spacing: 0.8px;
         }
         .product-card .product-info .product-name {
             font-size: 12px; min-height: 2.1em;
@@ -2518,8 +2518,8 @@
         .category-card { aspect-ratio: 3 / 3; border-radius: 14px; }
         .category-card img { object-fit: contain; background: #fafafa; }
         .category-card .card-overlay h3 { font-size: 1.5rem; letter-spacing: 1.5px; }
-        .category-card .card-overlay .catalog-subtitle { font-size: 0.6rem; }
-        .category-card .card-overlay .shop-now { font-size: 0.6rem; padding: 5px 14px; }
+        .category-card .card-overlay .catalog-subtitle { font-size: 0.7rem; }
+        .category-card .card-overlay .shop-now { font-size: 0.7rem; padding: 5px 14px; min-height: 36px; }
         .products-section .container { padding: 0 8px; }
         .products-grid { gap: 8px; }
         .mini-cart { width: 100%; max-width: 100%; padding: 20px 16px; }
@@ -2527,13 +2527,13 @@
     }
     @media (max-width: 390px) {
         .header-mobile { padding: 8px 10px; min-height: 48px; }
-        .icon-btn { width: 36px; height: 36px; }
-        .icon-btn i { font-size: 17px; }
+        .icon-btn { width: 40px; height: 40px; }
+        .icon-btn i { font-size: 18px; }
         .icon-btn .badge { min-width: 12px; height: 12px; font-size: 7px; top: 1px; right: 1px; }
-        .search-btn { width: 36px; height: 36px; }
-        .search-btn i { font-size: 17px; }
-        .profile-btn { width: 36px; height: 36px; }
-        .hamburger-btn { width: 36px; height: 36px; }
+        .search-btn { width: 40px; height: 40px; }
+        .search-btn i { font-size: 18px; }
+        .profile-btn { width: 40px; height: 40px; }
+        .hamburger-btn { width: 40px; height: 40px; }
         .hamburger-btn .hamburger-line { width: 16px; height: 1.5px; }
 
         .logo-svg-mobile { width: 96px; }
@@ -2552,13 +2552,13 @@
        .logo-svg-mobile { width: 84px; }
        .logo-wordmark-mobile { display: none; }
        .logo-sub-mobile { display: none; }
-       .icon-btn { width: 34px; height: 34px; }
-       .icon-btn i { font-size: 16px; }
+       .icon-btn { width: 40px; height: 40px; }
+       .icon-btn i { font-size: 17px; }
        .icon-btn .badge { min-width: 11px; height: 11px; font-size: 6px; }
-       .search-btn { width: 34px; height: 34px; }
-       .search-btn i { font-size: 16px; }
-       .profile-btn { width: 34px; height: 34px; }
-       .hamburger-btn { width: 34px; height: 34px; }
+       .search-btn { width: 40px; height: 40px; }
+       .search-btn i { font-size: 17px; }
+       .profile-btn { width: 40px; height: 40px; }
+       .hamburger-btn { width: 40px; height: 40px; }
         .hamburger-btn .hamburger-line { width: 14px; }
     }
 
@@ -2772,8 +2772,8 @@
         /* Filter buttons on small mobile — readable but compact */
         @media (max-width: 480px) {
             .filter-group { gap: 4px; }
-            .filter-btn { padding: 6px 12px; font-size: 0.6rem; border-radius: 30px; min-height: 40px; }
-            .filter-label { font-size: 0.55rem; }
+            .filter-btn { padding: 6px 12px; font-size: 0.6rem; border-radius: 30px; min-height: 44px; }
+            .filter-label { font-size: 0.7rem; }
         }
 
         /* WhatsApp: right on mobile, above bottom nav, respecting safe area */
@@ -2976,8 +2976,8 @@
         .product-count { font-size: 0.7rem; color: var(--text-secondary); }
         @media (max-width: 768px) {
             .filter-bar { padding: 12px 0; gap: 8px; }
-            .filter-btn { padding: 5px 10px; font-size: 0.55rem; }
-            .sort-select { font-size: 0.6rem; padding: 6px 10px; padding-right: 26px; }
+            .filter-btn { padding: 6px 10px; font-size: 0.65rem; min-height: 36px; }
+            .sort-select { font-size: 0.7rem; padding: 6px 10px; padding-right: 26px; }
         }
 
         /* ============================================================
@@ -2986,7 +2986,7 @@
         .product-sizes { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
         .product-sizes .size-chip {
             padding: 3px 8px; border: 1px solid var(--border-light); border-radius: 4px;
-            font-size: 0.5rem; color: var(--text-secondary); cursor: pointer;
+            font-size: 0.7rem; color: var(--text-secondary); cursor: pointer;
             transition: all 0.2s; background: #fff; font-family: 'Poppins', sans-serif;
         }
         .product-sizes .size-chip:hover, .product-sizes .size-chip.selected {
@@ -2995,7 +2995,7 @@
         .product-sizes .size-chip.selected { font-weight: 600; }
         @media (max-width: 768px) {
             .product-sizes { gap: 3px; }
-            .product-sizes .size-chip { padding: 2px 6px; font-size: 0.45rem; }
+            .product-sizes .size-chip { padding: 4px 8px; font-size: 0.7rem; }
         }
 
         /* ============================================================
