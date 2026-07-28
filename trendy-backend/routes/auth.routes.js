@@ -5,6 +5,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { validate, schemas } = require('../middleware/validate');
 
+// GET /api/auth/mpesa-ping - debug endpoint
+router.get('/mpesa-ping', (req, res) => res.json({ pong: true, ok: true }));
+
 // POST /api/auth/register
 router.post('/register', validate(schemas.register), async (req, res) => {
     try {
