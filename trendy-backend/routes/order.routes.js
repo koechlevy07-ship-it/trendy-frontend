@@ -8,6 +8,7 @@ const Inventory = require('../models/Inventory');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { validate, schemas } = require('../middleware/validate');
 const { sendOrderConfirmation, sendAdminNewOrder, sendOrderStatusUpdate } = require('../services/emailService');
+const { processMpesaPayment, verifyMpesaPayment } = require('../services/paymentService');
 
 function escapeRegex(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
@@ -103,6 +104,59 @@ router.get('/payment-methods', async (req, res) => {
         res.json({ success: true, data: mapped });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+// POST /api/orders/callback/mpesa – Safaricom M-Pesa STK Push callback (NO auth)
+router.post('/callback/mpesa', async (req, res) => {
+    try {
+        const callbackData = req.body.Body?.stkCallback;
+        if (!callbackData) {
+            console.error('M-Pesa callback: missing stkCallback');
+            return res.json({ ResultCode: 0, ResultDesc: 'OK' });
+        }
+
+        const checkoutRequestId = callbackData.CheckoutRequestID;
+        const resultCode = callbackData.ResultCode;
+        const resultDesc = callbackData.ResultDesc;
+
+        console.log('M-Pesa callback:', { checkoutRequestId, resultCode, resultDesc });
+
+        const order = await Order.findOne({ 'paymentDetails.mpesaCheckoutRequestId': checkoutRequestId });
+        if (!order) {
+            console.error('M-Pesa callback: order not found for', checkoutRequestId);
+            return res.json({ ResultCode: 0, ResultDesc: 'OK' });
+        }
+
+        if (resultCode === 0) {
+            const items = callbackData.CallbackMetadata?.Item || [];
+            const mpesaReceipt = items.find(i => i.Name === 'MpesaReceiptNumber')?.Value || '';
+            const amount = items.find(i => i.Name === 'Amount')?.Value || order.total;
+            const phone = items.find(i => i.Name === 'PhoneNumber')?.Value || '';
+
+            order.paymentDetails.transactionId = mpesaReceipt;
+            order.paymentDetails.paymentRef = mpesaReceipt;
+            order.paymentDetails.paidAt = new Date();
+            order.paymentDetails.paymentStatus = 'completed';
+            order.paymentDetails.providerResponse = callbackData;
+            if (order.status === 'pending') order.status = 'confirmed';
+            order.timeline.push({ status: order.status, note: `M-Pesa payment confirmed (${mpesaReceipt})`, timestamp: new Date() });
+            await order.save();
+
+            const user = await User.findById(order.user).select('name email');
+            if (user) sendOrderConfirmation(order, user).catch(() => {});
+            if (user) sendAdminNewOrder(order, user).catch(() => {});
+        } else {
+            order.paymentDetails.paymentStatus = 'failed';
+            order.paymentDetails.providerResponse = callbackData;
+            order.timeline.push({ status: order.status, note: `M-Pesa payment failed: ${resultDesc}`, timestamp: new Date() });
+            await order.save();
+        }
+
+        res.json({ ResultCode: 0, ResultDesc: 'Success' });
+    } catch (err) {
+        console.error('M-Pesa callback error:', err);
+        res.json({ ResultCode: 0, ResultDesc: 'OK' });
     }
 });
 
@@ -447,6 +501,100 @@ router.post('/', authenticateToken, validate(schemas.order), async (req, res) =>
     } catch (err) {
         console.error('POST /orders error:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+// POST /api/orders/:id/pay-mpesa – Initiate M-Pesa STK Push for an order
+router.post('/:id/pay-mpesa', authenticateToken, async (req, res) => {
+    try {
+        const { phoneNumber } = req.body;
+        if (!phoneNumber) return res.status(400).json({ success: false, message: 'Phone number is required' });
+
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+        if (order.user.toString() !== req.user.id)
+            return res.status(403).json({ success: false, message: 'Not authorized' });
+        if (order.paymentDetails?.paymentStatus === 'completed')
+            return res.status(400).json({ success: false, message: 'Order already paid' });
+
+        let formattedPhone = phoneNumber.replace(/^\+?254/, '254').replace(/^0/, '254');
+        if (!formattedPhone.startsWith('254')) formattedPhone = '254' + formattedPhone;
+
+        const result = await processMpesaPayment({
+            phoneNumber: formattedPhone,
+            amount: order.total,
+            accountReference: order.orderNumber,
+            transactionDesc: `Payment for order ${order.orderNumber}`,
+            callbackUrl: `${process.env.API_URL || 'https://trendy-backend-jq27.onrender.com'}/api/orders/callback/mpesa`
+        });
+
+        if (!result.success) {
+            return res.status(400).json({ success: false, message: result.error || 'M-Pesa STK Push failed' });
+        }
+
+        order.paymentDetails.mpesaCheckoutRequestId = result.checkoutRequestId;
+        order.paymentDetails.mpesaMerchantRequestId = result.merchantRequestId;
+        order.paymentDetails.paymentStatus = 'processing';
+        order.paymentDetails.providerResponse = result;
+        order.timeline.push({ status: order.status, note: `M-Pesa STK Push sent to ${formattedPhone}`, timestamp: new Date() });
+        await order.save();
+
+        res.json({
+            success: true,
+            message: result.customerMessage || 'Check your phone for the M-Pesa prompt',
+            data: {
+                checkoutRequestId: result.checkoutRequestId,
+                merchantRequestId: result.merchantRequestId
+            }
+        });
+    } catch (err) {
+        console.error('M-Pesa pay error:', err);
+        res.status(500).json({ success: false, message: 'M-Pesa payment failed' });
+    }
+});
+
+// POST /api/orders/:id/verify-payment – Poll payment status
+router.post('/:id/verify-payment', authenticateToken, async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+        if (order.user.toString() !== req.user.id && req.user.role !== 'admin')
+            return res.status(403).json({ success: false, message: 'Not authorized' });
+
+        if (order.paymentDetails?.paymentStatus === 'completed') {
+            return res.json({ success: true, data: { status: 'completed', orderNumber: order.orderNumber } });
+        }
+
+        if (order.paymentDetails?.mpesaCheckoutRequestId) {
+            const verification = await verifyMpesaPayment(order.paymentDetails.mpesaCheckoutRequestId);
+            if (verification.success) {
+                const mpesaReceipt = verification.resultParameters?.find(p => p.Name === 'MpesaReceiptNumber')?.Value || '';
+                order.paymentDetails.transactionId = mpesaReceipt;
+                order.paymentDetails.paymentRef = mpesaReceipt;
+                order.paymentDetails.paidAt = new Date();
+                order.paymentDetails.paymentStatus = 'completed';
+                order.paymentDetails.providerResponse = verification;
+                if (order.status === 'pending') order.status = 'confirmed';
+                order.timeline.push({ status: order.status, note: `M-Pesa payment verified (${mpesaReceipt})`, timestamp: new Date() });
+                await order.save();
+                return res.json({ success: true, data: { status: 'completed', orderNumber: order.orderNumber } });
+            }
+            if (verification.pending) {
+                return res.json({ success: true, data: { status: 'processing' } });
+            }
+            if (verification.error) {
+                order.paymentDetails.paymentStatus = 'failed';
+                order.paymentDetails.providerResponse = verification;
+                order.timeline.push({ status: order.status, note: `M-Pesa payment failed: ${verification.error}`, timestamp: new Date() });
+                await order.save();
+                return res.json({ success: true, data: { status: 'failed' } });
+            }
+        }
+
+        res.json({ success: true, data: { status: order.paymentDetails?.paymentStatus || 'pending' } });
+    } catch (err) {
+        console.error('Verify payment error:', err);
+        res.status(500).json({ success: false, message: 'Payment verification failed' });
     }
 });
 

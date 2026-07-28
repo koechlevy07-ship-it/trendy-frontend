@@ -72,9 +72,11 @@ const orderSchema = new mongoose.Schema({
         paidAt: { type: Date },
         paymentStatus: {
             type: String,
-            enum: ['pending', 'completed', 'failed', 'refunded', 'partially_refunded'],
+            enum: ['pending', 'processing', 'completed', 'failed', 'refunded', 'partially_refunded'],
             default: 'pending'
         },
+        mpesaCheckoutRequestId: { type: String, default: '' },
+        mpesaMerchantRequestId: { type: String, default: '' },
         providerResponse: { type: mongoose.Schema.Types.Mixed }
     },
     status: {
