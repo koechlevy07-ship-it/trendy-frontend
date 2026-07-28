@@ -463,6 +463,10 @@ async function verifyPayment({ provider, transactionId, checkoutSessionToken }) 
     }
 }
 
+function generateTransactionId() {
+    return 'TWTX-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
 module.exports = {
     processMpesaPayment,
     verifyMpesaPayment,
