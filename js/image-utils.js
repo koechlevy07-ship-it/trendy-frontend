@@ -21,7 +21,7 @@ function getImageUrl(path, width) {
     }
     // Bare filename or relative path — construct full Cloudinary URL
     const clean = path.replace(/^\/+/, '');
-    return `https://res.cloudinary.com/vbnlibtl/image/upload/f_auto,q_auto,w_${w}/trendy-wardrobe/${clean}`;
+    return `https://res.cloudinary.com/vbnlibtl/image/upload/f_auto,q_auto,w_${w}/trendy-products/${clean}`;
 }
 
 // Insert Cloudinary delivery transformations into an existing URL.
