@@ -271,7 +271,8 @@ async function loadOrders() {
     try {
         const res = await authFetch(`${API_URL}/orders/my-orders`);
         if (!res.ok) return;
-        orders = await res.json();
+        const data = await res.json();
+        orders = Array.isArray(data) ? data : (data.data || data.orders || data.result || []);
         renderOrders();
         renderRecentOrders();
     } catch(e) { /* ignore */ }

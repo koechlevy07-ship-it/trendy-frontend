@@ -626,7 +626,8 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error('Failed to fetch orders');
-                const orders = await res.json();
+                const raw = await res.json();
+                const orders = Array.isArray(raw) ? raw : (raw.data || raw.orders || raw.result || []);
                 renderOrders(orders, ordersListContainer);
             } catch (err) {
                 ordersListContainer.innerHTML =
