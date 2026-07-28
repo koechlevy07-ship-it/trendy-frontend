@@ -2024,6 +2024,14 @@
         let lastFetchGender = null;
         let lastFetchSearch = '';
         let currentProducts = [];
+        let displayedCount = 0;
+        const ROWS_INITIAL = 4;
+
+        function getGridColumns() {
+            if (!productsGrid) return 5;
+            return window.getComputedStyle(productsGrid).gridTemplateColumns.split(' ').length;
+        }
+        function getBatchSize() { return getGridColumns() * ROWS_INITIAL; }
 
         async function fetchProducts(filter = 'all', gender = null, search = '', page = 1, limit = 20, sortBy = 'newest') {
             try {
@@ -2166,29 +2174,32 @@
             });
         }
 
+        function updateShowMoreVisibility() {
+            var lmr = document.getElementById('loadMoreWrap');
+            var amr = document.getElementById('allLoadedWrap');
+            var hasMore = displayedCount < currentProducts.length || currentPage < totalPages;
+            var allLoaded = !hasMore && currentProducts.length > 0;
+            if (lmr) lmr.style.display = hasMore ? 'block' : 'none';
+            if (amr) amr.style.display = allLoaded ? 'block' : 'none';
+        }
+
         function renderProducts(products, append = false) {
             if (!products) products = currentProducts;
-            else if (!append) currentProducts = products;
-            else currentProducts = currentProducts.concat(products);
+            else if (!append) {
+                currentProducts = products;
+                displayedCount = Math.min(products.length, getBatchSize());
+            } else {
+                currentProducts = currentProducts.concat(products);
+            }
             if (!productsGrid) return;
             if (!currentProducts.length && !append) {
                 productsGrid.innerHTML =
                     `<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-secondary);">No products found.</div>`;
-                var lmr = document.getElementById('loadMoreWrap');
-                if (lmr) lmr.style.display = 'none';
+                updateShowMoreVisibility();
                 return;
             }
-            if (append) {
-                const fragment = document.createRange().createContextualFragment(products.map(p => buildProductCard(p)).join(''));
-                while (fragment.firstChild) productsGrid.appendChild(fragment.firstChild);
-            } else {
-                productsGrid.innerHTML = currentProducts.map(p => buildProductCard(p)).join('');
-            }
-            var lmr2 = document.getElementById('loadMoreWrap');
-            if (lmr2) lmr2.style.display = (currentPage < totalPages) ? 'block' : 'none';
-            var lmb = document.getElementById('loadMoreBtn');
-            if (lmb) lmb.style.display = (currentPage < totalPages) ? '' : 'none';
-
+            productsGrid.innerHTML = currentProducts.slice(0, displayedCount).map(p => buildProductCard(p)).join('');
+            updateShowMoreVisibility();
             bindProductCardEvents(productsGrid);
         }
 
@@ -2248,17 +2259,32 @@
         }
 
         async function loadMore() {
-            if (isLoadingMore || currentPage >= totalPages) return;
+            if (isLoadingMore) return;
+            var batchSize = getBatchSize();
+
+            if (displayedCount < currentProducts.length) {
+                displayedCount = Math.min(displayedCount + batchSize, currentProducts.length);
+                renderProducts();
+                return;
+            }
+            if (currentPage >= totalPages) {
+                updateShowMoreVisibility();
+                return;
+            }
             isLoadingMore = true;
-            const btn = document.getElementById('loadMoreBtn');
-            const spinner = document.getElementById('loadMoreSpinner');
+            var btn = document.getElementById('loadMoreBtn');
+            var spinner = document.getElementById('loadMoreSpinner');
             if (btn) btn.style.display = 'none';
             if (spinner) spinner.style.display = 'block';
-            const nextPage = currentPage + 1;
-            const { products, pagination } = await fetchProducts(lastFetchFilter, lastFetchGender, lastFetchSearch, nextPage, 20, currentSort);
-            currentPage = pagination.page;
-            totalPages = pagination.pages;
-            renderProducts(products, true);
+            var nextPage = currentPage + 1;
+            var result = await fetchProducts(lastFetchFilter, lastFetchGender, lastFetchSearch, nextPage, 20, currentSort);
+            currentPage = result.pagination.page;
+            totalPages = result.pagination.pages;
+            currentProducts = currentProducts.concat(result.products);
+            displayedCount = Math.min(displayedCount + batchSize, currentProducts.length);
+            productsGrid.innerHTML = currentProducts.slice(0, displayedCount).map(p => buildProductCard(p)).join('');
+            updateShowMoreVisibility();
+            bindProductCardEvents(productsGrid);
             isLoadingMore = false;
             if (spinner) spinner.style.display = 'none';
         }
