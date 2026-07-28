@@ -525,7 +525,7 @@ router.post('/:id/pay-mpesa', authenticateToken, async (req, res) => {
             amount: order.total,
             accountReference: order.orderNumber,
             transactionDesc: `Payment for order ${order.orderNumber}`,
-            callbackUrl: `${process.env.API_URL || 'https://trendy-backend-jq27.onrender.com'}/api/orders/callback/mpesa`
+            callbackUrl: `${process.env.API_URL || 'https://trendy-backend-jq27.onrender.com'}/api/mpesa/callback`
         });
 
         if (!result.success) {
