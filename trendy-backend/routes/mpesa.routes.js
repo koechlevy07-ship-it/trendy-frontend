@@ -4,6 +4,8 @@ const Order = require('../models/Order');
 const User = require('../models/User');
 const { sendOrderConfirmation, sendAdminNewOrder } = require('../services/emailService');
 
+router.get('/ping', (req, res) => res.json({ pong: true }));
+
 router.post('/callback', async (req, res) => {
     try {
         const callbackData = req.body.Body?.stkCallback;
