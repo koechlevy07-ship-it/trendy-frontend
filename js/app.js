@@ -646,14 +646,14 @@
                 const itemsList = order.items ? order.items.map(item =>
                     `${item.name} (x${item.quantity})`
                 ).join(', ') : '';
-                const discountText = order.discount ? ` (Discount: Ksh ${order.discount.toLocaleString()})` : '';
+                const discountText = order.discount ? ` (Discount: Ksh ${(order.discount || 0).toLocaleString()})` : '';
                 const canCancel = ['pending', 'confirmed'].includes(order.status);
-                const canRefund = order.status === 'delivered' && order.refundStatus === 'none';
-                const refundBadge = order.refundStatus !== 'none' ? `<span style="font-size:0.7rem;background:${order.refundStatus==='approved'||order.refundStatus==='completed'?'var(--success)':'var(--gold)'};color:${order.refundStatus==='rejected'?'#fff':'#000'};padding:2px 8px;border-radius:20px;margin-left:6px;">Refund: ${order.refundStatus}</span>` : '';
+                const canRefund = order.status === 'delivered' && (!order.refundStatus || order.refundStatus === 'none');
+                const refundBadge = order.refundStatus && order.refundStatus !== 'none' ? `<span style="font-size:0.7rem;background:${order.refundStatus==='approved'||order.refundStatus==='completed'?'var(--success)':'var(--gold)'};color:${order.refundStatus==='rejected'?'#fff':'#000'};padding:2px 8px;border-radius:20px;margin-left:6px;">Refund: ${order.refundStatus}</span>` : '';
                 html += `
                         <div class="order-item" style="cursor:pointer;" onclick="openOrderDetail('${order._id}')">
                             <div class="order-header">
-                                <span class="order-id">#${order.orderNumber || order._id.toString().slice(-8).toUpperCase()}</span>
+                                <span class="order-id">#${order.orderNumber || String(order._id || '').slice(-8).toUpperCase()}</span>
                                 <span class="order-status ${statusClass}">${statusClass}</span>${refundBadge}
                             </div>
                             <div class="order-header" style="margin-bottom:4px;">
@@ -709,12 +709,13 @@
         async function openOrderDetail(orderId) {
             const token = getToken();
             try {
-                const res = await fetch(`${API_URL}/orders/my-orders`, {
+                const res = await fetch(`${API_URL}/orders/${orderId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                if (!res.ok) throw new Error('Failed to load order');
                 const data = await res.json();
-                const order = (data.data || data).find(o => o._id === orderId);
-                if (!order) return;
+                const order = data.data || data;
+                if (!order || !order._id) { showToast('Order not found'); return; }
                 const modal = document.getElementById('orderDetailModal');
                 const content = document.getElementById('orderDetailContent');
                 const statusSteps = ['pending', 'confirmed', 'processing', 'packed', 'shipped', 'delivered'];
@@ -742,19 +743,19 @@
                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
                         ${statusSteps.map((s, i) => `<div style="flex:1;min-width:60px;text-align:center;padding:6px 4px;border-radius:6px;font-size:0.7rem;font-weight:600;background:${i <= currentIdx ? 'var(--gold)' : 'var(--bg-secondary)'};color:${i <= currentIdx ? '#000' : 'var(--text-muted)'};">${s}</div>`).join('<div style="width:12px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);">→</div>')}
                     </div>
-                    ${order.trackingNumber ? `<div style="margin-bottom:12px;padding:10px;background:var(--bg-secondary);border-radius:8px;font-size:0.85rem;"><strong>Tracking:</strong> ${order.trackingNumber}</div>` : ''}
+                    ${order.trackingNumber ? `<div style="margin-bottom:12px;padding:10px;background:var(--bg-secondary);border-radius:8px;font-size:0.85rem;"><strong>Tracking:</strong> ${escHtml(order.trackingNumber)}</div>` : ''}
                     <div style="margin-bottom:16px;"><h4 style="font-size:0.9rem;margin-bottom:8px;">Items</h4>${itemsHtml}</div>
                     <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;"><span>Subtotal</span><span>Ksh ${(order.subtotal || 0).toLocaleString()}</span></div>
-                    <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;"><span>Delivery</span><span>${order.deliveryFee === 0 ? 'Free' : 'Ksh ' + (order.deliveryFee || 0).toLocaleString()}</span></div>
-                    ${order.discount ? `<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;color:var(--success);"><span>Discount</span><span>-Ksh ${order.discount.toLocaleString()}</span></div>` : ''}
+                    <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;"><span>Delivery</span><span>${(order.deliveryFee === 0 || order.deliveryFee === '0') ? 'Free' : 'Ksh ' + (order.deliveryFee || 0).toLocaleString()}</span></div>
+                    ${order.discount ? `<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem;color:var(--success);"><span>Discount</span><span>-Ksh ${(order.discount || 0).toLocaleString()}</span></div>` : ''}
                     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:1rem;font-weight:700;border-top:2px solid var(--border-color);margin-top:4px;"><span>Total</span><span>Ksh ${(order.total || 0).toLocaleString()}</span></div>
                     <div style="margin-top:12px;padding:10px;background:var(--bg-secondary);border-radius:8px;font-size:0.8rem;">
-                        <div><strong>Payment:</strong> ${order.paymentMethod || 'Cash'}</div>
-                        <div><strong>Address:</strong> ${order.shippingAddress?.fullName || ''}, ${order.shippingAddress?.address || ''}, ${order.shippingAddress?.city || ''}</div>
-                        <div><strong>Phone:</strong> ${order.shippingAddress?.phone || ''}</div>
+                        <div><strong>Payment:</strong> ${escHtml(order.paymentMethod || 'Cash')}</div>
+                        <div><strong>Address:</strong> ${escHtml(order.shippingAddress?.fullName || '')}, ${escHtml(order.shippingAddress?.street || order.shippingAddress?.address || '')}, ${escHtml(order.shippingAddress?.city || '')}</div>
+                        <div><strong>Phone:</strong> ${escHtml(order.shippingAddress?.phone || '')}</div>
                     </div>
-                    ${order.cancelReason ? `<div style="margin-top:10px;padding:10px;background:#fff3f3;border-radius:8px;font-size:0.8rem;color:var(--error);"><strong>Cancellation reason:</strong> ${order.cancelReason}</div>` : ''}
-                    ${order.refundStatus !== 'none' ? `<div style="margin-top:10px;padding:10px;background:${order.refundStatus==='approved'?'#f0fff0':'#fff8e1'};border-radius:8px;font-size:0.8rem;"><strong>Refund:</strong> ${order.refundStatus} - Ksh ${(order.refundAmount||0).toLocaleString()}</div>` : ''}
+                    ${order.cancelReason ? `<div style="margin-top:10px;padding:10px;background:#fff3f3;border-radius:8px;font-size:0.8rem;color:var(--error);"><strong>Cancellation reason:</strong> ${escHtml(order.cancelReason)}</div>` : ''}
+                    ${order.refundStatus && order.refundStatus !== 'none' ? `<div style="margin-top:10px;padding:10px;background:${order.refundStatus==='approved'?'#f0fff0':'#fff8e1'};border-radius:8px;font-size:0.8rem;"><strong>Refund:</strong> ${escHtml(order.refundStatus)} - Ksh ${(order.refundAmount||0).toLocaleString()}</div>` : ''}
                     <h4 style="font-size:0.9rem;margin:16px 0 8px;">Order Timeline</h4>
                     ${timelineHtml || '<p style="font-size:0.8rem;color:var(--text-muted);">No timeline events yet.</p>'}
                 `;
@@ -1373,10 +1374,11 @@
                     size: item.size || undefined,
                     color: item.color || undefined
                 })),
-                shippingAddress: { fullName: name, phone, address, city, postcode },
+                shippingAddress: { fullName: name, phone, street: address, city, postcode, address: address },
                 total: parseFloat(checkoutTotal.textContent.replace('Ksh ', '').replace(/,/g, '')),
                 paymentMethod: checkoutPayment.value,
-                coupon: appliedCoupon ? appliedCoupon.code : undefined,
+                couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+                couponDiscount: appliedCoupon ? appliedCoupon.discount : undefined,
             };
 
             try {
@@ -1395,7 +1397,7 @@
                 renderMiniCart();
                 updateCartBadge();
                 closeCheckout();
-                orderNumberDisplay.textContent = `#${data.order.orderNumber || data.order._id.toString().slice(-8).toUpperCase()}`;
+                orderNumberDisplay.textContent = `#${(data.data || data.order || data).orderNumber || String((data.data || data.order || data)._id || '').slice(-8).toUpperCase()}`;
                 orderSuccessOverlay.classList.add('show');
                 document.body.classList.add('no-scroll');
                 showToast('Order placed successfully!', 'success');

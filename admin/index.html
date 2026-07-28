@@ -28,6 +28,8 @@
             --border-light: #E5E7EB;
             --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
             --shadow-lg: 0 10px 40px rgba(0,0,0,0.08);
+            --bg-card: #FFFFFF; --bg-tertiary: #F3F4F6;
+            --border-color: #E5E7EB;
             --gold: #C8A96A; --gold-dark: #B8975A; --gold-light: #D9BE8A;
             --success: #22C55E; --warning: #F59E0B; --error: #EF4444; --info: #3B82F6;
             --radius: 12px; --radius-sm: 8px;
@@ -618,6 +620,11 @@
                         <button onclick="exportOrdersCSV()" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-color);padding:5px 12px;border-radius:4px;cursor:pointer;font-size:0.78rem;"><i class="fas fa-download"></i> CSV</button>
                         <button onclick="exportOrdersJSON()" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-color);padding:5px 12px;border-radius:4px;cursor:pointer;font-size:0.78rem;"><i class="fas fa-file-export"></i> Export</button>
                     </div>
+                </div>
+                <div id="ordersBulkBar" class="orders-bulk-bar" style="display:none;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;margin-bottom:12px;background:var(--gold-light);border-radius:6px;font-size:0.82rem;">
+                    <span><strong id="bulkSelectedCount">0</strong> selected</span>
+                    <button onclick="showBulkOrderModal()" style="background:var(--gold);color:#000;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.78rem;font-weight:600;">Bulk Action</button>
+                    <button onclick="selectedOrderIds.clear();document.querySelectorAll('.order-checkbox').forEach(c=>c.checked=false);document.getElementById('orderSelectAll').checked=false;document.querySelectorAll('.orders-bulk-bar').forEach(el=>el.style.display='none');" style="background:transparent;border:1px solid var(--border-color);padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.78rem;">Clear</button>
                 </div>
                 <!-- Table -->
                 <div class="table-section">
@@ -5026,6 +5033,20 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
         let ordSearchDebounceTimer = null;
 
         function escStatus(s) { return s ? s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''; }
+        function downloadCsv(headers, rows, filename) {
+            const csvContent = [headers.join(','), ...rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(','))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename || 'export.csv';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        document.getElementById('orderSearchInput')?.addEventListener('input', function() { clearTimeout(ordSearchDebounceTimer); ordSearchDebounceTimer = setTimeout(() => { ordersPage = 1; loadOrders(); }, 400); });
+        document.getElementById('orderStatusFilter')?.addEventListener('change', function() { ordersPage = 1; loadOrders(); });
+        document.getElementById('orderPaymentFilter')?.addEventListener('change', function() { ordersPage = 1; loadOrders(); });
+        document.getElementById('orderSort')?.addEventListener('change', function() { ordersPage = 1; loadOrders(); });
 
         async function loadOrderStats() {
             try {
@@ -5306,7 +5327,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
             const newTx = parts[1] || tx;
             const newRef = parts[2] || ref;
             if (!['pending', 'completed', 'failed', 'refunded', 'partially_refunded'].includes(newStatus)) { showToast('Invalid status'); return; }
-            fetch(`${API_URL}/orders/${orderId}/payment`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ paymentStatus: newStatus, transactionId: newTx, paymentRef: newRef }) })
+            safeFetch(`${API_URL}/orders/${orderId}/payment`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ paymentStatus: newStatus, transactionId: newTx, paymentRef: newRef }) })
                 .then(r => r.json()).then(d => { if (d.success) { showToast('Payment updated'); loadOrders(); loadDashboardData(); } else showToast(d.message || 'Failed'); })
                 .catch(() => showToast('Failed'));
         }
@@ -5325,7 +5346,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
             const val = prompt('Update tracking (format: trackingNumber|courier|ETA_date):\n\nCurrent: ' + track + ' | ' + courier + ' | ' + eta, track + '|' + courier + '|' + eta);
             if (!val) return;
             const parts = val.split('|').map(s => s.trim());
-            fetch(`${API_URL}/orders/${orderId}/tracking`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ trackingNumber: parts[0] || track, courier: parts[1] || courier, estDeliveryDate: parts[2] || undefined }) })
+            safeFetch(`${API_URL}/orders/${orderId}/tracking`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ trackingNumber: parts[0] || track, courier: parts[1] || courier, estDeliveryDate: parts[2] || undefined }) })
                 .then(r => r.json()).then(d => { if (d.success) { showToast('Tracking updated'); loadOrders(); } else showToast(d.message || 'Failed'); })
                 .catch(() => showToast('Failed'));
         }
@@ -5338,7 +5359,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
         async function processRefund(orderId, refundStatus) {
             const note = prompt(`Add a note for this refund (${refundStatus}):`);
             try {
-                const res = await fetch(`${API_URL}/orders/${orderId}/refund`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ refundStatus, note }) });
+                const res = await safeFetch(`${API_URL}/orders/${orderId}/refund`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ refundStatus, note }) });
                 if (!res.ok) throw new Error('Failed');
                 showToast(`Refund ${refundStatus}`);
                 document.getElementById('orderDetailModal').classList.remove('show');
@@ -5350,7 +5371,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
             const reason = prompt('Enter return reason:');
             if (reason === null) return;
             try {
-                const res = await fetch(`${API_URL}/orders/${orderId}/return`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ reason, note: 'Return processed by admin' }) });
+                const res = await safeFetch(`${API_URL}/orders/${orderId}/return`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ reason, note: 'Return processed by admin' }) });
                 if (!res.ok) throw new Error('Failed');
                 showToast('Return processed');
                 document.getElementById('orderDetailModal').classList.remove('show');
@@ -5369,7 +5390,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
             const note = document.getElementById('bulkOrderNote').value.trim();
             const ids = Array.from(selectedOrderIds);
             try {
-                const res = await fetch(`${API_URL}/orders/admin/bulk`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ orderIds: ids, action, value, note }) });
+                const res = await safeFetch(`${API_URL}/orders/admin/bulk`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ orderIds: ids, action, value, note }) });
                 const d = await res.json();
                 if (!d.success) throw new Error(d.message || 'Failed');
                 showToast(d.message || 'Bulk action done');
@@ -5382,17 +5403,37 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
         async function exportOrdersCSV() {
             const status = document.getElementById('orderStatusFilter').value;
             const search = document.getElementById('orderSearchInput').value;
-            let url = `${API_URL}/orders/export?`;
-            if (status) url += `status=${status}&`;
-            if (search) url += `search=${encodeURIComponent(search)}&`;
-            window.open(url, '_blank');
+            try {
+                const res = await safeFetch(`${API_URL}/orders/admin/all?limit=10000${status ? '&status=' + status : ''}${search ? '&search=' + encodeURIComponent(search) : ''}`, { headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed');
+                const d = await res.json();
+                const orders = d.data || [];
+                const headers = ['Order #', 'Customer', 'Email', 'Phone', 'Items', 'Subtotal', 'Delivery', 'Discount', 'Total', 'Payment', 'Status', 'Tracking', 'Date'];
+                const rows = orders.map(o => [
+                    o.orderNumber || o._id?.toString().slice(-6) || '',
+                    o.shippingAddress?.fullName || o.user?.name || '',
+                    o.email || o.user?.email || '',
+                    o.shippingAddress?.phone || '',
+                    (o.items || []).length + ' item(s)',
+                    o.subtotal || 0,
+                    o.deliveryFee || 0,
+                    o.discount || o.couponDiscount || 0,
+                    o.total || 0,
+                    o.paymentDetails?.paymentStatus || 'pending',
+                    o.status || '',
+                    o.trackingNumber || '',
+                    o.createdAt ? new Date(o.createdAt).toLocaleDateString() : ''
+                ]);
+                downloadCsv(headers, rows, `orders-export-${new Date().toISOString().split('T')[0]}.csv`);
+                showToast('Orders exported');
+            } catch (err) { showToast('Export failed'); }
         }
 
         async function exportOrdersJSON() {
             const status = document.getElementById('orderStatusFilter').value;
             const search = document.getElementById('orderSearchInput').value;
             try {
-                const res = await fetch(`${API_URL}/orders/export`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ status: status || undefined, search: search || undefined, format: 'json' }) });
+                const res = await safeFetch(`${API_URL}/orders/admin/all?limit=10000${status ? '&status=' + status : ''}${search ? '&search=' + encodeURIComponent(search) : ''}`, { headers: getHeaders() });
                 const d = await res.json();
                 if (!d.success || !d.data) throw new Error('Failed');
                 const headers = ['Order #', 'Customer', 'Email', 'Phone', 'Items', 'Subtotal', 'Delivery', 'Discount', 'Total', 'Payment', 'Status', 'Courier', 'Tracking', 'Date'];

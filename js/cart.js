@@ -1052,12 +1052,14 @@ $('checkoutForm')?.addEventListener('submit', async function(e) {
             shippingAddress: {
                 fullName: $('checkoutName').value.trim(),
                 phone: $('checkoutPhone').value.trim(),
+                street: $('checkoutAddress').value.trim(),
                 address: $('checkoutAddress').value.trim(),
                 city: $('checkoutCity').value.trim()
             },
             total: parseFloat($('checkoutTotal').textContent.replace('Ksh ','').replace(/,/g,'')),
             paymentMethod: $('checkoutPayment').value,
-            coupon: appliedCoupon ? appliedCoupon.code : undefined
+            couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+            couponDiscount: appliedCoupon ? appliedCoupon.discount : undefined
         };
 
         const res = await fetch(`${API_URL}/orders`, {
@@ -1075,7 +1077,8 @@ $('checkoutForm')?.addEventListener('submit', async function(e) {
         $('discountRow').style.display = 'none';
         closeCheckout();
 
-        $('orderNumberDisplay').textContent = `#${data.order?.orderNumber || data.order?._id?.toString().slice(-8).toUpperCase() || 'TW-000001'}`;
+        const orderObj = data.data || data.order || data;
+        $('orderNumberDisplay').textContent = `#${orderObj.orderNumber || String(orderObj._id || '').slice(-8).toUpperCase() || 'TW-000001'}`;
         $('orderSuccessOverlay').classList.add('show');
         showToast('Order placed successfully!', 'success');
         loadCart();

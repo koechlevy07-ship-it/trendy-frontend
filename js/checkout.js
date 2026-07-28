@@ -926,9 +926,10 @@ $('placeOrderBtn')?.addEventListener('click', async function() {
         localStorage.removeItem('cart');
 
         // Redirect to confirmation page
-        const orderId = data.data?._id || data.order?._id;
-        const orderNumber = data.data?.orderNumber || data.order?.orderNumber;
-        window.location.href = `/order-confirmation.html?id=${orderId}&number=${orderNumber}`;
+        const orderObj = data.data || data.order || data;
+        const orderId = orderObj._id || orderObj.id;
+        const orderNumber = orderObj.orderNumber;
+        window.location.href = `/order-confirmation.html?id=${orderId}&number=${orderNumber || ''}`;
 
     } catch (err) {
         showToast(err.message || 'Failed to place order', 'error');
