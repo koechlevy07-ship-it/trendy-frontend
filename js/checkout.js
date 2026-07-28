@@ -586,6 +586,8 @@ async function loadPaymentMethods() {
 
 function selectPaymentMethod(id, label) {
     selectedPayment = { id, label };
+    const mpesaSection = $('mpesaPhoneSection');
+    if (mpesaSection) mpesaSection.style.display = id === 'm-pesa' ? 'block' : 'none';
 }
 
 // Coupon
@@ -843,17 +845,24 @@ $('placeOrderBtn')?.addEventListener('click', async function() {
     if (this.disabled) return;
     if (!isLoggedIn()) { showToast('Please sign in', 'error'); return; }
 
-    // Double-check stock before placing
+    const isMpesa = selectedPayment?.id === 'm-pesa';
+
+    if (isMpesa) {
+        const phone = $('mpesaPhoneInput')?.value?.trim() || $('shipPhone')?.value?.trim() || '';
+        if (!phone || phone.replace(/\D/g,'').length < 9) {
+            showToast('Please enter a valid M-Pesa phone number', 'error');
+            return;
+        }
+    }
+
     this.disabled = true;
     this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing Order...';
 
     try {
-        // Validate stock via API
         const stockRes = await authFetch(`${API_URL}/cart/validate-stock`, { method: 'POST' });
         const stockJson = await stockRes.json();
         const validation = stockJson.data;
         if (validation && !validation.valid && validation.issues?.length > 0) {
-            const msgs = validation.issues.map(i => `${i.name}: ${i.issue}`).join('\n');
             showToast('Stock issues found. Please review your cart.', 'error');
             this.disabled = false;
             this.innerHTML = 'Place Order <i class="fas fa-lock"></i>';
@@ -921,15 +930,36 @@ $('placeOrderBtn')?.addEventListener('click', async function() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Order failed');
 
-        // Clear local cart
-        setLocalCart([]);
-        localStorage.removeItem('cart');
-
-        // Redirect to confirmation page
         const orderObj = data.data || data.order || data;
         const orderId = orderObj._id || orderObj.id;
         const orderNumber = orderObj.orderNumber;
-        window.location.href = `/order-confirmation.html?id=${orderId}&number=${orderNumber || ''}`;
+
+        setLocalCart([]);
+        localStorage.removeItem('cart');
+
+        if (isMpesa) {
+            const phone = $('mpesaPhoneInput')?.value?.trim() || $('shipPhone')?.value?.trim() || '';
+            showMpesaModal();
+            try {
+                const payRes = await authFetch(`${API_URL}/orders/${orderId}/pay-mpesa`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber: phone })
+                });
+                const payData = await payRes.json();
+                if (!payRes.ok) throw new Error(payData.message || 'M-Pesa payment failed');
+                updateMpesaModal('pending', 'Check your phone for the M-Pesa prompt. Enter your PIN to complete payment.');
+                pollMpesaPayment(orderId, orderNumber, 0);
+            } catch (mpesaErr) {
+                updateMpesaModal('failed', mpesaErr.message || 'M-Pesa payment initiation failed');
+                $('mpesaModalCloseBtn')?.addEventListener('click', () => {
+                    hideMpesaModal();
+                    window.location.href = `/order-confirmation.html?id=${orderId}&number=${orderNumber || ''}`;
+                }, { once: true });
+            }
+        } else {
+            window.location.href = `/order-confirmation.html?id=${orderId}&number=${orderNumber || ''}`;
+        }
 
     } catch (err) {
         showToast(err.message || 'Failed to place order', 'error');
@@ -937,6 +967,96 @@ $('placeOrderBtn')?.addEventListener('click', async function() {
         this.innerHTML = 'Place Order <i class="fas fa-lock"></i>';
     }
 });
+
+function showMpesaModal() {
+    let modal = $('mpesaPaymentModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'mpesaPaymentModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content mpesa-modal">
+                <div class="mpesa-modal-icon" id="mpesaModalIcon"><i class="fas fa-mobile-alt"></i></div>
+                <h3 id="mpesaModalTitle">M-Pesa Payment</h3>
+                <p id="mpesaModalMsg">Waiting for M-Pesa confirmation...</p>
+                <div class="mpesa-modal-spinner" id="mpesaModalSpinner"><div class="spinner"></div></div>
+                <button id="mpesaModalCloseBtn" style="display:none" class="btn btn-primary" onclick="this.closest('.modal-overlay').style.display='none'">Done</button>
+            </div>`;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'flex'; });
+    }
+    modal.style.display = 'flex';
+    updateMpesaModal('pending', 'Sending M-Pesa prompt to your phone...');
+}
+
+function updateMpesaModal(status, msg) {
+    const icon = $('mpesaModalIcon');
+    const title = $('mpesaModalTitle');
+    const msgEl = $('mpesaModalMsg');
+    const spinner = $('mpesaModalSpinner');
+    const closeBtn = $('mpesaModalCloseBtn');
+    if (msgEl) msgEl.textContent = msg;
+    if (status === 'pending') {
+        if (icon) icon.innerHTML = '<i class="fas fa-mobile-alt"></i>';
+        if (icon) icon.style.color = 'var(--accent, #C9A24D)';
+        if (title) title.textContent = 'M-Pesa Payment';
+        if (spinner) spinner.style.display = 'block';
+        if (closeBtn) closeBtn.style.display = 'none';
+    } else if (status === 'completed') {
+        if (icon) icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+        if (icon) icon.style.color = '#2ecc71';
+        if (title) title.textContent = 'Payment Successful!';
+        if (spinner) spinner.style.display = 'none';
+        if (closeBtn) { closeBtn.style.display = 'inline-block'; closeBtn.textContent = 'View Order'; }
+    } else {
+        if (icon) icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+        if (icon) icon.style.color = '#e74c3c';
+        if (title) title.textContent = 'Payment Issue';
+        if (spinner) spinner.style.display = 'none';
+        if (closeBtn) { closeBtn.style.display = 'inline-block'; closeBtn.textContent = 'Continue'; }
+    }
+}
+
+function hideMpesaModal() {
+    const modal = $('mpesaPaymentModal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function pollMpesaPayment(orderId, orderNumber, attempts) {
+    if (attempts >= 30) {
+        updateMpesaModal('failed', 'Payment verification timed out. Your order was placed — check your account for updates.');
+        $('mpesaModalCloseBtn')?.addEventListener('click', () => {
+            hideMpesaModal();
+            window.location.href = `/order-confirmation.html?id=${orderId}&number=${orderNumber || ''}`;
+        }, { once: true });
+        return;
+    }
+
+    try {
+        const res = await authFetch(`${API_URL}/orders/${orderId}/verify-payment`, { method: 'POST' });
+        const data = await res.json();
+        const status = data.data?.status;
+
+        if (status === 'completed') {
+            updateMpesaModal('completed', 'Payment confirmed! Redirecting to your order...');
+            setTimeout(() => {
+                window.location.href = `/order-confirmation.html?id=${orderId}&number=${orderNumber || ''}`;
+            }, 1500);
+            return;
+        } else if (status === 'failed') {
+            updateMpesaModal('failed', 'Payment was not completed. Your order is placed but awaiting payment.');
+            $('mpesaModalCloseBtn')?.addEventListener('click', () => {
+                hideMpesaModal();
+                window.location.href = `/order-confirmation.html?id=${orderId}&number=${orderNumber || ''}`;
+            }, { once: true });
+            return;
+        }
+
+        setTimeout(() => pollMpesaPayment(orderId, orderNumber, attempts + 1), 3000);
+    } catch (e) {
+        setTimeout(() => pollMpesaPayment(orderId, orderNumber, attempts + 1), 5000);
+    }
+}
 
 // ============================================================
 // HEADER & NAV

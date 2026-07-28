@@ -325,6 +325,14 @@
                         <div class="payment-methods" id="paymentMethods">
                             <div class="checkout-loading-inline"><i class="fas fa-spinner fa-spin"></i> Loading payment methods...</div>
                         </div>
+                        <div class="mpesa-phone-section" id="mpesaPhoneSection" style="display:none;margin-top:16px;padding:16px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border-color);">
+                            <label style="display:block;font-weight:600;margin-bottom:8px;"><i class="fas fa-mobile-alt" style="color:var(--accent,#C9A24D);margin-right:6px;"></i> M-Pesa Phone Number</label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <span style="font-weight:600;color:var(--text-secondary);white-space:nowrap;">+254</span>
+                                <input type="tel" id="mpesaPhoneInput" placeholder="7XX XXX XXX" style="flex:1;padding:10px 14px;border:1px solid var(--border-color);border-radius:8px;font-size:0.95rem;" maxlength="10" />
+                            </div>
+                            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">You will receive an STK Push prompt on this number to complete payment.</p>
+                        </div>
                         <div class="checkout-coupon-section">
                             <h3>Have a Coupon?</h3>
                             <div class="coupon-input-group">
