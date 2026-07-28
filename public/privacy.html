@@ -161,12 +161,12 @@ STICKY HEADER
             <span class="drawer-toggle" data-target="drawerShoes">Trendy Shoes <span class="arrow"><i class="fas fa-chevron-down"></i></span></span>
             <div class="drawer-sub" id="drawerShoes"><a href="#">Sneakers</a><a href="#">Boots</a><a href="#">Sandals</a><a href="#">Running Shoes</a><a href="#">Formal Shoes</a><a href="#">Sports Shoes</a><a href="#">New Arrivals</a></div>
         </div>
-        <a href="/" data-page="wishlist" id="drawerWishlist"><i class="far fa-heart" style="margin-right:10px;"></i>Wishlist</a>
-        <a href="/" data-page="orders" id="drawerOrders"><i class="fas fa-box" style="margin-right:10px;"></i>My Orders</a>
+        <a href="#" data-page="wishlist" id="drawerWishlist"><i class="far fa-heart" style="margin-right:10px;"></i>Wishlist</a>
+        <a href="#" data-page="orders" id="drawerOrders"><i class="fas fa-box" style="margin-right:10px;"></i>My Orders</a>
         <a href="/contact.html" id="drawerContact">Contact Us</a>
         <a href="/about.html">About Us</a>
-        <a href="/" data-page="settings" id="drawerSettings"><i class="fas fa-cog" style="margin-right:10px;"></i>Settings</a>
-        <a href="/" id="drawerLogout"><i class="fas fa-sign-out-alt" style="margin-right:10px;color:#D81B60;"></i>Log Out</a>
+        <a href="#" data-page="settings" id="drawerSettings"><i class="fas fa-cog" style="margin-right:10px;"></i>Settings</a>
+        <a href="#" id="drawerLogout"><i class="fas fa-sign-out-alt" style="margin-right:10px;color:#D81B60;"></i>Log Out</a>
     </nav>
     <div class="drawer-footer">
         <div class="social-icons" id="drawerSocialLinks"></div>
@@ -420,6 +420,27 @@ FOOTER
 <!-- FLOATING WHATSAPP -->
 <a href="https://wa.me/254728985417" target="_blank" class="floating-whatsapp hidden-wa" id="floatingWhatsApp" aria-label="Chat on WhatsApp"><i class="fab fa-whatsapp"></i></a>
 <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fas fa-arrow-up"></i></button>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border-light);z-index:9999;padding:6px 0 env(safe-area-inset-bottom, 6px);box-shadow:0 -2px 8px rgba(0,0,0,0.08);" aria-label="Mobile navigation">
+    <div style="display:flex;justify-content:space-evenly;align-items:center;width:100%;">
+        <button data-nav="home" onclick="window.location.href='/'" aria-label="Home" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.65rem;flex:1;min-height:44px;">
+            <i class="fas fa-home" style="font-size:1.15rem;"></i><span>Home</span>
+        </button>
+        <button data-nav="search" aria-label="Search" onclick="window.location.href='/'" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.65rem;flex:1;min-height:44px;">
+            <i class="fas fa-search" style="font-size:1.15rem;"></i><span>Search</span>
+        </button>
+        <button data-nav="wishlist" onclick="toggleAuthRequiredAction('wishlist')" aria-label="Wishlist" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.65rem;flex:1;min-height:44px;">
+            <i class="fas fa-heart" style="font-size:1.15rem;"></i><span>Wishlist</span>
+        </button>
+        <button data-nav="cart" onclick="openCartModal()" aria-label="Cart" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.65rem;flex:1;min-height:44px;">
+            <i class="fas fa-shopping-bag" style="font-size:1.15rem;"></i><span>Cart</span>
+        </button>
+        <button data-nav="account" onclick="toggleAuthRequiredAction('profile')" aria-label="Account" style="position:relative;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:8px 0;color:var(--text-secondary);font-size:0.65rem;flex:1;min-height:44px;">
+            <i class="fas fa-user" style="font-size:1.15rem;"></i><span>Account</span>
+        </button>
+    </div>
+</nav>
 
 <!-- TOAST -->
 <div class="toast" id="toast"><span id="toastMessage">Welcome!</span><span class="toast-close" id="toastClose">&times;</span></div>

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v34';
+const CACHE_VERSION = 'v35';
 const STATIC_CACHE = 'trendy-static-' + CACHE_VERSION;
 const DYNAMIC_CACHE = 'trendy-dynamic-' + CACHE_VERSION;
 const IMAGE_CACHE = 'trendy-images-' + CACHE_VERSION;
@@ -34,7 +34,11 @@ const API_SEMI_PATHS = [
 ];
 
 self.addEventListener('install', (event) => {
-    event.waitUntil(self.skipWaiting());
+    event.waitUntil(
+        caches.open(STATIC_CACHE).then(cache => {
+            return cache.add('/404.html').catch(() => {});
+        }).then(() => self.skipWaiting())
+    );
 });
 
 self.addEventListener('activate', (event) => {
@@ -223,7 +227,13 @@ async function networkFirst(request) {
         if (cached) return cached;
         if (request.mode === 'navigate') {
             const offlinePage = await caches.match('/404.html');
-            if (offlinePage) return offlinePage;
+            if (offlinePage) {
+                return new Response(offlinePage.body, {
+                    status: 503,
+                    statusText: 'Offline',
+                    headers: offlinePage.headers
+                });
+            }
         }
         return new Response(JSON.stringify({ error: 'Offline' }), {
             headers: { 'Content-Type': 'application/json' },

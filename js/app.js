@@ -469,6 +469,8 @@
             if (loginError) loginError.style.display = 'none';
             const email = loginEmail.value.trim();
             const password = loginPassword.value.trim();
+            var loginSubmitBtn = loginForm.querySelector('button[type="submit"]');
+            if (loginSubmitBtn) { loginSubmitBtn.disabled = true; loginSubmitBtn.textContent = 'Logging in...'; }
             try {
                 const res = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
@@ -478,21 +480,22 @@
                 const data = await res.json();
                 if (!res.ok) {
                     if (loginError) { loginError.textContent = data.message || 'Login failed'; loginError.style.display = 'block'; }
+                    if (loginSubmitBtn) { loginSubmitBtn.disabled = false; loginSubmitBtn.textContent = 'Login'; }
                     return;
                 }
                 setAuth(data.user, data.token);
                 showToast(`✅ Welcome back, ${data.user.name}!`, 'success');
                 closeAuthModal();
-                await loadWishlist();
-                await syncGuestWishlist();
+                loadWishlist();
+                syncGuestWishlist();
                 if (window.location.pathname !== '/account.html' && !window.location.pathname.includes('/account')) {
                     window.location.href = '/account.html';
                 } else {
                     loadProducts();
                 }
             } catch (err) {
-                loginError.textContent = 'Connection error';
-                loginError.style.display = 'block';
+                if (loginError) { loginError.textContent = 'Connection error'; loginError.style.display = 'block'; }
+                if (loginSubmitBtn) { loginSubmitBtn.disabled = false; loginSubmitBtn.textContent = 'Login'; }
             }
         });
 
@@ -509,6 +512,8 @@
                 registerError.style.display = 'block';
                 return;
             }
+            var regSubmitBtn = registerForm.querySelector('button[type="submit"]');
+            if (regSubmitBtn) { regSubmitBtn.disabled = true; regSubmitBtn.textContent = 'Creating account...'; }
             try {
                 const res = await fetch(`${API_URL}/auth/register`, {
                     method: 'POST',
@@ -519,13 +524,14 @@
                 if (!res.ok) {
                     registerError.textContent = data.message || 'Registration failed';
                     registerError.style.display = 'block';
+                    if (regSubmitBtn) { regSubmitBtn.disabled = false; regSubmitBtn.textContent = 'Create Account'; }
                     return;
                 }
                 setAuth(data.user, data.token);
                 showToast(`🎉 Welcome, ${data.user.name}!`, 'success');
                 closeAuthModal();
-                await loadWishlist();
-                await syncGuestWishlist();
+                loadWishlist();
+                syncGuestWishlist();
                 if (window.location.pathname !== '/account.html' && !window.location.pathname.includes('/account')) {
                     window.location.href = '/account.html';
                 } else {
@@ -534,6 +540,7 @@
             } catch (err) {
                 registerError.textContent = 'Connection error';
                 registerError.style.display = 'block';
+                if (regSubmitBtn) { regSubmitBtn.disabled = false; regSubmitBtn.textContent = 'Create Account'; }
             }
         });
 
@@ -1421,6 +1428,12 @@
             } else if (link.startsWith('#')) {
                 document.querySelector(link)?.scrollIntoView({ behavior: 'smooth' });
             } else {
+                if (link === '/collections' || link === '/collections/') {
+                    var target = document.querySelector('.products-section') || document.querySelector('#featured');
+                    if (target && window.location.pathname === '/') { target.scrollIntoView({ behavior: 'smooth' }); return; }
+                    window.location.href = '/#featured';
+                    return;
+                }
                 const url = new URL(link, window.location.origin);
                 const gender = url.searchParams.get('gender');
                 const cat = url.searchParams.get('category');
@@ -1588,7 +1601,7 @@
             // Primary CTA
             if (shopBtn) {
                 const ctaText = slide.primaryCtaText || slide.buttonText || 'SHOP TRENDY TRENCH COATS';
-                const ctaLink = slide.primaryCtaUrl || slide.buttonLink || '/collections';
+                const ctaLink = slide.primaryCtaUrl || slide.buttonLink || '/#featured';
                 shopBtn.textContent = ctaText;
                 shopBtn.onclick = () => handleCtaClick(ctaLink);
             }
