@@ -749,78 +749,84 @@
         .dropdown-banner .banner-sub { font-weight: 300; font-size: 0.7rem; color: var(--text-secondary); }
 
 /* ============================================================
-   HERO — Luxury Fashion Editorial (Cinematic)
+   HERO — Luxury Fashion Editorial (Split Composition)
    ============================================================ */
     .hero {
         position: relative;
         width: 100%;
-        height: clamp(600px, 72vh, 760px);
-        min-height: 580px;
+        height: clamp(620px, 75vh, 780px);
+        min-height: 560px;
         display: flex;
-        align-items: center;
-        justify-content: flex-start;
+        align-items: stretch;
         overflow: hidden;
         background: #0a0a0a;
     }
-   .hero-overlay {
-       position: absolute;
-       inset: 0;
-       z-index: 1;
-       pointer-events: none;
-       background: linear-gradient(
-           90deg,
-           rgba(0, 0, 0, 0.72) 0%,
-           rgba(0, 0, 0, 0.48) 35%,
-           rgba(0, 0, 0, 0.15) 65%,
-           rgba(0, 0, 0, 0.03) 100%
-       );
-   }
-   .hero::before {
-       content: '';
-       position: absolute;
-       inset: 0;
-       background: linear-gradient(
-           180deg,
-           rgba(0, 0, 0, 0.08) 0%,
-           rgba(0, 0, 0, 0) 30%,
-           rgba(0, 0, 0, 0) 70%,
-           rgba(0, 0, 0, 0.22) 100%
-       );
-       z-index: 1;
-   }
-    .hero-video {
+    .hero-overlay {
+        position: absolute;
+        left: 38%;
+        top: 0;
+        width: 24%;
+        height: 100%;
+        z-index: 1;
+        pointer-events: none;
+        background: linear-gradient(
+            90deg,
+            #0a0a0a 0%,
+            rgba(10, 10, 10, 0.85) 35%,
+            rgba(10, 10, 10, 0.35) 70%,
+            transparent 100%
+        );
+    }
+    .hero::before {
+        content: '';
         position: absolute;
         inset: 0;
-        width: 100%;
+        background: linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.06) 0%,
+            rgba(0, 0, 0, 0) 25%,
+            rgba(0, 0, 0, 0) 75%,
+            rgba(0, 0, 0, 0.18) 100%
+        );
+        z-index: 2;
+        pointer-events: none;
+    }
+    .hero-video {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 60%;
         height: 100%;
         object-fit: cover;
+        object-position: center top;
         z-index: 0;
         display: block;
     }
     .hero-video.hidden-video { display: none; }
-     .hero-bg {
-         position: absolute;
-         inset: -3%;
-         width: 106%;
-         height: 106%;
-         background-image: url('https://res.cloudinary.com/vbnlibtl/image/upload/f_auto,q_auto,w_1920,c_limit/trendy-wardrobe/file_isj9hu.png');
-         background-size: auto 110%;
-         background-position: right center;
-         background-repeat: no-repeat;
-         z-index: 0;
-         transform: translateZ(0) scale(1);
-         backface-visibility: hidden;
-         opacity: 0;
-         animation: heroBgReveal 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards,
-                    kenBurns 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.4s infinite alternate;
-     }
+    .hero-bg {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 60%;
+        height: 100%;
+        background-image: url('https://res.cloudinary.com/vbnlibtl/image/upload/f_auto,q_auto,w_1920,c_limit/trendy-wardrobe/file_isj9hu.png');
+        background-size: cover;
+        background-position: center top;
+        background-repeat: no-repeat;
+        z-index: 0;
+        transform: translateZ(0) scale(1);
+        backface-visibility: hidden;
+        opacity: 0;
+        animation: heroBgReveal 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+                   kenBurns 12s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.4s infinite alternate;
+    }
     @keyframes heroBgReveal {
-        0% { opacity: 0; transform: translateZ(0) scale(1.05); }
+        0% { opacity: 0; transform: translateZ(0) scale(1.04); }
         100% { opacity: 1; transform: translateZ(0) scale(1); }
     }
     @keyframes kenBurns {
         0% { transform: translateZ(0) scale(1); }
-        100% { transform: translateZ(0) scale(1.05); }
+        100% { transform: translateZ(0) scale(1.04); }
     }
     .hero-bg.parallax-disabled {
         animation: heroBgReveal 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -829,20 +835,24 @@
     }
     .hero-content {
         position: relative;
-        z-index: 2;
-        max-width: 680px;
-        padding: 0 clamp(24px, 5vw, 80px);
+        z-index: 3;
+        flex: 0 0 42%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 clamp(24px, 4vw, 72px);
+        padding-left: 6%;
         text-align: left;
     }
     .hero-eyebrow {
         display: block;
         font-family: 'Poppins', sans-serif;
         font-weight: 500;
-        font-size: clamp(0.6rem, 0.9vw, 0.75rem);
-        letter-spacing: 5px;
+        font-size: clamp(0.65rem, 0.95vw, 0.8rem);
+        letter-spacing: 6px;
         text-transform: uppercase;
         color: var(--color-gold);
-        margin-bottom: 18px;
+        margin-bottom: 20px;
         opacity: 0;
         transform: translateY(25px);
         animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
@@ -850,13 +860,13 @@
     .hero-content h1 {
         font-family: 'Oswald', sans-serif;
         font-weight: 700;
-        font-size: clamp(2.8rem, 7vw, 5.2rem);
-        line-height: 1.02;
-        letter-spacing: 5px;
+        font-size: clamp(3.2rem, 7.5vw, 5.8rem);
+        line-height: 1.0;
+        letter-spacing: 4px;
         color: #FFFFFF;
         text-transform: uppercase;
-        text-shadow: 0 2px 40px rgba(0, 0, 0, 0.4);
-        margin-bottom: 12px;
+        text-shadow: 0 2px 40px rgba(0, 0, 0, 0.5);
+        margin-bottom: 14px;
         opacity: 0;
         transform: translateY(25px);
         animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
@@ -868,7 +878,7 @@
         width: 56px;
         height: 2px;
         background: var(--color-gold);
-        margin: 0 0 20px;
+        margin: 0 0 22px;
         opacity: 0;
         transform: translateY(25px);
         animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
@@ -880,13 +890,13 @@
     .hero-content .hero-sub {
         font-family: 'Poppins', sans-serif;
         font-weight: 300;
-        font-size: clamp(0.85rem, 1.4vw, 1.05rem);
+        font-size: clamp(0.85rem, 1.3vw, 1.05rem);
         letter-spacing: 0.5px;
-        color: rgba(255, 255, 255, 0.82);
+        color: rgba(255, 255, 255, 0.8);
         text-transform: none;
-        margin-bottom: 32px;
+        margin-bottom: 36px;
         line-height: 1.7;
-        max-width: 440px;
+        max-width: 400px;
         opacity: 0;
         transform: translateY(25px);
         animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.75s forwards;
@@ -903,19 +913,19 @@
     .hero-content .btn-primary-cta,
     .hero-content .btn-shop {
         display: inline-block;
-        padding: 15px 40px;
+        padding: 16px 44px;
         background: var(--color-gold);
-        color: #111111;
+        color: #0a0a0a;
         font-family: 'Poppins', sans-serif;
         font-weight: 600;
         font-size: clamp(0.72rem, 0.9vw, 0.85rem);
         letter-spacing: 2px;
         text-transform: uppercase;
-        border-radius: 4px;
+        border-radius: 3px;
         border: none;
         cursor: pointer;
         transition: background 0.35s, color 0.35s, transform 0.35s, box-shadow 0.35s;
-        box-shadow: 0 4px 20px rgba(200, 163, 90, 0.25);
+        box-shadow: 0 4px 24px rgba(200, 163, 90, 0.3);
         position: relative;
         overflow: hidden;
         text-decoration: none;
@@ -924,7 +934,7 @@
     .hero-content .btn-shop:hover {
         background: #111111;
         color: var(--color-gold);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         transform: translateY(-2px);
     }
     .hero-content .btn-primary-cta:active,
@@ -942,7 +952,7 @@
         transform: scaleX(0);
         transform-origin: right;
         transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        border-radius: 4px;
+        border-radius: 3px;
         z-index: -1;
     }
     .hero-content .btn-shop:hover::before {
@@ -959,7 +969,7 @@
         font-size: clamp(0.7rem, 0.85vw, 0.82rem);
         letter-spacing: 1.5px;
         text-transform: uppercase;
-        border-radius: 4px;
+        border-radius: 3px;
         border: 1px solid var(--color-gold);
         cursor: pointer;
         transition: background 0.35s, color 0.35s, border-color 0.35s, transform 0.35s;
@@ -967,7 +977,7 @@
     }
     .hero-content .btn-secondary-cta:hover {
         background: var(--color-gold);
-        color: #111111;
+        color: #0a0a0a;
         transform: translateY(-1px);
     }
     .hero-content .btn-secondary-cta:active { transform: translateY(0); }
@@ -978,10 +988,10 @@
     /* Slide indicators — numbered style */
     .hero-indicators {
         position: absolute;
-        bottom: 32px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 3;
+        bottom: 36px;
+        left: 42%;
+        transform: translateX(0);
+        z-index: 4;
         display: flex;
         align-items: center;
         gap: 0;
@@ -1017,7 +1027,7 @@
     .hero-dot.active { color: var(--color-gold); }
     .hero-dot.active .dot-num { color: var(--color-gold); }
     .hero-dot.active .dot-line {
-        width: 32px;
+        width: 36px;
         background: var(--color-gold);
     }
     .hero-dot:focus-visible {
@@ -1037,7 +1047,15 @@
             height: clamp(520px, 72vh, 680px);
         }
         .hero-content {
-            max-width: 580px;
+            flex: 0 0 45%;
+            padding-left: 5%;
+        }
+        .hero-bg, .hero-video {
+            width: 57%;
+        }
+        .hero-overlay {
+            left: 40%;
+            width: 20%;
         }
     }
 
@@ -1055,7 +1073,8 @@
         }
         .hero-bg {
             position: relative;
-            inset: 0;
+            right: auto;
+            top: auto;
             width: 100%;
             height: 0;
             padding-bottom: 120%;
@@ -1069,15 +1088,15 @@
         }
         .hero-overlay {
             position: absolute;
-            top: 0;
             left: 0;
-            right: 0;
-            height: 70%;
+            top: 0;
+            width: 100%;
+            height: 100%;
             background: linear-gradient(
                 180deg,
-                rgba(0, 0, 0, 0.05) 0%,
-                rgba(0, 0, 0, 0.55) 50%,
-                rgba(0, 0, 0, 0.75) 100%
+                rgba(10, 10, 10, 0) 0%,
+                rgba(10, 10, 10, 0.3) 40%,
+                rgba(10, 10, 10, 0.75) 100%
             );
         }
         .hero::before {
@@ -1094,11 +1113,11 @@
             max-width: 100%;
             text-align: left;
             position: relative;
-            z-index: 2;
-            background: linear-gradient(180deg, rgba(10,10,10,0.85) 0%, rgba(10,10,10,0.95) 100%);
+            z-index: 3;
+            background: linear-gradient(180deg, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.98) 100%);
         }
         .hero-content h1 {
-            font-size: clamp(2rem, 10vw, 3.2rem);
+            font-size: clamp(2.2rem, 10vw, 3.4rem);
             letter-spacing: 2px;
         }
         .hero-content .hero-sub {
@@ -1113,7 +1132,7 @@
         .hero-content .btn-primary-cta,
         .hero-content .btn-shop {
             width: 100%;
-            max-width: 300px;
+            max-width: 320px;
             text-align: center;
             padding: 14px 32px;
             font-size: 0.78rem;
@@ -1136,8 +1155,8 @@
        ============================================================ */
     @media (max-width: 480px) {
         .hero-content { padding: 24px 20px 32px; }
-        .hero-content h1 { font-size: clamp(1.8rem, 8vw, 2.6rem); letter-spacing: 1px; }
-        .hero-content .hero-sub { font-size: 0.78rem; margin-bottom: 24px; }
+        .hero-content h1 { font-size: clamp(1.4rem, 7vw, 2rem); letter-spacing: 1px; }
+        .hero-content .hero-sub { font-size: 0.7rem; }
         .hero-eyebrow { font-size: 0.6rem; letter-spacing: 3px; margin-bottom: 12px; }
         .hero-content .btn-primary-cta,
         .hero-content .btn-shop { padding: 12px 24px; font-size: 0.7rem; min-height: 48px; }
@@ -2625,7 +2644,7 @@
         .logo-wordmark-mobile { font-size: 12px; letter-spacing: 1px; }
         .logo-sub-mobile { font-size: 8px; letter-spacing: 1.5px; }
 
-        .hero-content h1 { font-size: clamp(1.1rem, 4vw, 1.5rem); }
+        .hero-content h1 { font-size: clamp(1.2rem, 5vw, 1.6rem); letter-spacing: 1px; }
         .hero-content .hero-sub { font-size: 0.6rem; letter-spacing: 1.5px; }
         .hero-content .btn-shop { padding: 10px 20px; font-size: 0.6rem; min-height: 44px; }
         .products-section .container { padding: 0 6px; }
