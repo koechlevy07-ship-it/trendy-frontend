@@ -1082,6 +1082,10 @@ $('checkoutForm')?.addEventListener('submit', async function(e) {
         $('orderSuccessOverlay').classList.add('show');
         showToast('Order placed successfully!', 'success');
         loadCart();
+
+        if (($('checkoutPayment')?.value || '') === 'mpesa' && orderObj._id) {
+            setTimeout(() => showMpesaPayment(orderObj), 500);
+        }
     } catch (err) {
         showToast(err.message, 'error');
     } finally {
@@ -1285,3 +1289,102 @@ function initVirtualKeyboardHandler() {
     });
     window.visualViewport.addEventListener('focusout', function() { fixedEls.forEach(function(el) { el.style.transform = ''; }); });
 }
+
+// ============================================================
+// M-PESA PAYMENT
+// ============================================================
+const mpesaOverlay = document.getElementById('mpesaPaymentOverlay');
+const mpesaPhoneInput = document.getElementById('mpesaPhoneInput');
+const mpesaPayBtn = document.getElementById('mpesaPayBtn');
+const mpesaCancelBtn = document.getElementById('mpesaCancelBtn');
+const mpesaOrderDisplay = document.getElementById('mpesaOrderDisplay');
+const mpesaPaymentStatus = document.getElementById('mpesaPaymentStatus');
+let mpesaOrderId = null;
+
+function showMpesaPayment(order) {
+    mpesaOrderId = order._id;
+    mpesaOrderDisplay.textContent = `#${order.orderNumber || 'TW-' + order._id.slice(-8).toUpperCase()}`;
+    if ($('checkoutPhone')) mpesaPhoneInput.value = $('checkoutPhone').value;
+    mpesaPaymentStatus.style.display = 'none';
+    mpesaPayBtn.style.display = 'block';
+    mpesaPayBtn.disabled = false;
+    mpesaPayBtn.textContent = 'Pay with M-Pesa';
+    mpesaOverlay.style.display = 'flex';
+}
+
+function closeMpesaPayment() {
+    mpesaOverlay.style.display = 'none';
+}
+
+if (mpesaCancelBtn) mpesaCancelBtn.addEventListener('click', closeMpesaPayment);
+if (mpesaOverlay) mpesaOverlay.addEventListener('click', function(e) {
+    if (e.target === this) closeMpesaPayment();
+});
+
+if (mpesaPayBtn) mpesaPayBtn.addEventListener('click', async function() {
+    let phone = mpesaPhoneInput.value.trim();
+    if (!phone) {
+        mpesaPhoneInput.style.borderColor = 'red';
+        showToast('Please enter your M-Pesa phone number', 'error');
+        return;
+    }
+    mpesaPhoneInput.style.borderColor = '';
+    mpesaPayBtn.disabled = true;
+    mpesaPayBtn.textContent = 'Sending prompt...';
+    mpesaPaymentStatus.style.display = 'none';
+
+    try {
+        const res = await fetch(`${API_URL}/orders/${mpesaOrderId}/pay-mpesa`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phoneNumber: phone })
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.message || 'Payment failed');
+
+        mpesaPaymentStatus.style.display = 'block';
+        mpesaPaymentStatus.style.background = '#e8f5e9';
+        mpesaPaymentStatus.style.color = '#2e7d32';
+        mpesaPaymentStatus.innerHTML = `<strong>Prompt Sent!</strong><br><span style="font-size:0.8rem;">${result.message || 'Check your phone for the M-Pesa prompt.'}</span>`;
+        mpesaPayBtn.style.display = 'none';
+        showToast('M-Pesa prompt sent to your phone', 'success');
+
+        let pollCount = 0;
+        const pollInterval = setInterval(async () => {
+            pollCount++;
+            try {
+                const pollRes = await fetch(`${API_URL}/orders/${mpesaOrderId}/verify-payment`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                const pollData = await pollRes.json();
+                if (pollData.success && pollData.data) {
+                    if (pollData.data.status === 'completed') {
+                        clearInterval(pollInterval);
+                        mpesaPaymentStatus.innerHTML = '<strong>Payment Confirmed!</strong><br><span style="font-size:0.8rem;">Your M-Pesa payment was successful.</span>';
+                        mpesaPaymentStatus.style.background = '#e8f5e9';
+                        mpesaPaymentStatus.style.color = '#2e7d32';
+                        showToast('Payment confirmed! Thank you.', 'success');
+                        setTimeout(closeMpesaPayment, 3000);
+                    } else if (pollData.data.status === 'failed') {
+                        clearInterval(pollInterval);
+                        mpesaPaymentStatus.innerHTML = '<strong>Payment Failed</strong><br><span style="font-size:0.8rem;">The payment was not completed. Please try again.</span>';
+                        mpesaPaymentStatus.style.background = '#fff3f3';
+                        mpesaPaymentStatus.style.color = '#dc2626';
+                        mpesaPayBtn.style.display = 'block';
+                        mpesaPayBtn.disabled = false;
+                        mpesaPayBtn.textContent = 'Retry Payment';
+                    }
+                }
+            } catch (e) { /* ignore poll errors */ }
+            if (pollCount > 30) { clearInterval(pollInterval); }
+        }, 10000);
+    } catch (err) {
+        mpesaPaymentStatus.style.display = 'block';
+        mpesaPaymentStatus.style.background = '#fff3f3';
+        mpesaPaymentStatus.style.color = '#dc2626';
+        mpesaPaymentStatus.innerHTML = `<strong>Payment Error</strong><br><span style="font-size:0.8rem;">${err.message}</span>`;
+        mpesaPayBtn.disabled = false;
+        mpesaPayBtn.textContent = 'Try Again';
+    }
+});
