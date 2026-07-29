@@ -624,8 +624,11 @@
             </div>
             <div class="products-grid" id="productsGrid"></div>
             <div id="loadMoreWrap" style="text-align:center;padding:24px 0;display:none;">
-                <button id="loadMoreBtn" class="filter-btn active" style="padding:10px 32px;font-size:0.8rem;">Load More</button>
+                <button id="loadMoreBtn" class="filter-btn active" style="padding:10px 32px;font-size:0.8rem;">SHOW MORE</button>
                 <div id="loadMoreSpinner" style="display:none;margin-top:12px;color:var(--text-secondary);font-size:0.8rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+            </div>
+            <div id="allLoadedWrap" style="text-align:center;padding:24px 0;display:none;">
+                <p style="color:var(--text-muted);font-size:0.82rem;letter-spacing:0.5px;">ALL PRODUCTS LOADED</p>
             </div>
         </div>
     </section>
@@ -805,6 +808,25 @@
             <p style="font-size:0.85rem;color:var(--text-secondary);">You will receive a confirmation email shortly.</p>
             <button class="btn-dashboard" id="orderSuccessDashboard">Go to Dashboard</button>
             <button onclick="document.getElementById('orderSuccessOverlay').classList.remove('show');window.scrollTo({top:0,behavior:'smooth'});" style="margin-top:8px;padding:10px 24px;background:transparent;border:1px solid var(--border-light);border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;color:var(--text-secondary);">Continue Shopping</button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    M-PESA PAYMENT MODAL
+    ============================================================ -->
+    <div class="mpesa-payment-overlay" id="mpesaPaymentOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;justify-content:center;align-items:center;backdrop-filter:blur(4px);">
+        <div style="background:#fff;border-radius:16px;padding:32px;max-width:400px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;">
+            <div style="margin-bottom:16px;"><img src="https://cdn-icons-png.flaticon.com/128/5968/5968313.png" alt="M-Pesa" style="width:64px;height:64px;" onerror="this.style.display='none'"></div>
+            <h2 style="margin:0 0 8px;font-size:1.3rem;">Pay with M-Pesa</h2>
+            <p style="margin:0 0 8px;font-size:0.85rem;color:var(--text-secondary);">Enter your M-Pesa phone number to receive the payment prompt.</p>
+            <p style="margin:0 0 20px;font-size:0.8rem;color:var(--text-secondary);">Order: <strong id="mpesaOrderDisplay" style="color:var(--text-primary);"></strong></p>
+            <div style="margin-bottom:20px;">
+                <label style="display:block;text-align:left;font-size:0.8rem;font-weight:600;margin-bottom:4px;color:var(--text-secondary);">M-Pesa Phone Number</label>
+                <input type="tel" id="mpesaPhoneInput" placeholder="e.g. 0712345678" style="width:100%;padding:14px 16px;border:2px solid var(--border-light);border-radius:8px;font-size:1rem;font-family:inherit;box-sizing:border-box;" />
+            </div>
+            <div id="mpesaPaymentStatus" style="display:none;margin-bottom:16px;padding:12px;border-radius:8px;font-size:0.85rem;"></div>
+            <button id="mpesaPayBtn" style="width:100%;padding:14px;background:#41b35d;color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;">Pay with M-Pesa</button>
+            <button id="mpesaCancelBtn" style="width:100%;margin-top:8px;padding:10px;background:transparent;border:1px solid var(--border-light);border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;color:var(--text-secondary);">Cancel</button>
         </div>
     </div>
 
