@@ -11,6 +11,15 @@ const { sendOrderConfirmation, sendAdminNewOrder, sendOrderStatusUpdate } = requ
 
 function escapeRegex(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
+function getEffectiveStock(product) {
+    if (product.soldOut) return 0;
+    if (product.stock > 0) return product.stock;
+    if (product.limitedAvailable && product.limitedPieces > 0) return product.limitedPieces;
+    if (product.preOrder) return 999;
+    if (product.inStock) return product.stockThreshold || 5;
+    return 0;
+}
+
 async function logInventoryChange(productId, qty, type, reason, ref = '') {
     try {
         let inv = await Inventory.findOne({ product: productId });
@@ -331,10 +340,11 @@ router.post('/', authenticateToken, validate(schemas.order), async (req, res) =>
             if (!product) return res.status(400).json({ success: false, message: `Product not found: ${item.productId || item.id}` });
             const qty = item.quantity || 1;
 
+            const available = getEffectiveStock(product);
+            if (available < qty) {
+                return res.status(400).json({ success: false, message: `Insufficient stock for "${product.name}". Available: ${available}, requested: ${qty}` });
+            }
             if (!product.preOrder && !product.limitedAvailable) {
-                if (product.stock < qty) {
-                    return res.status(400).json({ success: false, message: `Insufficient stock for "${product.name}". Available: ${product.stock}, requested: ${qty}` });
-                }
                 stockUpdates.push({ productId: product._id, qty });
             }
 

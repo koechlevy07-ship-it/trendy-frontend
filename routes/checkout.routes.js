@@ -19,6 +19,15 @@ const { runFraudChecks } = require('../services/fraudService');
 const { sendOrderConfirmation, sendCheckoutAbandoned, sendPaymentConfirmation, sendOrderStatusUpdate } = require('../services/emailService');
 const { generateInvoicePDF, sendInvoiceEmail } = require('../services/invoiceService');
 
+function getEffectiveStock(product) {
+    if (product.soldOut) return 0;
+    if (product.stock > 0) return product.stock;
+    if (product.limitedAvailable && product.limitedPieces > 0) return product.limitedPieces;
+    if (product.preOrder) return 999;
+    if (product.inStock) return product.stockThreshold || 5;
+    return 0;
+}
+
 // Helper functions
 function generateSessionToken() {
     return crypto.randomBytes(32).toString('hex');
@@ -66,8 +75,9 @@ router.post('/', async (req, res) => {
                 return res.status(400).json({ success: false, message: `Product not found: ${item.productId || item.id}` });
             }
             
-            if (product.stock < (item.quantity || 1)) {
-                return res.status(400).json({ success: false, message: `Insufficient stock for "${product.name}"` });
+            const available = getEffectiveStock(product);
+            if (available < (item.quantity || 1)) {
+                return res.status(400).json({ success: false, message: `Insufficient stock for "${product.name}". Available: ${available}, requested: ${item.quantity || 1}` });
             }
             
             const price = product.price;
@@ -288,7 +298,8 @@ router.post('/:sessionToken/validate', async (req, res) => {
         // Validate stock
         for (const item of session.items) {
             const product = await Product.findById(item.productId);
-            if (!product || product.stock < item.quantity) {
+            const available = product ? getEffectiveStock(product) : 0;
+            if (!product || available < item.quantity) {
                 errors.push(`Insufficient stock for ${item.name}`);
             }
         }
