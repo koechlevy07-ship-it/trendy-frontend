@@ -1,0 +1,7 @@
+admin/index.html: productOriginalPrice=YES productLimitedAvailable=YES size=152416
+admin.html (root): productOriginalPrice=NO productLimitedAvailable=NO size=149420
+public/admin.html: productOriginalPrice=NO productLimitedAvailable=NO size=149420
+COPIED admin/index.html -> admin.html (root) and public/admin.html
+After copy:
+admin.html (root): productOriginalPrice=YES productLimitedAvailable=YES size=152416
+public/admin.html: productOriginalPrice=YES productLimitedAvailable=YES size=152416

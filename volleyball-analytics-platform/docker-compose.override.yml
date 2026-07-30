@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: volley
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  minio:
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  kafka:
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+
+  zookeeper:
+    ports:
+      - "2181:2181"
+
+  pgadmin:
+    ports:
+      - "5050:80"
+
+  redis-commander:
+    ports:
+      - "8081:8081"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: volleyball-backend
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://volley:volley@postgres:5432/volley
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - JWT_SECRET_KEY=dev-secret-key
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=15
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - AI_INFERENCE_URL=http://ai-engine:8001
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+    volumes:
+      - ./backend:/app
+      - ./backend/app:/app/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    command: poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: volleyball-frontend
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_WS_URL=ws://localhost:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  ai-engine:
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile
+    container_name: volleyball-ai-engine
+    environment:
+      - AI_DEVICE=cuda:0
+      - DETECTION_MODEL_PATH=/app/models/detection/yolov8s_v2.1.0.pt
+      - BALL_MODEL_PATH=/app/models/detection/ball_yolov8s_v1.3.0.pt
+      - POSE_MODEL_PATH=/app/models/pose/rtmpose_s_v1.2.0.onnx
+      - OCR_MODEL_PATH=/app/models/ocr/ppocr_v3_mobile.pt
+      - ACTION_MODEL_PATH=/app/models/action/transformer_v1.0.0.pt
+      - AI_DEVICE=cuda:0
+      - BATCH_SIZE=4
+      - CONF_THRESH=0.5
+      - IOU_THRESH=0.45
+    volumes:
+      - ./ai-engine:/app
+      - ./models:/app/models
+    ports:
+      - "8001:8001"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    depends_on:
+      - minio
+    command: poetry run python -m inference.main
+
+  pgadmin:
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@volley.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+
+  redis-commander:
+    ports:
+      - "8081:8081"

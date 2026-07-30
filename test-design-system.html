@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trendy Wardrobe - Design System Test</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/dist/trendy-wardrobe.css">
+  <style>
+    body { background: var(--color-soft-gray-bg); }
+    .test-section { padding: var(--space-12) var(--space-6); }
+    .test-title { font-family: var(--font-heading); font-size: var(--font-size-heading-xl); margin-bottom: var(--space-8); color: var(--color-premium-black); }
+    .test-subtitle { font-size: var(--font-size-heading-md); margin: var(--space-8) 0 var(--space-4); color: var(--color-text-secondary); }
+    .component-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-6); }
+    .component-card { background: white; border-radius: var(--radius-card); padding: var(--space-6); box-shadow: var(--shadow-card); }
+    .component-card h4 { margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border); }
+    .color-swatch { display: inline-flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-md); }
+    .color-box { width: 48px; height: 48px; border-radius: var(--radius-md); border: 1px solid var(--color-border); flex-shrink: 0; }
+    .typography-sample { margin-bottom: var(--space-4); }
+    .typography-sample .label { font-size: var(--font-size-caption); text-transform: uppercase; letter-spacing: var(--letter-spacing-wider); color: var(--color-text-tertiary); margin-bottom: var(--space-1); }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+  
+  <main id="main" class="container">
+    <header class="py-12 text-center">
+      <h1 class="text-display-xl text-premium-black mb-4">Trendy Wardrobe</h1>
+      <p class="text-body-lg text-secondary max-w-2xl mx-auto">Design System Verification - Module 1 Foundation</p>
+    </header>
+
+    <!-- Colors -->
+    <section class="test-section">
+      <h2 class="test-title">Color Palette</h2>
+      <div class="component-grid">
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--color-primary-white);"></div>
+          <div>
+            <div class="font-medium">Primary White</div>
+            <div class="text-caption text-tertiary">#FFFFFF</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--color-luxury-gold);"></div>
+          <div>
+            <div class="font-medium">Luxury Gold</div>
+            <div class="text-caption text-tertiary">#C9A227</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--color-premium-black);"></div>
+          <div>
+            <div class="font-medium">Premium Black</div>
+            <div class="text-caption text-tertiary">#111111</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--color-soft-gray-bg);"></div>
+          <div>
+            <div class="font-medium">Soft Gray BG</div>
+            <div class="text-caption text-tertiary">#F8F8F8</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--color-border-gray);"></div>
+          <div>
+            <div class="font-medium">Border Gray</div>
+            <div class="text-caption text-tertiary">#E5E5E5</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--color-success-green);"></div>
+          <div>
+            <div class="font-medium">Success Green</div>
+            <div class="text-caption text-tertiary">#16A34A</div>
+          </div>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: var(--color-danger-red);"></div>
+          <div>
+            <div class="font-medium">Danger Red</div>
+            <div class="text-caption text-tertiary">#DC2626</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Typography -->
+    <section class="test-section">
+      <h2 class="test-title">Typography Scale</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h4>Display</h4>
+          <div class="typography-sample">
+            <div class="label">Display XL</div>
+            <p class="text-display-xl">Trendy Wardrobe</p>
+          </div>
+          <div class="typography-sample">
+            <div class="label">Display LG</div>
+            <p class="text-display-lg">Luxury Fashion</p>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Headings</h4>
+          <div class="typography-sample">
+            <div class="label">Heading XL</div>
+            <p class="text-heading-xl">Trendy Trenchcoats</p>
+          </div>
+          <div class="typography-sample">
+            <div class="label">Heading LG</div>
+            <p class="text-heading-lg">New Collection</p>
+          </div>
+          <div class="typography-sample">
+            <div class="label">Heading MD</div>
+            <p class="text-heading-md">Spring 2024</p>
+          </div>
+          <div class="typography-sample">
+            <div class="label">Heading SM</div>
+            <p class="text-heading-sm">Featured Items</p>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Body</h4>
+          <div class="typography-sample">
+            <div class="label">Body LG</div>
+            <p class="text-body-lg">Discover our curated selection of premium fashion pieces.</p>
+          </div>
+          <div class="typography-sample">
+            <div class="label">Body MD</div>
+            <p class="text-body-md">Each item is crafted with attention to detail and quality materials.</p>
+          </div>
+          <div class="typography-sample">
+            <div class="label">Body SM</div>
+            <p class="text-body-sm">Free shipping on orders over $200. Returns within 30 days.</p>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Caption & Label</h4>
+          <div class="typography-sample">
+            <div class="label">Caption</div>
+            <p class="text-caption">Product details and care instructions</p>
+          </div>
+          <div class="typography-sample">
+            <div class="label">Label</div>
+            <p class="text-label">Add to Cart</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Buttons -->
+    <section class="test-section">
+      <h2 class="test-title">Buttons</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h4>Primary Variants</h4>
+          <div class="flex flex-col gap-3">
+            <button class="btn btn-primary">Primary Gold</button>
+            <button class="btn btn-secondary">Secondary White</button>
+            <button class="btn btn-outline">Outline</button>
+            <button class="btn btn-ghost">Ghost</button>
+            <button class="btn btn-text">Text Button</button>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Semantic Variants</h4>
+          <div class="flex flex-col gap-3">
+            <button class="btn btn-success">Success</button>
+            <button class="btn btn-error">Error</button>
+            <button class="btn btn-warning">Warning</button>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Sizes</h4>
+          <div class="flex flex-wrap gap-3 items-center">
+            <button class="btn btn-primary btn-sm">Small</button>
+            <button class="btn btn-primary">Default</button>
+            <button class="btn btn-primary btn-lg">Large</button>
+            <button class="btn btn-primary btn-xl">XL</button>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>States</h4>
+          <div class="flex flex-wrap gap-3">
+            <button class="btn btn-primary" disabled>Disabled</button>
+            <button class="btn btn-primary btn-loading">Loading</button>
+            <button class="btn btn-primary" aria-pressed="true">Pressed</button>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Icon Buttons</h4>
+          <div class="flex flex-wrap gap-3">
+            <button class="btn btn-icon-only btn-primary" aria-label="Add to cart">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1 0 8"/></svg>
+            </button>
+            <button class="btn btn-icon-only btn-secondary" aria-label="Wishlist">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <button class="btn btn-icon-only btn-ghost" aria-label="Search">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Button Group</h4>
+          <div class="btn-group" role="group">
+            <button class="btn btn-outline">Cancel</button>
+            <button class="btn btn-primary">Save</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Inputs -->
+    <section class="test-section">
+      <h2 class="test-title">Form Inputs</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h4>Text Inputs</h4>
+          <div class="flex flex-col gap-4">
+            <div class="field">
+              <label class="field-label">Email Address</label>
+              <input type="email" class="input" placeholder="you@example.com">
+            </div>
+            <div class="field">
+              <label class="field-label">Password</label>
+              <div class="input-wrapper">
+                <input type="password" class="input" placeholder="••••••••">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Select & Textarea</h4>
+          <div class="flex flex-col gap-4">
+            <div class="field">
+              <label class="field-label">Category</label>
+              <div class="select-wrapper">
+                <select class="select">
+                  <option value="">Select category</option>
+                  <option>Trendy Trenchcoats</option>
+                  <option>Trendy Wardrobe</option>
+                  <option>Trendy Shoes</option>
+                </select>
+                <svg class="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Message</label>
+              <textarea class="textarea" rows="3" placeholder="Your message..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Checkboxes & Radios</h4>
+          <div class="flex flex-col gap-3">
+            <label class="checkbox">
+              <input type="checkbox" class="checkbox-input">
+              <span class="checkbox-box"></span>
+              <span class="checkbox-label">Subscribe to newsletter</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" class="checkbox-input" checked>
+              <span class="checkbox-box"></span>
+              <span class="checkbox-label">Accept terms (checked)</span>
+            </label>
+            <div class="flex gap-6">
+              <label class="radio">
+                <input type="radio" name="option" class="radio-input" checked>
+                <span class="radio-circle"></span>
+                <span class="radio-label">Option A</span>
+              </label>
+              <label class="radio">
+                <input type="radio" name="option" class="radio-input">
+                <span class="radio-circle"></span>
+                <span class="radio-label">Option B</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Toggle Switch</h4>
+          <div class="flex flex-col gap-3">
+            <label class="toggle">
+              <input type="checkbox" class="toggle-input">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              <span class="toggle-label">Email notifications</span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" class="toggle-input" checked>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              <span class="toggle-label">SMS alerts (on)</span>
+            </label>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>States</h4>
+          <div class="flex flex-col gap-4">
+            <div class="field">
+              <label class="field-label">Error State</label>
+              <input type="text" class="input" value="Invalid email" aria-invalid="true">
+              <p class="field-error">Please enter a valid email address</p>
+            </div>
+            <div class="field">
+              <label class="field-label">Disabled</label>
+              <input type="text" class="input" value="Not editable" disabled>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cards -->
+    <section class="test-section">
+      <h2 class="test-title">Cards</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h4>Basic Card</h4>
+          <div class="card card-basic">
+            <p class="text-body-md">This is a basic card with padding and border. Use for general content containers.</p>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Elevated Card</h4>
+          <div class="card card-elevated">
+            <p class="text-body-md">This card has a shadow for visual hierarchy. Hover to see the lift effect.</p>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Product Card</h4>
+          <article class="card card-product">
+            <div class="card-product-image-wrapper">
+              <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--color-luxury-gold),var(--color-luxury-gold-dark));display:flex;align-items:center;justify-content:center;">
+                <svg class="icon icon-3xl" style="color:var(--color-premium-black);opacity:0.3;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </div>
+              <div class="card-product-badge">
+                <span class="badge badge-sale">Sale</span>
+              </div>
+              <button class="card-product-wishlist" aria-label="Add to wishlist">
+                <svg class="icon icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </button>
+            </div>
+            <div class="card-product-content">
+              <p class="card-product-category">Trenchcoats</p>
+              <h3 class="card-product-name">Classic Wool Trenchcoat</h3>
+              <div class="flex items-center gap-2">
+                <span class="card-product-price">$450</span>
+                <span class="card-product-price-original">$600</span>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="component-card">
+          <h4>Feature Card</h4>
+          <div class="card card-feature">
+            <div class="card-feature-icon">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <h3 class="card-feature-title">Free Shipping</h3>
+            <p class="card-feature-description">On all orders over $200 worldwide</p>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Stat Card</h4>
+          <div class="card card-stat">
+            <div class="card-stat-icon">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <div class="card-stat-content">
+              <div class="card-stat-value">$12,450</div>
+              <div class="card-stat-label">Total Revenue</div>
+              <div class="card-stat-trend positive">
+                <svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+                +12.5% vs last month
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Empty State</h4>
+          <div class="card card-empty">
+            <div class="card-empty-icon">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <h3 class="card-empty-title">No products found</h3>
+            <p class="card-empty-description">Try adjusting your filters or search terms to find what you're looking for.</p>
+            <button class="btn btn-primary">Clear Filters</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Badges -->
+    <section class="test-section">
+      <h2 class="test-title">Badges</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h4>Status Badges</h4>
+          <div class="badge-group flex flex-wrap gap-2">
+            <span class="badge badge-new">New</span>
+            <span class="badge badge-sale">Sale</span>
+            <span class="badge badge-trending">Trending</span>
+            <span class="badge badge-best-seller">Best Seller</span>
+            <span class="badge badge-limited">Limited</span>
+            <span class="badge badge-out-of-stock">Out of Stock</span>
+            <span class="badge badge-low-stock">Low Stock</span>
+            <span class="badge badge-featured">Featured</span>
+            <span class="badge badge-premium">Premium</span>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Semantic Badges</h4>
+          <div class="badge-group flex flex-wrap gap-2">
+            <span class="badge badge-primary">Primary</span>
+            <span class="badge badge-success">Success</span>
+            <span class="badge badge-warning">Warning</span>
+            <span class="badge badge-error">Error</span>
+            <span class="badge badge-info">Info</span>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Outline & Soft</h4>
+          <div class="badge-group flex flex-wrap gap-2">
+            <span class="badge badge-outline badge-primary">Outline Primary</span>
+            <span class="badge badge-outline badge-success">Outline Success</span>
+            <span class="badge badge-soft badge-primary">Soft Primary</span>
+            <span class="badge badge-soft badge-success">Soft Success</span>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Removable Badges</h4>
+          <div class="badge-group flex flex-wrap gap-2">
+            <span class="badge badge-primary badge-removable">Tag 1 <button class="badge-remove" aria-label="Remove"><svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>
+            <span class="badge badge-success badge-removable">Tag 2 <button class="badge-remove" aria-label="Remove"><svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chips -->
+    <section class="test-section">
+      <h2 class="test-title">Chips</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h4>Filter Chips</h4>
+          <div class="chip-group flex flex-wrap gap-2">
+            <button class="chip chip-filter chip-selected" role="checkbox" aria-checked="true">All</button>
+            <button class="chip chip-filter" role="checkbox" aria-checked="false">Trenchcoats</button>
+            <button class="chip chip-filter" role="checkbox" aria-checked="false">Wardrobe</button>
+            <button class="chip chip-filter" role="checkbox" aria-checked="false">Shoes</button>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Category Chips</h4>
+          <div class="chip-group flex flex-wrap gap-2">
+            <button class="chip chip-category chip-selected">New Arrivals</button>
+            <button class="chip chip-category">Best Sellers</button>
+            <button class="chip chip-category">On Sale</button>
+            <button class="chip chip-category">Premium</button>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Size Chips</h4>
+          <div class="chip-group flex flex-wrap gap-2">
+            <button class="chip chip-size">XS</button>
+            <button class="chip chip-size chip-selected">S</button>
+            <button class="chip chip-size">M</button>
+            <button class="chip chip-size">L</button>
+            <button class="chip chip-size">XL</button>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Color Swatches</h4>
+          <div class="chip-group flex flex-wrap gap-2">
+            <button class="chip chip-color" style="background:#111;" aria-label="Black"></button>
+            <button class="chip chip-color" style="background:#fff;border:1px solid var(--color-border);" aria-label="White"></button>
+            <button class="chip chip-color" style="background:#C9A227;" aria-label="Gold"></button>
+            <button class="chip chip-color" style="background:#8B7355;" aria-label="Brown"></button>
+            <button class="chip chip-color" style="background:#2C3E50;" aria-label="Navy"></button>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Removable Input Chips</h4>
+          <div class="chip-group flex flex-wrap gap-2">
+            <span class="chip chip-input chip-removable">Search term <button class="chip-remove" aria-label="Remove"><svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>
+            <span class="chip chip-input chip-removable">Filter <button class="chip-remove" aria-label="Remove"><svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Avatars -->
+    <section class="test-section">
+      <h2 class="test-title">Avatars</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h4>Sizes</h4>
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="avatar avatar-xs avatar-initials">JD</div>
+            <div class="avatar avatar-sm avatar-initials">JD</div>
+            <div class="avatar avatar-md avatar-initials">JD</div>
+            <div class="avatar avatar-lg avatar-initials">JD</div>
+            <div class="avatar avatar-xl avatar-initials">JD</div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>With Status</h4>
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="avatar avatar-md avatar-status avatar-status-online avatar-initials">JD</div>
+            <div class="avatar avatar-md avatar-status avatar-status-busy avatar-initials">AS</div>
+            <div class="avatar avatar-md avatar-status avatar-status-away avatar-initials">MK</div>
+            <div class="avatar avatar-md avatar-status avatar-status-offline avatar-initials">RL</div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Avatar Group</h4>
+          <div class="avatar-group">
+            <div class="avatar avatar-md avatar-initials">JD</div>
+            <div class="avatar avatar-md avatar-initials">AS</div>
+            <div class="avatar avatar-md avatar-initials">MK</div>
+            <div class="avatar avatar-md avatar-initials">RL</div>
+            <div class="avatar avatar-md" style="background:var(--color-background-tertiary);color:var(--color-text-tertiary);font-size:var(--font-size-caption);">+3</div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>With Badge</h4>
+          <div class="avatar avatar-lg avatar-badge avatar-initials">
+            JD
+            <span class="avatar-badge-content">3</span>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Ring Avatar</h4>
+          <div class="avatar avatar-lg avatar-ring avatar-ring-active avatar-initials">JD</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Alerts & Toasts -->
+    <section class="test-section">
+      <h2 class="test-title">Alerts & Toasts</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h4>Alert Variants</h4>
+          <div class="flex flex-col gap-3">
+            <div class="alert alert-success">
+              <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <div class="alert-content">
+                <p class="alert-title">Success</p>
+                <p class="alert-description">Your order has been placed successfully.</p>
+              </div>
+            </div>
+            <div class="alert alert-warning">
+              <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <div class="alert-content">
+                <p class="alert-title">Warning</p>
+                <p class="alert-description">Only 3 items left in stock.</p>
+              </div>
+            </div>
+            <div class="alert alert-error">
+              <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <div class="alert-content">
+                <p class="alert-title">Error</p>
+                <p class="alert-description">Failed to process payment. Please try again.</p>
+              </div>
+            </div>
+            <div class="alert alert-info">
+              <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <div class="alert-content">
+                <p class="alert-title">Information</p>
+                <p class="alert-description">Free shipping on orders over $200.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Dismissible Alert</h4>
+          <div class="alert alert-warning alert-dismissible" style="position:relative;">
+            <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div class="alert-content">
+              <p class="alert-title">Cookie Notice</p>
+              <p class="alert-description">We use cookies to improve your experience.</p>
+            </div>
+            <button class="alert-close" aria-label="Dismiss">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Toast Preview</h4>
+          <div class="flex flex-col gap-3" style="width:100%;">
+            <div class="toast toast-success" style="width:100%;min-width:auto;max-width:none;">
+              <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <div class="toast-content">
+                <p class="toast-title">Order Confirmed</p>
+                <p class="toast-description">Your order #12345 has been placed.</p>
+              </div>
+              <button class="toast-close" aria-label="Dismiss"><svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="toast toast-error" style="width:100%;min-width:auto;max-width:none;">
+              <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <div class="toast-content">
+                <p class="toast-title">Payment Failed</p>
+                <p class="toast-description">Unable to process your payment.</p>
+              </div>
+              <button class="toast-close" aria-label="Dismiss"><svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modals -->
+    <section class="test-section">
+      <h2 class="test-title">Modals & Dialogs</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h4>Standard Modal</h4>
+          <button class="btn btn-primary" data-modal="demo-modal">Open Modal</button>
+        </div>
+        <div class="component-card">
+          <h4>Confirmation Dialog</h4>
+          <button class="btn btn-outline" data-modal="confirm-modal">Open Confirm</button>
+        </div>
+        <div class="component-card">
+          <h4>Delete Dialog</h4>
+          <button class="btn btn-outline" data-modal="delete-modal">Open Delete</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading -->
+    <section class="test-section">
+      <h2 class="test-title">Loading States</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h4>Spinners</h4>
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="spinner spinner-sm"></div>
+            <div class="spinner"></div>
+            <div class="spinner spinner-lg"></div>
+            <div class="spinner spinner-xl"></div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Progress Bars</h4>
+          <div class="flex flex-col gap-3">
+            <div class="progress"><div class="progress-bar" style="width: 60%"></div></div>
+            <div class="progress progress-lg"><div class="progress-bar" style="width: 30%"></div></div>
+            <div class="progress progress-indeterminate"><div class="progress-bar"></div></div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Skeleton Loaders</h4>
+          <div class="skeleton-product-card" style="max-width:280px;">
+            <div class="skeleton-product-image"></div>
+            <div class="skeleton-product-content">
+              <div class="skeleton-product-category"></div>
+              <div class="skeleton-product-name"></div>
+              <div class="skeleton-product-name-line-2"></div>
+              <div class="skeleton-product-price"></div>
+            </div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Skeleton Text</h4>
+          <div class="flex flex-col gap-3">
+            <div class="skeleton-text short"></div>
+            <div class="skeleton-text medium"></div>
+            <div class="skeleton-text long"></div>
+            <div class="skeleton-heading large"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Grid & Layout -->
+    <section class="test-section">
+      <h2 class="test-title">Responsive Grid</h2>
+      <div class="component-card">
+        <h4 class="mb-4">12-Column Grid</h4>
+        <div class="grid grid-cols-12 gap-4">
+          <div class="col-span-12 md:col-span-6 lg:col-span-3 bg-gray-100 p-4 rounded">1/4 (lg)</div>
+          <div class="col-span-12 md:col-span-6 lg:col-span-3 bg-gray-100 p-4 rounded">1/4 (lg)</div>
+          <div class="col-span-12 md:col-span-6 lg:col-span-3 bg-gray-100 p-4 rounded">1/4 (lg)</div>
+          <div class="col-span-12 md:col-span-6 lg:col-span-3 bg-gray-100 p-4 rounded">1/4 (lg)</div>
+          <div class="col-span-12 md:col-span-6 lg:col-span-6 bg-gray-200 p-4 rounded">1/2 (lg)</div>
+          <div class="col-span-12 md:col-span-6 lg:col-span-6 bg-gray-200 p-4 rounded">1/2 (lg)</div>
+          <div class="col-span-12 bg-gray-300 p-4 rounded">Full width</div>
+        </div>
+      </div>
+      <div class="component-card mt-6">
+        <h4 class="mb-4">Auto-fit Grid (Product Cards)</h4>
+        <div class="auto-grid">
+          <div class="card card-basic p-6">Card 1</div>
+          <div class="card card-basic p-6">Card 2</div>
+          <div class="card card-basic p-6">Card 3</div>
+          <div class="card card-basic p-6">Card 4</div>
+          <div class="card card-basic p-6">Card 5</div>
+          <div class="card card-basic p-6">Card 6</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Utilities -->
+    <section class="test-section">
+      <h2 class="test-title">Utility Classes</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h4>Spacing</h4>
+          <div class="space-y-2">
+            <div class="p-4 bg-gray-100 rounded">p-4 (16px)</div>
+            <div class="px-6 py-8 bg-gray-200 rounded">px-6 py-8</div>
+            <div class="m-4 bg-gray-300 rounded">m-4</div>
+            <div class="mx-auto max-w-xs bg-gray-100 rounded p-4">mx-auto</div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Flexbox</h4>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-gray-100 rounded">
+              <span>justify-between</span>
+              <span>items-center</span>
+            </div>
+            <div class="flex items-center gap-4 p-4 bg-gray-200 rounded">
+              <span>gap-4</span>
+              <span>flex-1</span>
+              <span>flex-1</span>
+            </div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Visibility</h4>
+          <div class="space-y-2">
+            <div class="hidden md:block p-4 bg-gray-100 rounded">Visible on md+</div>
+            <div class="block md:hidden p-4 bg-gray-200 rounded">Hidden on md+</div>
+            <div class="overflow-hidden truncate p-4 bg-gray-300 rounded" style="width:200px;">This text will truncate with ellipsis when too long</div>
+          </div>
+        </div>
+        <div class="component-card">
+          <h4>Shadows & Radius</h4>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 shadow-sm bg-white rounded">shadow-sm</div>
+            <div class="p-4 shadow bg-white rounded">shadow</div>
+            <div class="p-4 shadow-lg bg-white rounded">shadow-lg</div>
+            <div class="p-4 shadow-xl bg-white rounded">shadow-xl</div>
+            <div class="p-4 shadow-card bg-white rounded">shadow-card</div>
+            <div class="p-4 shadow-gold-md bg-white rounded">shadow-gold</div>
+            <div class="p-6 bg-white rounded-full">rounded-full</div>
+            <div class="p-6 bg-white rounded-2xl">rounded-2xl</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Demo Modals (Hidden by default) -->
+    <div class="modal-overlay" id="demo-modal" role="dialog" aria-modal="true" aria-labelledby="demo-title" style="display:none;">
+      <div class="modal modal-md">
+        <div class="modal-header">
+          <h2 class="modal-title" id="demo-title">Modal Title</h2>
+          <button class="modal-close" aria-label="Close modal"><svg class="icon icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-body-md">This is a standard modal dialog. It can contain any content including forms, text, or other components.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" data-close-modal>Cancel</button>
+          <button class="btn btn-primary" data-close-modal>Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title" style="display:none;">
+      <div class="modal modal-confirm modal-sm">
+        <div class="modal-header">
+          <h2 class="modal-title" id="confirm-title">Confirm Action</h2>
+          <button class="modal-close" aria-label="Close"><svg class="icon icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-confirm-icon warning">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <h3 class="modal-confirm-title">Are you sure?</h3>
+          <p class="modal-confirm-description">This action cannot be undone. Please confirm you want to proceed.</p>
+        </div>
+        <div class="modal-footer modal-confirm-footer">
+          <button class="btn btn-ghost" data-close-modal>Cancel</button>
+          <button class="btn btn-primary" data-close-modal>Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-title" style="display:none;">
+      <div class="modal modal-delete modal-sm">
+        <div class="modal-header">
+          <h2 class="modal-title" id="delete-title">Delete Item</h2>
+          <button class="modal-close" aria-label="Close"><svg class="icon icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-delete-icon">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </div>
+          <h3 class="modal-title">Delete permanently?</h3>
+          <p class="modal-description">This will permanently delete the item. This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" data-close-modal>Cancel</button>
+          <button class="btn btn-error btn-confirm" data-close-modal>Delete</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Simple modal handling for demo
+    document.querySelectorAll('[data-modal]').forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const modalId = trigger.getAttribute('data-modal');
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.style.display = 'flex';
+          document.body.classList.add('modal-open');
+          modal.querySelector('.modal-close')?.focus();
+        }
+      });
+    });
+
+    document.querySelectorAll('[data-close-modal]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const overlay = btn.closest('.modal-overlay');
+        if (overlay) {
+          overlay.style.display = 'none';
+          document.body.classList.remove('modal-open');
+        }
+      });
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.style.display = 'none';
+          document.body.classList.remove('modal-open');
+        }
+      });
+    });
+
+    // ESC key to close
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay[style*="flex"]').forEach(modal => {
+          modal.style.display = 'none';
+          document.body.classList.remove('modal-open');
+        });
+      }
+    });
+
+    // Toggle chips
+    document.querySelectorAll('.chip-filter').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const selected = chip.getAttribute('aria-checked') === 'true';
+        chip.setAttribute('aria-checked', !selected);
+        chip.classList.toggle('chip-selected', !selected);
+      });
+    });
+
+    // Removable badges/chips
+    document.querySelectorAll('.badge-remove, .chip-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        btn.closest('.badge, .chip')?.remove();
+      });
+    });
+
+    console.log('Trendy Wardrobe Design System - Module 1 Verification Complete');
+    console.log('All components rendered successfully!');
+  </script>
+</body>
+</html>

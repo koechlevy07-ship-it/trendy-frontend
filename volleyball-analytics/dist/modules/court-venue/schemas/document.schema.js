@@ -1,0 +1,84 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Document = exports.$1Schema = exports.DocumentAccessLevel = exports.DocumentStatus = exports.DocumentCategory = void 0;
+const mongoose_1 = require("mongoose");
+var DocumentCategory;
+(function (DocumentCategory) {
+    DocumentCategory["VENUE_PLAN"] = "venue_plan";
+    DocumentCategory["COURT_LAYOUT"] = "court_layout";
+    DocumentCategory["CERTIFICATE"] = "certificate";
+    DocumentCategory["INSPECTION_REPORT"] = "inspection_report";
+    DocumentCategory["MAINTENANCE_LOG"] = "maintenance_log";
+    DocumentCategory["CALIBRATION_REPORT"] = "calibration_report";
+    DocumentCategory["SAFETY_AUDIT"] = "safety_audit";
+    DocumentCategory["FIRE_CERTIFICATE"] = "fire_certificate";
+    DocumentCategory["STRUCTURAL_CERTIFICATE"] = "structural_certificate";
+    DocumentCategory["ELECTRICAL_CERTIFICATE"] = "electrical_certificate";
+    DocumentCategory["ACCESSIBILITY_CERTIFICATE"] = "accessibility_certificate";
+    DocumentCategory["ENVIRONMENTAL_CERTIFICATE"] = "environmental_certificate";
+    DocumentCategory["INSURANCE"] = "insurance";
+    DocumentCategory["PERMIT"] = "permit";
+    DocumentCategory["LICENSE"] = "license";
+    DocumentCategory["CONTRACT"] = "contract";
+    DocumentCategory["WARRANTY"] = "warranty";
+    DocumentCategory["MANUAL"] = "manual";
+    DocumentCategory["SPECIFICATION"] = "specification";
+    DocumentCategory["DRAWING"] = "drawing";
+    DocumentCategory["PHOTO"] = "photo";
+    DocumentCategory["VIDEO"] = "video";
+    DocumentCategory["OTHER"] = "other";
+})(DocumentCategory || (exports.DocumentCategory = DocumentCategory = {}));
+var DocumentStatus;
+(function (DocumentStatus) {
+    DocumentStatus["DRAFT"] = "draft";
+    DocumentStatus["PENDING_REVIEW"] = "pending_review";
+    DocumentStatus["APPROVED"] = "approved";
+    DocumentStatus["REJECTED"] = "rejected";
+    DocumentStatus["EXPIRED"] = "expired";
+    DocumentStatus["ARCHIVED"] = "archived";
+    DocumentStatus["SUPERSEDED"] = "superseded";
+})(DocumentStatus || (exports.DocumentStatus = DocumentStatus = {}));
+var DocumentAccessLevel;
+(function (DocumentAccessLevel) {
+    DocumentAccessLevel["PUBLIC"] = "public";
+    DocumentAccessLevel["ORGANIZATION"] = "organization";
+    DocumentAccessLevel["VENUE"] = "venue";
+    DocumentAccessLevel["COURT"] = "court";
+    DocumentAccessLevel["RESTRICTED"] = "restricted";
+    DocumentAccessLevel["CONFIDENTIAL"] = "confidential";
+})(DocumentAccessLevel || (exports.DocumentAccessLevel = DocumentAccessLevel = {}));
+const DocumentVersionSchema = new mongoose_1.Schema({ version: { type: Number, required: true, min: 1 }, fileUrl: { type: String, required: true }, fileSize: { type: Number, required: true, min: 0 }, mimeType: { type: String, required: true }, checksum: { type: String, required: true }, uploadedAt: { type: Date, default: Date.now }, uploadedBy: { type: mongoose_1.Schema.Types.ObjectId, required: true, ref: 'User' }, changesSummary: { type: String, required: true, trim: true }, isCurrent: { type: Boolean, default: true } }, { _id: false });
+const DocumentMetadataSchema = new mongoose_1.Schema({ author: { type: String, trim: true }, department: { type: String, trim: true }, project: { type: String, trim: true }, confidentiality: { type: String, trim: true }, retentionPeriodDays: { type: Number, min: 1 }, expiryDate: { type: Date }, reviewDate: { type: Date }, approvedAt: { type: Date }, approvedBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' }, rejectedAt: { type: Date }, rejectedBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' }, rejectionReason: { type: String, trim: true } }, { _id: false });
+const DocumentSchema = new mongoose_1.Schema({ documentCode: { type: String, required: true, unique: true, trim: true, uppercase: true, maxlength: 50 }, title: { type: String, required: true, trim: true, maxlength: 300 }, description: { type: String, trim: true, maxlength: 5000 }, category: { type: String, enum: Object.values(DocumentCategory), required: true }, status: { type: String, enum: Object.values(DocumentStatus), default: DocumentStatus.DRAFT }, accessLevel: { type: String, enum: Object.values(DocumentAccessLevel), default: DocumentAccessLevel.ORGANIZATION }, venueId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Venue' }, courtId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Court' }, facilityId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Facility' }, equipmentId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Equipment' }, certificationId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Certification' }, maintenanceId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'MaintenanceRecord' }, currentVersion: { type: DocumentVersionSchema, required: true }, versions: { type: [DocumentVersionSchema], default: [] }, tags: [{ type: String, trim: true, lowercase: true }], metadata: { type: DocumentMetadataSchema, default: {} }, relatedDocuments: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'Document' }], supersededBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Document' }, supersedes: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Document' }, downloadCount: { type: Number, default: 0, min: 0 }, lastAccessedAt: { type: Date }, lastAccessedBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' }, retentionPolicy: { retainUntil: { type: Date, required: true }, autoArchive: { type: Boolean, default: true }, autoDelete: { type: Boolean, default: false }, legalHold: { type: Boolean, default: false } }, createdBy: { type: mongoose_1.Schema.Types.ObjectId, required: true, ref: 'User' }, updatedBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' } }, { timestamps: true, collection: 'documents' });
+DocumentSchema.index({ venueId: 1, category: 1 });
+DocumentSchema.index({ courtId: 1, category: 1 });
+DocumentSchema.index({ facilityId: 1, category: 1 });
+DocumentSchema.index({ equipmentId: 1, category: 1 });
+DocumentSchema.index({ certificationId: 1 });
+DocumentSchema.index({ maintenanceId: 1 });
+DocumentSchema.index({ status: 1 });
+DocumentSchema.index({ accessLevel: 1 });
+DocumentSchema.index({ tags: 1 });
+DocumentSchema.index({ 'metadata.expiryDate': 1 });
+DocumentSchema.index({ 'metadata.reviewDate': 1 });
+DocumentSchema.index({ createdBy: 1 });
+DocumentSchema.index({ documentCode: 1 }, { unique: true });
+DocumentSchema.virtual('isExpired').get(function () { if (!this.metadata.expiryDate)
+    return false; return this.metadata.expiryDate < new Date(); });
+DocumentSchema.virtual('isExpiringSoon').get(function () { if (!this.metadata.expiryDate)
+    return false; const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); return this.metadata.expiryDate <= thirtyDaysFromNow && this.metadata.expiryDate >= new Date(); });
+DocumentSchema.virtual('isPendingReview').get(function () { if (!this.metadata.reviewDate)
+    return false; return this.metadata.reviewDate <= new Date(); });
+DocumentSchema.virtual('latestVersion').get(function () { return this.versions.find((v) => v.isCurrent) || this.currentVersion; });
+DocumentSchema.virtual('versionCount').get(function () { return this.versions.length + 1; });
+DocumentSchema.methods.addVersion = function (fileUrl, fileSize, mimeType, checksum, uploadedBy, changesSummary) { const newVersion = this.currentVersion.version + 1; this.versions.push({ ...this.currentVersion, isCurrent: false }); this.currentVersion = { version: newVersion, fileUrl, fileSize, mimeType, checksum, uploadedAt: new Date(), uploadedBy, changesSummary, isCurrent: true }; return this.save(); };
+DocumentSchema.methods.approve = function (approvedBy) { this.status = DocumentStatus.APPROVED; this.metadata.approvedAt = new Date(); this.metadata.approvedBy = approvedBy; return this.save(); };
+DocumentSchema.methods.reject = function (rejectedBy, reason) { this.status = DocumentStatus.REJECTED; this.metadata.rejectedAt = new Date(); this.metadata.rejectedBy = rejectedBy; this.metadata.rejectionReason = reason; return this.save(); };
+DocumentSchema.methods.archive = function () { this.status = DocumentStatus.ARCHIVED; return this.save(); };
+DocumentSchema.methods.supersede = function (newDocumentId) { this.status = DocumentStatus.SUPERSEDED; this.supersededBy = newDocumentId; return this.save(); };
+exports.$1Schema = $2Schema;
+;
+;
+;
+exports.Document = mongoose_1.models.Document || (0, mongoose_1.model)('Document', DocumentSchema);
+//# sourceMappingURL=document.schema.js.map

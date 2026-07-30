@@ -1,0 +1,2 @@
+Tables: ['organizations', 'teams', 'venues', 'courts', 'user_roles', 'role_permissions', 'permissions', 'roles', 'users', 'players', 'coaches', 'officials', 'match_officials', 'seasons', 'competitions', 'competition_teams', 'matches', 'sets', 'rallies', 'events', 'lineups', 'player_match_statistics', 'team_match_statistics', 'player_season_statistics', 'team_season_statistics', 'cameras', 'video_recordings', 'ai_inferences', 'track_records', 'pose_records', 'reports', 'notifications', 'audit_logs']
+All models compile successfully!

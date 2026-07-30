@@ -1,0 +1,116 @@
+# AI Engine Configuration
+
+# Inference settings
+inference:
+  host: "0.0.0.0"
+  port: 8001
+  workers: 4
+  max_batch_size: 4
+  queue_timeout: 5.0
+  
+  # Model paths
+  detection:
+    player_model: "models/detection/yolov8s_v2.1.0.pt"
+    ball_model: "models/detection/ball_yolov8s_v1.3.0.pt"
+    player_confidence: 0.5
+    ball_confidence: 0.6
+    iou_threshold: 0.45
+  
+  tracking:
+    algorithm: "bytetrack"
+    track_buffer: 30
+    match_thresh: 0.8
+    track_thresh: 0.5
+    min_box_area: 100
+    frame_rate: 30
+  
+  # Pose estimation
+  pose:
+    model: "models/pose/rtmpose_s_v1.2.0.onnx"
+    input_size: [256, 192]
+    confidence_threshold: 0.5
+    device: "cuda:0"
+  
+  # OCR
+  ocr:
+    engine: "paddleocr"
+    model_dir: "models/ocr"
+    languages: ["en"]
+    confidence_threshold: 0.7
+    gpu: true
+  
+  # Action recognition
+  action:
+    model: "models/action/transformer_v1.0.0.pt"
+    sequence_length: 30
+    confidence_threshold: 0.7
+    device: "cuda:0"
+  
+  # Court detection
+  court:
+    model: "models/court/court_keypoints.onnx"
+    confidence: 0.7
+
+# Inference settings
+inference:
+  device: "cuda:0"
+  half_precision: true
+  batch_size: 4
+  target_fps: 30
+  max_batch_size: 4
+  queue_size: 100
+
+# Model paths
+models:
+  detection:
+    player: "models/detection/yolov8s_v2.1.0.pt"
+    ball: "models/detection/ball_yolov8s_v1.3.0.pt"
+  pose: "models/pose/rtmpose_s_v1.2.0.onnx"
+  ocr: "models/ocr/ppocr_v3_mobile.pt"
+  action: "models/action/transformer_v1.0.0.pt"
+  court: "models/court/court_keypoints.onnx"
+
+# Tracking config
+tracking:
+  algorithm: "bytetrack"
+  track_thresh: 0.5
+  track_buffer: 30
+  match_thresh: 0.8
+  min_box_area: 100
+  frame_rate: 30
+
+# OCR settings
+ocr:
+  engine: "paddleocr"
+  confidence_threshold: 0.7
+  languages: ["en"]
+  gpu: true
+
+# Action recognition
+action_recognition:
+  model_type: "transformer"
+  sequence_length: 30
+  confidence_threshold: 0.7
+  num_classes: 34
+
+# Court detection
+court_detection:
+  model: "models/court/court_keypoints.onnx"
+  confidence: 0.7
+
+# Inference settings
+inference:
+  device: "cuda:0"
+  batch_size: 4
+  half_precision: true
+  max_batch_size: 4
+  queue_size: 100
+  timeout: 5.0
+
+# Logging
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/ai_engine.log"
+  max_size: "100MB"
+  backup_count: 5

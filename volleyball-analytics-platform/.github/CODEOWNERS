@@ -1,0 +1,87 @@
+# Code Owners
+
+# Global owners
+* @volleyball-platform/core-team
+
+# Documentation
+/docs/ @volleyball-platform/docs-team
+
+# Backend
+/backend/ @volleyball-platform/backend-team
+
+# Frontend
+/frontend/ @volleyball-platform/frontend-team
+
+# AI Engine
+/ai-engine/ @volleyball-platform/ai-team
+
+# Mobile
+/mobile/ @volleyball-platform/mobile-team
+
+# Infrastructure
+/infrastructure/ @volleyball-platform/devops-team
+
+# Deployment
+/deployment/ @volleyball-platform/devops-team
+
+# Documentation
+/documentation/ @volleyball-platform/docs-team
+
+# Database
+/database/ @volleyball-platform/backend-team
+
+# AI Engine
+/ai-engine/ @volleyball-platform/ai-team
+
+# Models
+/models/ @volleyball-platform/ai-team
+
+# Shared
+/shared/ @volleyball-platform/core-team
+
+# Tests
+/tests/ @volleyball-platform/qa-team
+
+# Scripts
+/scripts/ @volleyball-platform/devops-team
+
+# Tools
+/tools/ @volleyball-platform/devops-team
+
+# Documentation
+/documentation/ @volleyball-platform/docs-team
+
+# CI/CD
+/.github/workflows/ @volleyball-platform/devops-team
+
+# Docker
+/docker-compose*.yml @volleyball-platform/devops-team
+/Dockerfile* @volleyball-platform/devops-team
+
+# Configuration
+*.toml @volleyball-platform/core-team
+*.json @volleyball-platform/core-team
+*.yaml @volleyball-platform/core-team
+*.yml @volleyball-platform/core-team
+*.ini @volleyball-platform/core-team
+*.cfg @volleyball-platform/core-team
+
+# Documentation
+*.md @volleyball-platform/docs-team
+
+# Scripts
+/scripts/ @volleyball-platform/devops-team
+
+# Docker
+/Dockerfile* @volleyball-platform/devops-team
+docker-compose*.yml @volleyball-platform/devops-team
+
+# Configuration files
+*.toml @volleyball-platform/core-team
+*.json @volleyball-platform/core-team
+*.yaml @volleyball-platform/core-team
+*.yml @volleyball-platform/core-team
+
+# Ignore
+*.md @volleyball-platform/docs-team
+*.txt @volleyball-platform/docs-team
