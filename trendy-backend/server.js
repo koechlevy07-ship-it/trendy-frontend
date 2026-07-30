@@ -26,13 +26,20 @@ console.log('[INFO] Environment variables validated.');
 
 app.use(helmet());
 
+const ALLOWED_ORIGINS = [
+  'https://trendy-frontend-ashen.vercel.app',
+  /\.vercel\.app$/,
+  /^http:\/\/localhost:\d+$/,
+  /^http:\/\/127\.0\.0\.1:\d+$/,
+];
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (origin.endsWith('.vercel.app') || origin.includes('localhost')) {
-      return callback(null, true);
-    }
-    return callback(null, true);
+    const allowed = ALLOWED_ORIGINS.some(pattern => {
+      if (typeof pattern === 'string') return origin === pattern;
+      return pattern.test(origin);
+    });
+    callback(null, allowed);
   },
   credentials: true,
 }));
@@ -50,7 +57,17 @@ const limiter = rateLimit({
   message: { success: false, message: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.headers.authorization,
+});
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 2000,
+  message: { success: false, message: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', (req, res, next) => {
+  if (req.headers.authorization) return authLimiter(req, res, next);
+  return limiter(req, res, next);
 });
 app.use('/api', limiter);
 
@@ -79,10 +96,7 @@ app.get('/api/ready', (req, res) => {
 console.log('[INFO] Connecting to MongoDB Atlas...');
 
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('[INFO] MongoDB Atlas connection established.');
     try {

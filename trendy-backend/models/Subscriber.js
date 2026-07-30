@@ -484,7 +484,7 @@ subscriberSchema.statics.getEngagementStats = async function() {
                 avgScore: { $avg: '$engagement.engagementScore' }
             }
         }
-    );
+    ]);
 };
 
 module.exports = mongoose.model('Subscriber', subscriberSchema);

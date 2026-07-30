@@ -287,8 +287,6 @@ segmentSchema.methods.buildFilterCondition = function(filter) {
     };
     
     const mappedField = fieldMap[field] || field;
-    const val = filter.value;
-    const val2 = filter.value2;
     
     switch (op) {
         case 'equals': return { [mappedField]: val };

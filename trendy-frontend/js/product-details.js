@@ -460,7 +460,8 @@ function renderProduct(p) {
     }
 
     // Description
-    $('pdFullDescription').innerHTML = p.description ? p.description : '<p>No description available.</p>';
+    const desc = p.description ? escHtml(p.description).replace(/\n/g, '<br>') : '<p>No description available.</p>';
+    $('pdFullDescription').innerHTML = desc;
 
     // Specifications
     renderSpecs(p);
