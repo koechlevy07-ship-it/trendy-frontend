@@ -544,18 +544,9 @@ module.exports = {
     FraudCheck: mongoose.model('FraudCheck', fraudCheckSchema),
     CheckoutAnalytics: mongoose.model('CheckoutAnalytics', checkoutAnalyticsSchema),
     SavedAddress: mongoose.model('SavedAddress', savedAddressSchema),
-    PaymentMethod: mongoose.model('PaymentMethod', paymentMethodSchema),
     CheckoutItem: checkoutItemSchema,
     CheckoutAddress: checkoutAddressSchema,
     DeliveryMethod: deliveryMethodSchema,
     PaymentMethodConfig: mongoose.model('PaymentMethodConfig', paymentMethodConfigSchema),
-    PaymentTransaction: paymentTransactionSchema,
-    CheckoutSession: checkoutSessionSchema,
-    Invoice: invoiceSchema,
-    ShippingMethod: shippingMethodSchema,
-    DeliveryEstimate: deliveryEstimateSchema,
-    FraudCheck: fraudCheckSchema,
-    CheckoutAnalytics: checkoutAnalyticsSchema,
-    SavedAddress: savedAddressSchema,
-    PaymentMethod: paymentMethodSchema
+    PaymentMethod: mongoose.model('PaymentMethod', paymentMethodSchema)
 };
