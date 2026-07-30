@@ -145,6 +145,128 @@ router.post('/', async (req, res) => {
     }
 });
 
+// GET /api/checkout/shipping-methods – Get available shipping methods
+router.get('/shipping-methods', async (req, res) => {
+    try {
+        const methods = await ShippingMethod.find({ isActive: true })
+            .sort({ sortOrder: 1, baseFee: 1 })
+            .lean();
+        
+        res.json({ success: true, data: methods });
+    } catch (err) {
+        console.error('Get shipping methods error:', err);
+        res.status(500).json({ success: false, message: 'Failed to fetch shipping methods' });
+    }
+});
+
+// GET /api/checkout/shipping-options – Get shipping options for address
+router.post('/shipping-options', async (req, res) => {
+    try {
+        const { address, subtotal } = req.body;
+        
+        if (!address || !address.city) {
+            return res.status(400).json({ success: false, message: 'City is required' });
+        }
+        
+        const methods = await ShippingMethod.find({ isActive: true })
+            .sort({ baseFee: 1 })
+            .lean();
+        
+        const options = [];
+        for (const method of methods) {
+            // Check if method is available for this location
+            let available = true;
+            let fee = method.baseFee;
+            let estimatedDays = method.estimatedDays;
+            
+            // Check zone restrictions
+            if (method.zones && method.zones.length > 0) {
+                const matchingZone = method.zones.find(zone => 
+                    zone.isActive && 
+                    (zone.counties?.includes(req.body.address?.county) || 
+                     zone.cities?.includes(req.body.address?.city))
+                );
+                if (!matchingZone) {
+                    available = false;
+                } else {
+                    fee = matchingZone.fee || method.baseFee;
+                    estimatedDays = matchingZone.estimatedDays || method.estimatedDays;
+                }
+            }
+            
+            // Apply free shipping threshold
+            if (req.body.subtotal >= (method.freeShippingThreshold || 0)) {
+                fee = 0;
+            }
+            
+            if (available) {
+                options.push({
+                    ...method,
+                    fee,
+                    estimatedDays,
+                    available: true
+                });
+            }
+        }
+        
+        // Add free shipping if threshold met
+        const settings = await Settings.findOne();
+        const freeThreshold = settings?.freeDeliveryThreshold || 15000;
+        if (req.body.subtotal >= freeThreshold) {
+            const freeShipping = options.find(o => o.type === 'standard');
+            if (freeShipping) {
+                freeShipping.fee = 0;
+                freeShipping.label = 'Free Standard Delivery';
+            }
+        }
+        
+        res.json({ success: true, data: options.filter(o => o.available) });
+    } catch (err) {
+        console.error('Shipping options error:', err);
+        res.status(500).json({ success: false, message: 'Failed to calculate shipping options' });
+    }
+});
+
+// GET /api/checkout/payment-methods – Get available payment methods
+router.get('/payment-methods', async (req, res) => {
+    try {
+        const settings = await Settings.findOne();
+        const methods = [];
+        
+        // Get configured payment methods from settings
+        const configuredMethods = settings?.paymentMethods || [
+            'mpesa', 'stripe', 'paypal', 'visa', 'mastercard', 
+            'apple-pay', 'google-pay', 'bank-transfer', 'cash-on-delivery'
+        ];
+        
+        // Load payment method configurations
+        const configs = await PaymentMethodConfig.find({ isEnabled: true })
+            .sort({ sortOrder: 1 })
+            .lean();
+        
+        for (const config of configs) {
+            if (configuredMethods.includes(config.type)) {
+                methods.push({
+                    type: config.type,
+                    label: config.label,
+                    fees: config.fees,
+                    displayIcon: config.displayIcon,
+                    displayColor: config.displayColor,
+                    requiresRedirect: config.requiresRedirect,
+                    supportsRefunds: config.supportsRefunds,
+                    processingTime: config.processingTime,
+                    requirements: config.requirements
+                });
+            }
+        }
+        
+        res.json({ success: true, data: methods });
+    } catch (err) {
+        console.error('Get payment methods error:', err);
+        res.status(500).json({ success: false, message: 'Failed to retrieve checkout' });
+    }
+});
+
 // GET /api/checkout/:sessionToken – Get checkout session
 router.get('/:sessionToken', async (req, res) => {
     try {
@@ -455,87 +577,6 @@ router.delete('/:sessionToken/coupon', async (req, res) => {
 // SHIPPING & DELIVERY ROUTES
 // ============================================================
 
-// GET /api/checkout/shipping-methods – Get available shipping methods
-router.get('/shipping-methods', async (req, res) => {
-    try {
-        const methods = await ShippingMethod.find({ isActive: true })
-            .sort({ sortOrder: 1, baseFee: 1 })
-            .lean();
-        
-        res.json({ success: true, data: methods });
-    } catch (err) {
-        console.error('Get shipping methods error:', err);
-        res.status(500).json({ success: false, message: 'Failed to fetch shipping methods' });
-    }
-});
-
-// GET /api/checkout/shipping-options – Get shipping options for address
-router.post('/shipping-options', async (req, res) => {
-    try {
-        const { address, subtotal } = req.body;
-        
-        if (!address || !address.city) {
-            return res.status(400).json({ success: false, message: 'City is required' });
-        }
-        
-        const methods = await ShippingMethod.find({ isActive: true })
-            .sort({ baseFee: 1 })
-            .lean();
-        
-        const options = [];
-        for (const method of methods) {
-            // Check if method is available for this location
-            let available = true;
-            let fee = method.baseFee;
-            let estimatedDays = method.estimatedDays;
-            
-            // Check zone restrictions
-            if (method.zones && method.zones.length > 0) {
-                const matchingZone = method.zones.find(zone => 
-                    zone.isActive && 
-                    (zone.counties?.includes(req.body.address?.county) || 
-                     zone.cities?.includes(req.body.address?.city))
-                );
-                if (!matchingZone) {
-                    available = false;
-                } else {
-                    fee = matchingZone.fee || method.baseFee;
-                    estimatedDays = matchingZone.estimatedDays || method.estimatedDays;
-                }
-            }
-            
-            // Apply free shipping threshold
-            if (req.body.subtotal >= (method.freeShippingThreshold || 0)) {
-                fee = 0;
-            }
-            
-            if (available) {
-                options.push({
-                    ...method,
-                    fee,
-                    estimatedDays,
-                    available: true
-                });
-            }
-        }
-        
-        // Add free shipping if threshold met
-        const settings = await Settings.findOne();
-        const freeThreshold = settings?.freeDeliveryThreshold || 15000;
-        if (req.body.subtotal >= freeThreshold) {
-            const freeShipping = options.find(o => o.type === 'standard');
-            if (freeShipping) {
-                freeShipping.fee = 0;
-                freeShipping.label = 'Free Standard Delivery';
-            }
-        }
-        
-        res.json({ success: true, data: options.filter(o => o.available) });
-    } catch (err) {
-        console.error('Shipping options error:', err);
-        res.status(500).json({ success: false, message: 'Failed to calculate shipping options' });
-    }
-});
 
 // POST /api/checkout/:sessionToken/delivery-method – Set delivery method
 router.post('/:sessionToken/delivery-method', async (req, res) => {
@@ -588,49 +629,6 @@ router.post('/:sessionToken/delivery-method', async (req, res) => {
     }
 });
 
-// ============================================================
-// PAYMENT ROUTES
-// ============================================================
-
-// GET /api/checkout/payment-methods – Get available payment methods
-router.get('/payment-methods', async (req, res) => {
-    try {
-        const settings = await Settings.findOne();
-        const methods = [];
-        
-        // Get configured payment methods from settings
-        const configuredMethods = settings?.paymentMethods || [
-            'mpesa', 'stripe', 'paypal', 'visa', 'mastercard', 
-            'apple-pay', 'google-pay', 'bank-transfer', 'cash-on-delivery'
-        ];
-        
-        // Load payment method configurations
-        const configs = await PaymentMethodConfig.find({ isEnabled: true })
-            .sort({ sortOrder: 1 })
-            .lean();
-        
-        for (const config of configs) {
-            if (configuredMethods.includes(config.type)) {
-                methods.push({
-                    type: config.type,
-                    label: config.label,
-                    fees: config.fees,
-                    displayIcon: config.displayIcon,
-                    displayColor: config.displayColor,
-                    requiresRedirect: config.requiresRedirect,
-                    supportsRefunds: config.supportsRefunds,
-                    processingTime: config.processingTime,
-                    requirements: config.requirements
-                });
-            }
-        }
-        
-        res.json({ success: true, data: methods });
-    } catch (err) {
-        console.error('Get payment methods error:', err);
-        res.status(500).json({ success: false, message: 'Failed to fetch payment methods' });
-    }
-});
 
 // POST /api/checkout/:sessionToken/payment-method – Set payment method
 router.post('/:sessionToken/payment-method', async (req, res) => {
