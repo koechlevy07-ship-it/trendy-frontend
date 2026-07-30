@@ -7,7 +7,7 @@ const MPESA_CONFIG = {
     consumerSecret: process.env.MPESA_CONSUMER_SECRET,
     shortCode: process.env.MPESA_SHORTCODE || '880100',
     passKey: process.env.MPESA_PASSKEY,
-    baseUrl: process.env.MPESA_BASE_URL || 'https://sandbox.safaricom.co.ke',
+    baseUrl: process.env.MPESA_BASE_URL || 'https://api.safaricom.co.ke',
     callbackUrl: process.env.MPESA_CALLBACK_URL || 'https://your-domain.com/api/checkout/payment/callback/mpesa'
 };
 

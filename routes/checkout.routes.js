@@ -719,7 +719,7 @@ router.post('/payment/mpesa', async (req, res) => {
         const result = await processMpesaPayment({
             phoneNumber,
             amount: mpesaAmount,
-            accountReference: checkoutSession.sessionToken,
+            accountReference: '149042',
             transactionDesc: `Order payment for Trendy Wardrobe`,
             callbackUrl: `${process.env.API_URL || 'https://trendy-backend-jq27.onrender.com'}/api/checkout/payment/callback/mpesa`,
             transactionId: transaction.transactionId
