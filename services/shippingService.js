@@ -512,8 +512,7 @@ module.exports = {
     deleteShippingMethod,
     getShippingZones,
     calculateShipping,
-    estimateDelivery: estimateDelivery,
-    calculateDeliveryDate,
+    estimateDelivery: estimateDeliveryDate,
     estimateDays,
     DEFAULT_SHIPPING_CONFIG,
     KENYA_SHIPPING_ZONES

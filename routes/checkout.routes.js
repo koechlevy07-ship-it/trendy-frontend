@@ -13,7 +13,7 @@ const crypto = require('crypto');
 
 // Import payment services (to be implemented)
 const { processMpesaPayment, verifyMpesaPayment, processStripePayment, processPaypalPayment } = require('../services/paymentService');
-const { calculateShipping, estimateDelivery } = require('../services/shippingService');
+const { calculateShipping } = require('../services/shippingService');
 const { calculateTax } = require('../services/taxService');
 const { runFraudChecks } = require('../services/fraudService');
 const { sendOrderConfirmation, sendCheckoutAbandoned, sendPaymentConfirmation, sendOrderStatusUpdate } = require('../services/emailService');
