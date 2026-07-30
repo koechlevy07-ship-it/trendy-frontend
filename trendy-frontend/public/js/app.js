@@ -2021,6 +2021,7 @@
                         <div class="quick-actions">
                             <button class="compare-btn" data-id="${p._id}" aria-label="Add to compare" title="Compare"><i class="fas fa-exchange-alt"></i></button>
                             <button class="share-btn" data-id="${p._id}" aria-label="Share product" title="Share"><i class="fas fa-share-alt"></i></button>
+                            <button class="whatsapp-inquiry-btn" data-id="${p._id}" aria-label="Ask on WhatsApp" title="Ask on WhatsApp"><i class="fab fa-whatsapp"></i></button>
                         </div>
                         <button class="wishlist-btn ${inWish ? 'liked' : ''}" data-id="${p._id}" aria-label="${inWish ? 'Remove from wishlist' : 'Add to wishlist'}"><i class="fa${inWish ? 's' : 'r'} fa-heart"></i></button>
                         ${p.flashSale && p.flashSaleEnd && new Date(p.flashSaleEnd) > new Date() ? '<span class="badge flash-sale">FLASH SALE</span>' : ''}
@@ -2119,6 +2120,15 @@
                     } else {
                         navigator.clipboard.writeText(url).then(() => showToast('Link copied!', 'success'));
                     }
+                });
+            });
+            container.querySelectorAll('.whatsapp-inquiry-btn').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.stopPropagation();
+                    const p = currentProducts.find(pr => pr._id === btn.dataset.id);
+                    if (!p) return;
+                    const msg = `Hi! I'm interested in: ${p.name}%0APrice: Ksh ${(p.flashSale && p.flashSalePrice ? p.flashSalePrice : p.price).toLocaleString()}%0A${window.location.origin}/product-details.html?id=${p._id}`;
+                    window.open(`https://wa.me/254728985417?text=${msg}`, '_blank');
                 });
             });
         }
@@ -2323,6 +2333,7 @@
                             <button class="qv-btn buy-now" ${!inStock ? 'disabled' : ''} data-id="${p._id}">Buy Now</button>
                             <button class="qv-btn wishlist ${isInWishlist(p._id) ? 'liked' : ''}" data-id="${p._id}"><i class="fa${isInWishlist(p._id) ? 's' : 'r'} fa-heart"></i></button>
                             <button class="qv-btn share"><i class="fas fa-share-alt"></i></button>
+                            <button class="qv-btn whatsapp-inquiry" data-id="${p._id}"><i class="fab fa-whatsapp"></i></button>
                         </div>
                         ${p.tags && p.tags.length ? `<div style="margin-top:12px;font-size:0.8rem;color:var(--text-secondary);"><strong>Tags:</strong> ${escHtml(p.tags.join(', '))}</div>` : ''}
                         <div class="qv-meta">
@@ -2460,6 +2471,15 @@
                             navigator.clipboard.writeText(window.location.href);
                             showToast('Link copied to clipboard!');
                         }
+                    });
+                });
+                document.querySelectorAll('.qv-btn.whatsapp-inquiry').forEach(btn => {
+                    btn.addEventListener('click', e => {
+                        e.stopPropagation();
+                        const p = currentQVProduct;
+                        if (!p) return;
+                        const msg = `Hi! I'm interested in: ${p.name}%0APrice: Ksh ${(p.flashSale && p.flashSalePrice ? p.flashSalePrice : p.price).toLocaleString()}%0A${window.location.origin}/product-details.html?id=${p._id}`;
+                        window.open(`https://wa.me/254728985417?text=${msg}`, '_blank');
                     });
                 });
 
