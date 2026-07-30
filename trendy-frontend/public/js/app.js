@@ -260,7 +260,7 @@
             clearTimeout(toast._timer);
             toast._timer = setTimeout(() => toast.classList.remove('show'), 4000);
         }
-        toastClose.addEventListener('click', () => toast.classList.remove('show'));
+        if (toastClose) toastClose.addEventListener('click', () => toast.classList.remove('show'));
 
         // ============================================================
         // AUTH HELPERS
@@ -312,6 +312,8 @@
             fetchBadgeCounts();
         }
 
+        const profileBtnWrapper = document.getElementById('profileBtnWrapper');
+
         // Profile dropdown for desktop and mobile
         function updateProfileDropdown(user) {
             const dropdownHeader = document.getElementById('dropdownHeader');
@@ -355,14 +357,12 @@
                 profileBtn.setAttribute('aria-expanded', profileDropdown.classList.contains('open'));
             });
             document.addEventListener('click', (e) => {
-                if (!profileBtnWrapper.contains(e.target)) {
+                if (profileBtnWrapper && !profileBtnWrapper.contains(e.target)) {
                     profileDropdown.classList.remove('open');
                     profileBtn.setAttribute('aria-expanded', 'false');
                 }
             });
         }
-        const profileBtnWrapper = document.getElementById('profileBtnWrapper');
-
         // Profile dropdown items
         const ddProfile = document.getElementById('ddProfile');
         const ddOrders = document.getElementById('ddOrders');
@@ -445,7 +445,7 @@
         window.openAuthModal = openAuthModal;
         window.loadSharedModule = async function() {
             // Shared functionality loaded
-            updateWishlistBadge();
+            updateWishlistIcon();
             updateCartBadge();
         };
 
@@ -539,8 +539,8 @@
             const name = registerName.value.trim();
             const email = registerEmail.value.trim();
             const password = registerPassword.value.trim();
-            const confirm = registerConfirm.value.trim();
-            if (password !== confirm) {
+            const confirmPwd = registerConfirm.value.trim();
+            if (password !== confirmPwd) {
                 registerError.textContent = 'Passwords do not match';
                 registerError.style.display = 'block';
                 return;
@@ -1139,7 +1139,15 @@
 
         function loadCart() {
             const saved = localStorage.getItem('tw_cart') || localStorage.getItem('cart');
-            if (saved) { try { cartItems = JSON.parse(saved); localStorage.setItem('tw_cart', saved); } catch (e) { cartItems = []; } }
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed)) {
+                        cartItems = parsed.filter(i => i && typeof i.id === 'string' && typeof i.quantity === 'number' && i.quantity > 0);
+                    } else { cartItems = []; }
+                    localStorage.setItem('tw_cart', JSON.stringify(cartItems));
+                } catch (e) { cartItems = []; }
+            }
             updateCartBadge();
             if (isLoggedIn()) loadServerCart();
         }
@@ -1184,6 +1192,7 @@
             if (cartBadge) { cartBadge.textContent = total; cartBadge.style.display = total > 0 ? 'flex' : 'none'; }
             const desktopBadge = document.getElementById('cartBadgeDesktop');
             if (desktopBadge) { desktopBadge.textContent = total; desktopBadge.style.display = total > 0 ? 'flex' : 'none'; }
+            updateMobileCartBadge();
         }
 
         function addToCart(product) {
@@ -1290,17 +1299,17 @@
 
         function closeCartFn() { miniCartOverlay.classList.remove('show');
             document.body.classList.remove('no-scroll'); }
-        cartBtn.addEventListener('click', openCart);
+        if (cartBtn) cartBtn.addEventListener('click', openCart);
         const cartBtnDesktop = document.getElementById('cartBtnDesktop');
         if (cartBtnDesktop) cartBtnDesktop.addEventListener('click', openCart);
-        closeCart.addEventListener('click', closeCartFn);
-        miniCartOverlay.addEventListener('click', e => { if (e.target === miniCartOverlay) closeCartFn(); });
-        continueShoppingBtn.addEventListener('click', closeCartFn);
+        if (closeCart) closeCart.addEventListener('click', closeCartFn);
+        if (miniCartOverlay) miniCartOverlay.addEventListener('click', e => { if (e.target === miniCartOverlay) closeCartFn(); });
+        if (continueShoppingBtn) continueShoppingBtn.addEventListener('click', closeCartFn);
 
         // ============================================================
         // CHECKOUT
         // ============================================================
-        checkoutBtn.addEventListener('click', function() {
+        if (checkoutBtn) checkoutBtn.addEventListener('click', function() {
             if (!isLoggedIn()) {
                 showToast('⚠️ Please log in to checkout', 'error');
                 openAuthModal();
@@ -1445,13 +1454,13 @@
             }
         }
 
-        function setHeroSlide(slide) {
+         function setHeroSlide(slide) {
             const hero = document.getElementById('heroSection');
             const heroBg = document.getElementById('heroBg');
             const heroVideo = document.getElementById('heroVideo');
             const isMobile = window.innerWidth <= 768;
 
-            if (slide.videoUrl) {
+            if (slide.videoUrl && heroVideo) {
                 heroBg.style.backgroundImage = '';
                 heroVideo.classList.remove('hidden-video');
                 if (heroVideo.src !== slide.videoUrl) {
@@ -2207,7 +2216,8 @@
             spinner.style.display = 'none';
         }
 
-        document.getElementById('loadMoreBtn').addEventListener('click', loadMore);
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        if (loadMoreBtn) loadMoreBtn.addEventListener('click', loadMore);
 
         // ============================================================
         // QUICK VIEW
@@ -3557,9 +3567,7 @@
                 badge.textContent = count;
                 badge.style.display = count > 0 ? 'flex' : 'none';
             }
-            updateCartBadge();
         }
-        setInterval(updateMobileCartBadge, 2000);
 
         // ============================================================
         // HERO PARALLAX — Premium smooth scroll effect
@@ -3588,8 +3596,20 @@
             let targetY = 0;
             let rafId = null;
             let lastScrollY = window.scrollY;
+            let isPageVisible = !document.hidden;
+
+            document.addEventListener('visibilitychange', () => {
+                isPageVisible = !document.hidden;
+                if (isPageVisible && !rafId) {
+                    rafId = requestAnimationFrame(updateParallax);
+                } else if (!isPageVisible && rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+            });
 
             function updateParallax() {
+                if (!isPageVisible) { rafId = null; return; }
                 const scrollY = window.scrollY;
                 const heroRect = hero.getBoundingClientRect();
                 const heroBottom = heroRect.bottom;
@@ -3740,9 +3760,14 @@
         // ============================================================
         // GOOGLE ANALYTICS – ENHANCED ECOMMERCE & EVENT TRACKING
         // ============================================================
+        function gaEvent() {
+            if (typeof gtag !== 'function') return;
+            gtag.apply(this, arguments);
+        }
+
         (function() {
             // --- Page View ---
-            gtag('event', 'page_view', {
+            gaEvent('event', 'page_view', {
                 page_title: document.title,
                 page_location: window.location.href,
                 content_group: 'homepage'
@@ -3757,7 +3782,7 @@
                 [25, 50, 75, 100].forEach(function(t) {
                     if (pct >= t && !scrollTracked[t]) {
                         scrollTracked[t] = true;
-                        gtag('event', 'scroll', { percent_scrolled: t });
+                        gaEvent('event', 'scroll', { percent_scrolled: t });
                     }
                 });
             }, { passive: true });
@@ -3767,7 +3792,7 @@
             window.performSearch = function(query) {
                 const q = query || (searchInput && searchInput.value.trim());
                 if (q && q.length > 0) {
-                    gtag('event', 'search', {
+                    gaEvent('event', 'search', {
                         search_term: q,
                         content_type: 'products'
                     });
@@ -3778,7 +3803,7 @@
             // --- WhatsApp Click ---
             document.querySelectorAll('a[href*="wa.me"]').forEach(function(a) {
                 a.addEventListener('click', function() {
-                    gtag('event', 'whatsapp_click', {
+                    gaEvent('event', 'whatsapp_click', {
                         link_url: a.href,
                         link_text: a.textContent.trim().substring(0, 50)
                     });
@@ -3789,7 +3814,7 @@
             const contactFormEl = document.querySelector('.contact-form, #contactForm');
             if (contactFormEl) {
                 contactFormEl.addEventListener('submit', function() {
-                    gtag('event', 'contact_form_submit', {
+                    gaEvent('event', 'contact_form_submit', {
                         content_type: 'contact'
                     });
                 });
@@ -3798,7 +3823,7 @@
             // --- Product View (Quick View) ---
             const origOpenQuickView = window.openQuickView;
             window.openQuickView = function(id) {
-                gtag('event', 'view_item', {
+                gaEvent('event', 'view_item', {
                     items: [{ item_id: id }]
                 });
                 return origOpenQuickView.apply(this, arguments);
@@ -3807,7 +3832,7 @@
             // --- Add to Cart ---
             const origAddToCart = window.addToCart;
             window.addToCart = function(product) {
-                gtag('event', 'add_to_cart', {
+                gaEvent('event', 'add_to_cart', {
                     currency: 'KES',
                     value: product.price,
                     items: [{
@@ -3821,51 +3846,53 @@
             };
 
             // --- Begin Checkout ---
-            const origCheckoutBtnHandler = checkoutBtn && checkoutBtn.onclick;
-            checkoutBtn && checkoutBtn.addEventListener('click', function() {
-                const total = parseFloat((checkoutTotal.textContent || '0').replace('Ksh ', '').replace(/,/g, ''));
-                gtag('event', 'begin_checkout', {
-                    currency: 'KES',
-                    value: total,
-                    items: cartItems.map(function(item) {
-                        return {
-                            item_id: item.id,
-                            item_name: item.name,
-                            price: item.price,
-                            quantity: item.quantity
-                        };
-                    })
+            if (checkoutBtn) {
+                checkoutBtn.addEventListener('click', function() {
+                    const total = parseFloat((checkoutTotal.textContent || '0').replace('Ksh ', '').replace(/,/g, ''));
+                    gaEvent('event', 'begin_checkout', {
+                        currency: 'KES',
+                        value: total,
+                        items: cartItems.map(function(item) {
+                            return {
+                                item_id: item.id,
+                                item_name: item.name,
+                                price: item.price,
+                                quantity: item.quantity
+                            };
+                        })
+                    });
                 });
-            });
+            }
 
             // --- Purchase ---
-            const origCheckoutFormSubmit = checkoutForm && checkoutForm.onsubmit;
-            checkoutForm && checkoutForm.addEventListener('submit', function() {
-                setTimeout(function() {
-                    const successEl = document.getElementById('orderSuccessOverlay');
-                    if (successEl && successEl.classList.contains('show')) {
-                        const total = parseFloat((checkoutTotal.textContent || '0').replace('Ksh ', '').replace(/,/g, ''));
-                        gtag('event', 'purchase', {
-                            currency: 'KES',
-                            value: total,
-                            transaction_id: orderNumberDisplay ? orderNumberDisplay.textContent.replace('#', '') : '',
-                            items: cartItems.map(function(item) {
-                                return {
-                                    item_id: item.id,
-                                    item_name: item.name,
-                                    price: item.price,
-                                    quantity: item.quantity
-                                };
-                            })
-                        });
-                    }
-                }, 2000);
-            });
+            if (checkoutForm) {
+                checkoutForm.addEventListener('submit', function() {
+                    setTimeout(function() {
+                        const successEl = document.getElementById('orderSuccessOverlay');
+                        if (successEl && successEl.classList.contains('show')) {
+                            const total = parseFloat((checkoutTotal.textContent || '0').replace('Ksh ', '').replace(/,/g, ''));
+                            gaEvent('event', 'purchase', {
+                                currency: 'KES',
+                                value: total,
+                                transaction_id: orderNumberDisplay ? orderNumberDisplay.textContent.replace('#', '') : '',
+                                items: cartItems.map(function(item) {
+                                    return {
+                                        item_id: item.id,
+                                        item_name: item.name,
+                                        price: item.price,
+                                        quantity: item.quantity
+                                    };
+                                })
+                            });
+                        }
+                    }, 2000);
+                });
+            }
 
             // --- Wishlist ---
             document.querySelectorAll('.wishlist-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
-                    gtag('event', 'add_to_wishlist', {
+                    gaEvent('event', 'add_to_wishlist', {
                         content_type: 'product'
                     });
                 });
@@ -3875,7 +3902,7 @@
             document.querySelectorAll('.category-card').forEach(function(card) {
                 card.addEventListener('click', function() {
                     const title = card.querySelector('h3');
-                    gtag('event', 'select_content', {
+                    gaEvent('event', 'select_content', {
                         content_type: 'category',
                         content_id: title ? title.textContent.trim().toLowerCase() : 'unknown'
                     });
@@ -3885,7 +3912,7 @@
             // --- CTA Button Clicks ---
             document.querySelectorAll('.btn-shop, .shop-now').forEach(function(btn) {
                 btn.addEventListener('click', function() {
-                    gtag('event', 'cta_click', {
+                    gaEvent('event', 'cta_click', {
                         button_text: btn.textContent.trim(),
                         button_location: btn.closest('section') ? btn.closest('section').id || 'hero' : 'unknown'
                     });
@@ -3947,6 +3974,7 @@
                 if (bc) bc.textContent = this.dataset.gender === 'all' ? 'All Products' : this.textContent.charAt(0).toUpperCase() + this.textContent.slice(1) + ' Collection';
             });
         });
+        // Duplicate removed - these events are already bound above
     })();
     function showSizeTab(tab) {
         ['men','women','kids'].forEach(function(t) {
