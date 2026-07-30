@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const MPESA_CONFIG = {
     consumerKey: process.env.MPESA_CONSUMER_KEY,
     consumerSecret: process.env.MPESA_CONSUMER_SECRET,
-    shortCode: process.env.MPESA_SHORTCODE || '174379',
+    shortCode: process.env.MPESA_SHORTCODE || '880100',
     passKey: process.env.MPESA_PASSKEY,
     baseUrl: process.env.MPESA_BASE_URL || 'https://sandbox.safaricom.co.ke',
     callbackUrl: process.env.MPESA_CALLBACK_URL || 'https://your-domain.com/api/checkout/payment/callback/mpesa'
