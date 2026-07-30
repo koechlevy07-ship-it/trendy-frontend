@@ -16,6 +16,18 @@ function escapeRegex(str) {
 // COUPON ROUTES
 // ============================================================
 
+// GET /api/coupons – list coupons (with optional search)
+router.get('/', authenticateToken, async (req, res) => {
+    try {
+        const { search } = req.query;
+        const query = search ? { code: { $regex: search, $options: 'i' } } : {};
+        const coupons = await Coupon.find(query).sort({ createdAt: -1 }).limit(200);
+        res.json({ success: true, data: coupons });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to fetch coupons' });
+    }
+});
+
 // POST /api/coupons/validate – validate coupon for cart (customer)
 router.post('/validate', authenticateToken, async (req, res) => {
     try {

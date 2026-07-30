@@ -1146,7 +1146,7 @@
         async function loadInventory(){try{const res=await fetch(`${API_URL}/products`);if(!res.ok)throw new Error('Failed');const data=await res.json();const prods=Array.isArray(data)?data:(data.data||[]);const tbody=document.getElementById('inventoryTableBody');if(!prods.length){tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--text-muted);">No products.</td></tr>';return;}tbody.innerHTML=prods.map(p=>{const s=p.stock>0;return`<tr><td><strong>${p.name}</strong></td><td>${p.stock||0}</td><td><span class="status-badge ${s?'paid':'cancelled'}">${s?'In Stock':'Out of Stock'}</span></td></tr>`;}).join('');}catch(err){showToast(err.message);}}
         /* COUPONS */
         async function loadCoupons(search='') {
-            try{const url=search?`${API_URL}/coupons?search=${encodeURIComponent(search)}`:`${API_URL}/coupons`;
+            try{const url=search?`${API_URL}/coupons/admin?search=${encodeURIComponent(search)}`:`${API_URL}/coupons/admin`;
             const res=await fetch(url,{headers:getAuthHeaders()});if(!res.ok)throw new Error('Failed');const data=await res.json();const coupons=Array.isArray(data)?data:(data.data||[]);
             const tbody=document.getElementById('couponsTableBody');
             if(!coupons.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text-muted);">No coupons found.</td></tr>';document.getElementById('couponCountBadge').textContent=0;return;}
