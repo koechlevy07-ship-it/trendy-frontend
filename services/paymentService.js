@@ -392,6 +392,10 @@ async function processBankTransfer({ amount, accountNumber, accountName, bankCod
 // Cash on Delivery
 // ============================================================
 
+function generateTransactionId() {
+    return 'TXN-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
 async function processCashOnDelivery({ amount, phoneNumber, notes }) {
     return {
         success: true,
