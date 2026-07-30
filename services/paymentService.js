@@ -8,7 +8,7 @@ const MPESA_CONFIG = {
     shortCode: process.env.MPESA_SHORTCODE || '174379',
     passKey: process.env.MPESA_PASSKEY,
     baseUrl: process.env.MPESA_BASE_URL || 'https://sandbox.safaricom.co.ke',
-    callbackUrl: process.env.MPESA_CALLBACK_URL || 'https://your-domain.com/api/payment/callback/mpesa'
+    callbackUrl: process.env.MPESA_CALLBACK_URL || 'https://your-domain.com/api/checkout/payment/callback/mpesa'
 };
 
 // Stripe Configuration
