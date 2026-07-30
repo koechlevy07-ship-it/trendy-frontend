@@ -3458,4 +3458,9 @@
         @media (max-width: 768px) {
             .mobile-bottom-nav { display: flex !important; }
             body { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+        }
+
+        /* Hide compare button on mobile product cards */
+        @media (max-width: 768px) {
+            .product-card .quick-actions .compare-btn { display: none; }
         }
