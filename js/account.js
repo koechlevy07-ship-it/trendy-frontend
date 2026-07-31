@@ -33,11 +33,11 @@ document.addEventListener('DOMContentLoaded', () => $('toastClose')?.addEventLis
 let profileData = null;
 let addresses = [];
 let orders = [];
-let wishlistItems = [];
+let accountWishlistItems = [];
 let reviews = [];
 let notifications = [];
 let tickets = [];
-let cartItems = [];
+let accountCartItems = [];
 let paymentMethods = [];
 let loyaltyData = null;
 let coupons = [];
@@ -343,7 +343,7 @@ async function loadWishlist() {
         const res = await authFetch(`${API_URL}/wishlist`);
         if (!res.ok) return;
         const d = await res.json();
-        wishlistItems = d.items || [];
+        accountWishlistItems = d.items || [];
         renderWishlist();
     } catch(e) { /* ignore */ }
 }
@@ -351,7 +351,7 @@ async function loadWishlist() {
 function renderWishlist() {
     const container = $('awList');
     if (!container) return;
-    const items = wishlistItems.slice(0, 4);
+    const items = accountWishlistItems.slice(0, 4);
     if (!items.length) { container.innerHTML = '<p class="acc-text-muted">Your wishlist is empty.</p>'; return; }
     container.innerHTML = `<div class="acc-wishlist-grid">${items.map(item => {
         const p = item.productId;
@@ -739,7 +739,7 @@ async function loadCart() {
         const res = await authFetch(`${API_URL}/cart`);
         if (!res.ok) return;
         const d = await res.json();
-        cartItems = d.items || d.data?.items || [];
+        accountCartItems = d.items || d.data?.items || [];
         renderCart();
     } catch(e) { /* ignore */ }
 }
@@ -747,11 +747,11 @@ async function loadCart() {
 function renderCart() {
     const container = $('acList');
     if (!container) return;
-    if (!cartItems.length) {
+    if (!accountCartItems.length) {
         container.innerHTML = '<p class="acc-text-muted">Your cart is empty. <a href="/" style="color:var(--color-gold);">Continue shopping</a></p>';
         return;
     }
-    container.innerHTML = cartItems.map(item => {
+    container.innerHTML = accountCartItems.map(item => {
         const p = item.productId;
         if (!p) return '';
         const img = (p.images && p.images[0]) ? getImageUrl(p.images[0], 200) : 'https://placehold.co/200x240/FAF9F6/C8A35A?text=P';
@@ -804,7 +804,7 @@ window.removeFromCart = async function(itemId) {
 
 window.moveToWishlist = async function(itemId) {
     try {
-        const item = cartItems.find(i => i._id === itemId);
+        const item = accountCartItems.find(i => i._id === itemId);
         if (!item) return;
         await authFetch(`${API_URL}/wishlist`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ productId: item.productId }) });
         await removeFromCart(itemId);
