@@ -3104,13 +3104,17 @@
         async function loadHomepageSections() {
             try {
                 const [newRes, bestRes] = await Promise.all([
-                    fetch(`${API_URL}/products?limit=6&sortBy=newest`),
-                    fetch(`${API_URL}/products?limit=6&sortBy=popular`)
+                    fetch(`${API_URL}/products?limit=8&sortBy=newest`),
+                    fetch(`${API_URL}/products?limit=8&sortBy=popular`)
                 ]);
                 const newData = newRes.ok ? await newRes.json() : { data: [] };
                 const bestData = bestRes.ok ? await bestRes.json() : { data: [] };
-                const newProducts = (newData.data || []).filter(p => p.isNewArrival);
-                const bestProducts = (bestData.data || []).filter(p => p.isBestSeller);
+                const newestAll = newData.data || [];
+                const popularAll = bestData.data || [];
+                let newProducts = newestAll.filter(p => p.isNewArrival);
+                if (!newProducts.length) newProducts = newestAll.slice(0, 6);
+                let bestProducts = popularAll.filter(p => p.isBestSeller);
+                if (!bestProducts.length) bestProducts = popularAll.slice(0, 6);
                 if (newProducts.length > 0) {
                     const section = document.getElementById('newArrivalsSection');
                     const grid = document.getElementById('newArrivalsGrid');
