@@ -74,7 +74,7 @@ async function build() {
 
     // Files to copy from root
     const rootFiles = [
-        'index.html', 'admin.html', 'contact.html', '404.html',
+        'index.html', 'contact.html', '404.html',
         'about.html', 'terms.html', 'privacy.html', 'product-details.html',
         'cart.html', 'checkout.html', 'wishlist.html', 'order-confirmation.html',
         'account.html', 'robots.txt', 'sitemap.xml', 'manifest.json',
