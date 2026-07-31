@@ -10,7 +10,7 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.cloudinary.com https://trendy-backend-jq27.onrender.com https://www.googletagmanager.com https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://res.cloudinary.com data: blob: https://placehold.co https://cdn-icons-png.flaticon.com https://maps.googleapis.com https://maps.gstatic.com; connect-src 'self' https://trendy-backend-jq27.onrender.com https://api.cloudinary.com https://www.google-analytics.com https://www.google.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdnjs.cloudflare.com;" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://cdn.vercel-insights.com https://vercel.live https://maps.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://res.cloudinary.com https://placehold.co blob: https://cdn-icons-png.flaticon.com https://maps.googleapis.com https://maps.gstatic.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com; connect-src 'self' https://trendy-backend-jq27.onrender.com https://api.cloudinary.com https://cdn.vercel-insights.com https://vercel.live https://maps.googleapis.com https://www.google-analytics.com https://www.google.com; frame-src https://www.google.com https://www.google.com/maps https://vercel.live; worker-src 'self';" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZYYHCQ4HZX"></script>
@@ -4840,7 +4840,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
                     <code style="background:var(--bg-primary);padding:1px 6px;border-radius:3px;font-size:0.7rem;">${escHtml(node.slug)}</code>
                     <span class="status-badge" style="background:#E3F2FD;color:#0D47A1;font-size:0.7rem;padding:1px 8px;">${node.productCount||0}</span>
                     ${node.featured?'<span style="font-size:0.7rem;color:var(--gold);">★</span>':''}
-                    <span style="font-size:0.7rem;padding:1px 8px;border-radius:3px;background:${node.status==='published'?'#E8F5E9':'#FFEBEE'};color:${node.status==='published'?'#2E7D32':'#C62828';">${node.status||'published'}</span>
+                    <span style="font-size:0.7rem;padding:1px 8px;border-radius:3px;background:${node.status==='published'?'#E8F5E9':'#FFEBEE'};color:${node.status==='published'?'#2E7D32':'#C62828'};">${node.status||'published'}</span>
                     <div style="margin-left:auto;display:flex;gap:4px;">
                         <button class="cat-edit-btn" data-id="${node._id}" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.85rem;padding:2px 5px;" title="Edit"><i class="fas fa-edit"></i></button>
                         <button class="cat-delete-btn" data-id="${node._id}" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:0.85rem;padding:2px 5px;" title="Delete"><i class="fas fa-trash-alt"></i></button>
@@ -4913,7 +4913,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
             document.getElementById('catTabletBannerPreview').innerHTML=c.tabletBanner?`<img src="${c.tabletBanner}" style="width:80px;height:50px;border-radius:6px;object-fit:cover;">`:'';
             // Populate parent select
             populateCategorySelect();
-            document.getElementById('categoryParent').value=c.parent?.(._id||c.parent)||'';
+            document.getElementById('categoryParent').value=c.parent?._id||c.parent||'';
             document.getElementById('categoryFormModal').classList.add('show');
         }
         // Category image upload helper
@@ -5496,7 +5496,7 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
                 <div class="summary"><div>Subtotal: Ksh ${(order.subtotal || 0).toLocaleString()}</div><div>Delivery: ${order.deliveryFee ? 'Ksh ' + order.deliveryFee.toLocaleString() : 'Free'}</div>${order.discount ? '<div>Discount: -Ksh ' + order.discount.toLocaleString() + '</div>' : ''}<div class="grand">Total: Ksh ${(order.total || 0).toLocaleString()}</div></div>
                 <div style="margin-top:20px;font-size:12px;"><strong>Payment:</strong> ${escHtml(order.paymentMethod || 'N/A')} (${escHtml(order.paymentDetails?.paymentStatus || 'pending')})</div>
                 <div class="footer">Generated on ${new Date().toLocaleString()} | Trendy Wardrobe</div>
-                <script>window.print();setTimeout(function(){window.close();},1000);<\/script>
+                <script>window.print();setTimeout(function(){window.close();},1000);<\/script>`);
         }
 
         /* ====================== PROMOTIONS MANAGEMENT ====================== */
