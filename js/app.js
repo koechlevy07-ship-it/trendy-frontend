@@ -1943,6 +1943,7 @@
         let lastFetchSearch = '';
         let currentProducts = [];
         let displayedCount = 0;
+        let lastProductsFetchFailed = false;
         const ROWS_INITIAL = 4;
 
         function getGridColumns() {
@@ -1968,8 +1969,32 @@
                 const json = await res.json();
                 const products = Array.isArray(json) ? json : (json.data || []);
                 const pag = json.pagination || { page: 1, pages: 1, total: products.length };
+                if (page === 1 && filter === 'all' && !gender && !search) {
+                    try {
+                        localStorage.setItem('tw_products_cache', JSON.stringify({
+                            t: Date.now(),
+                            products: products.slice(0, 24),
+                            pagination: pag
+                        }));
+                    } catch (e) {}
+                }
+                lastProductsFetchFailed = false;
                 return { products, pagination: pag };
             } catch (e) {
+                lastProductsFetchFailed = true;
+                if (page === 1) {
+                    try {
+                        const cached = JSON.parse(localStorage.getItem('tw_products_cache') || 'null');
+                        if (cached && Array.isArray(cached.products) && cached.products.length) {
+                            showToast('Could not load products', 'error');
+                            return {
+                                products: cached.products,
+                                pagination: cached.pagination || { page: 1, pages: 1, total: cached.products.length },
+                                fromCache: true
+                            };
+                        }
+                    } catch (e2) {}
+                }
                 showToast('Could not load products', 'error');
                 return { products: [], pagination: { page: 1, pages: 1, total: 0 } };
             }
@@ -2171,9 +2196,22 @@
             lastFetchGender = gender;
             lastFetchSearch = search;
             renderSkeletonCards();
-            const { products, pagination } = await fetchProducts(filter, gender, search, 1, 20, currentSort);
+            const { products, pagination, fromCache } = await fetchProducts(filter, gender, search, 1, 20, currentSort);
             currentPage = pagination.page;
             totalPages = pagination.pages;
+            if (!products.length && lastProductsFetchFailed && !fromCache) {
+                if (productsGrid) {
+                    productsGrid.innerHTML =
+                        `<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-secondary);">
+                            <p style="margin:0 0 16px;font-size:0.95rem;">Couldn't load products. Please check your internet connection and try again.</p>
+                            <button id="retryProductsBtn" style="padding:10px 28px;background:#1a1a1a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem;">Retry</button>
+                        </div>`;
+                    updateShowMoreVisibility();
+                    const retry = document.getElementById('retryProductsBtn');
+                    if (retry) retry.addEventListener('click', () => loadProducts(filter, gender, search));
+                }
+                return;
+            }
             renderProducts(products);
         }
 

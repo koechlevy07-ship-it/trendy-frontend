@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v39';
+const CACHE_VERSION = 'v40';
 const STATIC_CACHE = 'trendy-static-' + CACHE_VERSION;
 const DYNAMIC_CACHE = 'trendy-dynamic-' + CACHE_VERSION;
 const IMAGE_CACHE = 'trendy-images-' + CACHE_VERSION;
@@ -165,20 +165,28 @@ async function cacheFirstWithExpiry(request, cacheName) {
 async function staleWhileRevalidate(request, cacheName = DYNAMIC_CACHE, expiryMs = 0) {
     const cached = await caches.match(request);
 
+    const refreshOrStale = async () => {
+        try {
+            const fresh = await fetchAndCache(request, cacheName);
+            return fresh;
+        } catch (e) {
+            return cached || new Response('', { status: 503 });
+        }
+    };
+
     if (cached && expiryMs > 0) {
         const header = cached.headers.get('sw-cached-at');
         if (header && (Date.now() - parseInt(header)) > expiryMs) {
-            caches.open(cacheName).then(c => c.delete(request));
-        } else if (cached) {
-            fetchAndCache(request, cacheName);
-            return cached;
+            return refreshOrStale();
         }
+        fetchAndCache(request, cacheName).catch(() => {});
+        return cached;
     } else if (cached) {
-        fetchAndCache(request, cacheName);
+        fetchAndCache(request, cacheName).catch(() => {});
         return cached;
     }
 
-    return fetchAndCache(request, cacheName);
+    return refreshOrStale();
 }
 
 async function fetchAndCache(request, cacheName) {
