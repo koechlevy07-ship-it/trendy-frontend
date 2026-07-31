@@ -1942,6 +1942,15 @@
         let lastFetchGender = null;
         let lastFetchSearch = '';
         let currentProducts = [];
+        let displayedCount = 0;
+        const ROWS_INITIAL = 4;
+
+        function getGridColumns() {
+            if (!productsGrid) return 5;
+            return window.getComputedStyle(productsGrid).gridTemplateColumns.split(' ').length;
+        }
+        function getBatchSize() { return getGridColumns() * ROWS_INITIAL; }
+
 
         async function fetchProducts(filter = 'all', gender = null, search = '', page = 1, limit = 20, sortBy = 'newest') {
             try {
@@ -2007,21 +2016,11 @@
 
         function buildProductCard(p) {
             const inWish = isInWishlist(p._id);
-            const inStock = !p.soldOut && (p.inStock || p.stock > 0 || p.preOrder || p.limitedAvailable || (p.limitedPieces && p.limitedPieces > 0));
-            const original = p.originalPrice ? `<span class="original">Ksh ${p.originalPrice.toLocaleString()}</span>` : '';
+            const inStock = isProductAvailable(p);
+            const effectiveStock = getEffectiveStock(p);
             const discount = p.originalPrice && p.originalPrice > p.price
                 ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100)
                 : 0;
-            const discountBadge = discount ? `<span class="discount">${discount}%</span>` : '';
-            const badges = [];
-            if (p.flashSale && p.flashSaleEnd && new Date(p.flashSaleEnd) > new Date()) badges.push('<span class="mini-badge flash-sale">Flash Sale</span>');
-            if (p.sponsored) badges.push('<span class="mini-badge sponsored">Sponsored</span>');
-            if (p.isNewArrival) badges.push('<span class="mini-badge new">New</span>');
-            if (p.isBestSeller) badges.push('<span class="mini-badge hot">Best Seller</span>');
-            if (p.featured) badges.push('<span class="mini-badge featured">Featured</span>');
-            if (p.limitedAvailable && p.limitedPieces > 0 && p.limitedPieces <= 10) badges.push(`<span class="mini-badge limited">Only ${p.limitedPieces} left</span>`);
-            if (p.installmentEligible) badges.push('<span class="mini-badge installment">Lipa Mdogo Mdogo</span>');
-            if (p.preOrder) badges.push('<span class="mini-badge pre-order">Pre-Order</span>');
             const rating = p.rating || 0;
             const fullStars = Math.floor(rating);
             const hasHalf = rating % 1 >= 0.5;
@@ -2029,66 +2028,49 @@
                 `<i class="fas fa-star ${i < fullStars ? '' : (i === fullStars && hasHalf ? 'half' : 'empty')}"></i>`
             ).join('');
             const reviewCount = p.totalReviews || p.reviewCount || 0;
-            const imageHtml = p.images && p.images.length > 1
-                ? `<div class="carousel-container">${p.images.map((img, i) => `<div class="carousel-slide ${i === 0 ? 'active' : ''}"><img src="${getOptimizedImage(img, 'card') || 'https://placehold.co/400x533/FAF9F6/C8A35A?text=Product'}" alt="${p.name} ${i + 1}" loading="lazy" decoding="async" /></div>`).join('')}<button class="carousel-arrow left" aria-label="Previous"><i class="fas fa-chevron-left"></i></button><button class="carousel-arrow right" aria-label="Next"><i class="fas fa-chevron-right"></i></button><div class="carousel-dots">${p.images.map((_, i) => `<span class="${i === 0 ? 'active' : ''}"></span>`).join('')}</div></div>`
-                : `<img src="${p.images?.[0] ? getOptimizedImage(p.images[0], 'card') : 'https://placehold.co/400x533/FAF9F6/C8A35A?text=Product'}" alt="${p.name}" loading="lazy" decoding="async" />`;
-            const deliveryEstimate = p.deliveryEstimate || 'Delivery in 2-5 days';
+            const imgUrl = p.images?.[0] ? (getOptimizedImage(p.images[0], 'card') || 'https://placehold.co/400x533/FAF9F6/C8A35A?text=Product') : 'https://placehold.co/400x533/FAF9F6/C8A35A?text=Product';
+            const secondImg = p.images?.[1] ? (getOptimizedImage(p.images[1], 'card') || null) : null;
+            const brandText = p.brand || (typeof p.category === 'string' ? p.category : 'Trendy Wardrobe');
+            const displayPrice = (p.flashSale && p.flashSalePrice) ? p.flashSalePrice : p.price;
+            const isNew = p.isNewArrival;
+            const isLimited = p.limitedAvailable && p.limitedPieces > 0 && p.limitedPieces <= 10;
+            const isFlash = p.flashSale && p.flashSaleEnd && new Date(p.flashSaleEnd) > new Date();
             return `
-                <div class="product-card" data-id="${p._id}" tabindex="0" role="article" aria-label="${p.name}">
-                    <div class="product-image">
-                        ${imageHtml}
-                        <div class="quick-actions">
-                            <button class="compare-btn" data-id="${p._id}" aria-label="Add to compare" title="Compare"><i class="fas fa-exchange-alt"></i></button>
-                            <button class="share-btn" data-id="${p._id}" aria-label="Share product" title="Share"><i class="fas fa-share-alt"></i></button>
-                            <button class="whatsapp-inquiry-btn" data-id="${p._id}" aria-label="Ask on WhatsApp" title="Ask on WhatsApp"><i class="fab fa-whatsapp"></i></button>
-                        </div>
-                        <button class="wishlist-btn ${inWish ? 'liked' : ''}" data-id="${p._id}" aria-label="${inWish ? 'Remove from wishlist' : 'Add to wishlist'}"><i class="fa${inWish ? 's' : 'r'} fa-heart"></i></button>
-                        ${p.flashSale && p.flashSaleEnd && new Date(p.flashSaleEnd) > new Date() ? '<span class="badge flash-sale">FLASH SALE</span>' : ''}
-                        ${p.featured ? '<span class="badge featured-badge">Featured</span>' : ''}
-                        ${p.sponsored ? '<span class="badge sponsored">Sponsored</span>' : ''}
-                        ${p.isNewArrival ? '<span class="badge new">New</span>' : ''}
-                        ${p.isBestSeller ? '<span class="badge hot">Best Seller</span>' : ''}
-                        ${p.limitedAvailable && p.limitedPieces > 0 && p.limitedPieces <= 10 ? `<span class="badge limited">Only ${p.limitedPieces} left!</span>` : ''}
-                        ${p.preOrder ? '<span class="badge pre-order">Pre-Order</span>' : ''}
-                        ${!inStock ? '<span class="badge out">OUT OF STOCK</span>' : ''}
-                        <button class="quick-view" data-id="${p._id}" aria-label="Quick view ${p.name}">Quick View</button>
+                <article class="product-card" data-id="${p._id}" tabindex="0" role="article" aria-label="${p.name}">
+                    <div class="product-image-wrap">
+                        <img class="card-img-primary" src="${imgUrl}" alt="${escHtml(p.name)}" loading="lazy" decoding="async" width="400" height="533" />
+                        ${secondImg ? `<img class="card-img-hover" src="${secondImg}" alt="${escHtml(p.name)} hover" loading="lazy" decoding="async" width="400" height="533" />` : ''}
+                        ${discount ? `<span class="badge-discount">-${discount}%</span>` : ''}
+                        ${isNew ? '<span class="badge-new">New</span>' : ''}
+                        ${isFlash ? '<span class="badge-flash">Flash</span>' : ''}
+                        ${isLimited ? `<span class="badge-limited">Only ${p.limitedPieces} left</span>` : ''}
+                        ${!inStock ? '<span class="badge-out">Out of Stock</span>' : ''}
+                        <button class="wishlist-btn ${inWish ? 'liked' : ''}" data-id="${p._id}" aria-label="${inWish ? 'Remove from wishlist' : 'Add to wishlist'}" onclick="event.stopPropagation()"><i class="fa${inWish ? 's' : 'r'} fa-heart"></i></button>
                     </div>
                     <div class="product-info">
-                        ${p.brand ? `<div class="brand">${p.brand}</div>` : ''}
+                        <div class="product-brand">${escHtml(brandText)}</div>
                         <div class="product-name">${escHtml(p.name)}</div>
-                        <div class="rating" aria-label="Rating ${rating.toFixed(1)} out of 5">
-                            <div class="stars">${stars}</div>
-                            ${rating > 0 ? `<span class="score">${rating.toFixed(1)}</span><span class="count">(${reviewCount})</span>` : ''}
+                        ${rating > 0 ? `<div class="product-rating" aria-label="Rating ${rating.toFixed(1)} out of 5"><span class="stars">${stars}</span><span class="count">(${reviewCount})</span></div>` : ''}
+                        <div class="product-price-row">
+                            <span class="current">Ksh ${displayPrice.toLocaleString()}</span>
+                            ${discount ? `<span class="original">Ksh ${p.originalPrice.toLocaleString()}</span>` : ''}
                         </div>
-                        <div class="badges-row">${badges.join('')}</div>
-                        <div class="stock-status ${inStock ? (p.stock !== undefined && p.stock <= 5 && p.stock > 0 ? 'low' : 'in-stock') : 'out'}">${inStock ? (p.stock !== undefined && p.stock <= 5 && p.stock > 0 ? 'Only ' + p.stock + ' left' : 'In Stock') : 'Out of Stock'}</div>
-                        <div class="delivery-estimate"><i class="fas fa-truck"></i>${deliveryEstimate}</div>
-                        <div class="product-price">
-                            <span class="current">Ksh ${(p.flashSale && p.flashSalePrice ? p.flashSalePrice : p.price).toLocaleString()}</span>
-                            ${original}
-                            ${discountBadge}
-                        </div>
-                        ${p.installmentEligible && p.installmentPrice ? `<div class="installment-info">or ${Math.ceil(p.price / (p.installmentPrice || 1))}x Ksh ${(p.installmentPrice || p.price).toLocaleString()}/mo</div>` : ''}
-                        <div class="card-actions">
-                            <button class="add-to-cart" data-id="${p._id}" ${!inStock ? 'disabled' : ''} aria-label="Add ${p.name} to cart"><i class="fas fa-shopping-bag"></i> <span>${inStock ? 'Add' : 'Out of Stock'}</span></button>
-                            <button class="buy-now" data-id="${p._id}" ${!inStock ? 'disabled' : ''} aria-label="Buy ${p.name} now"><i class="fas fa-bolt"></i></button>
-                        </div>
+                        <button class="add-btn" data-id="${p._id}" ${!inStock ? 'disabled' : ''} onclick="event.stopPropagation()"><i class="fas fa-shopping-bag"></i> ${inStock ? 'Add to Cart' : 'Out of Stock'}</button>
                     </div>
-                </div>`;
+                </article>`;
         }
 
         function bindProductCardEvents(container) {
             container.querySelectorAll('.product-card').forEach(card => {
-                initCarousel(card);
                 card.addEventListener('click', e => {
                     if (e.target.closest('button')) return;
-                    openQuickView(card.dataset.id);
+                    window.location.href = '/product-details?id=' + card.dataset.id;
                 });
                 card.addEventListener('keydown', e => {
-                    if (e.key === 'Enter' && !e.target.closest('button')) openQuickView(card.dataset.id);
+                    if (e.key === 'Enter' && !e.target.closest('button')) window.location.href = '/product-details?id=' + card.dataset.id;
                 });
             });
-            container.querySelectorAll('.add-to-cart').forEach(btn => {
+            container.querySelectorAll('.add-btn').forEach(btn => {
                 btn.addEventListener('click', async e => {
                     e.stopPropagation();
                     if (btn.disabled) return;
@@ -2097,15 +2079,6 @@
                     else {
                         try { const res = await fetch(`${API_URL}/products/${btn.dataset.id}`); const raw = await res.json(); addToCart(raw.data || raw); } catch (err) { showToast('Error adding to cart', 'error'); }
                     }
-                });
-            });
-            container.querySelectorAll('.buy-now').forEach(btn => {
-                btn.addEventListener('click', async e => {
-                    e.stopPropagation();
-                    if (btn.disabled) return;
-                    const cached = currentProducts.find(p => p._id === btn.dataset.id);
-                    const product = cached || await (async () => { try { const res = await fetch(`${API_URL}/products/${btn.dataset.id}`); const raw = await res.json(); return raw.data || raw; } catch (err) { showToast('Error adding to cart', 'error'); return null; } })();
-                    if (product) { addToCart(product); openCheckout(); }
                 });
             });
             container.querySelectorAll('.wishlist-btn').forEach(btn => {
@@ -2118,59 +2091,34 @@
                     } catch (err) { showToast('Error updating wishlist', 'error'); }
                 });
             });
-            container.querySelectorAll('.quick-view').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    openQuickView(btn.dataset.id);
-                });
-            });
-            container.querySelectorAll('.compare-btn').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    showToast('Compare feature coming soon!', 'info');
-                });
-            });
-            container.querySelectorAll('.share-btn').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    const url = `${window.location.origin}/#product-${btn.dataset.id}`;
-                    if (navigator.share) {
-                        navigator.share({ title: 'Check this out!', url });
-                    } else {
-                        navigator.clipboard.writeText(url).then(() => showToast('Link copied!', 'success'));
-                    }
-                });
-            });
-            container.querySelectorAll('.whatsapp-inquiry-btn').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    const p = currentProducts.find(pr => pr._id === btn.dataset.id);
-                    if (!p) return;
-                    const msg = `Hi! I'm interested in: ${p.name}%0APrice: Ksh ${(p.flashSale && p.flashSalePrice ? p.flashSalePrice : p.price).toLocaleString()}%0A${window.location.origin}/product-details.html?id=${p._id}`;
-                    window.open(`https://wa.me/254728985417?text=${msg}`, '_blank');
-                });
-            });
+        }
+
+        function updateShowMoreVisibility() {
+            var lmr = document.getElementById('loadMoreWrap');
+            var amr = document.getElementById('allLoadedWrap');
+            var hasMore = displayedCount < currentProducts.length || currentPage < totalPages;
+            var allLoaded = !hasMore && currentProducts.length > 0;
+            if (lmr) lmr.style.display = hasMore ? 'block' : 'none';
+            if (amr) amr.style.display = allLoaded ? 'block' : 'none';
         }
 
         function renderProducts(products, append = false) {
             if (!products) products = currentProducts;
-            else if (!append) currentProducts = products;
-            else currentProducts = currentProducts.concat(products);
+            else if (!append) {
+                currentProducts = products;
+                displayedCount = Math.min(products.length, getBatchSize());
+            } else {
+                currentProducts = currentProducts.concat(products);
+            }
+            if (!productsGrid) return;
             if (!currentProducts.length && !append) {
                 productsGrid.innerHTML =
                     `<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-secondary);">No products found.</div>`;
-                document.getElementById('loadMoreWrap').style.display = 'none';
+                updateShowMoreVisibility();
                 return;
             }
-            if (append) {
-                const fragment = document.createRange().createContextualFragment(products.map(p => buildProductCard(p)).join(''));
-                while (fragment.firstChild) productsGrid.appendChild(fragment.firstChild);
-            } else {
-                productsGrid.innerHTML = currentProducts.map(p => buildProductCard(p)).join('');
-            }
-            document.getElementById('loadMoreWrap').style.display = (currentPage < totalPages) ? 'block' : 'none';
-            document.getElementById('loadMoreBtn').style.display = (currentPage < totalPages) ? '' : 'none';
-
+            productsGrid.innerHTML = currentProducts.slice(0, displayedCount).map(p => buildProductCard(p)).join('');
+            updateShowMoreVisibility();
             bindProductCardEvents(productsGrid);
         }
 
@@ -2230,19 +2178,34 @@
         }
 
         async function loadMore() {
-            if (isLoadingMore || currentPage >= totalPages) return;
+            if (isLoadingMore) return;
+            var batchSize = getBatchSize();
+
+            if (displayedCount < currentProducts.length) {
+                displayedCount = Math.min(displayedCount + batchSize, currentProducts.length);
+                renderProducts();
+                return;
+            }
+            if (currentPage >= totalPages) {
+                updateShowMoreVisibility();
+                return;
+            }
             isLoadingMore = true;
-            const btn = document.getElementById('loadMoreBtn');
-            const spinner = document.getElementById('loadMoreSpinner');
-            btn.style.display = 'none';
-            spinner.style.display = 'block';
-            const nextPage = currentPage + 1;
-            const { products, pagination } = await fetchProducts(lastFetchFilter, lastFetchGender, lastFetchSearch, nextPage, 20, currentSort);
-            currentPage = pagination.page;
-            totalPages = pagination.pages;
-            renderProducts(products, true);
+            var btn = document.getElementById('loadMoreBtn');
+            var spinner = document.getElementById('loadMoreSpinner');
+            if (btn) btn.style.display = 'none';
+            if (spinner) spinner.style.display = 'block';
+            var nextPage = currentPage + 1;
+            var result = await fetchProducts(lastFetchFilter, lastFetchGender, lastFetchSearch, nextPage, 20, currentSort);
+            currentPage = result.pagination.page;
+            totalPages = result.pagination.pages;
+            currentProducts = currentProducts.concat(result.products);
+            displayedCount = Math.min(displayedCount + batchSize, currentProducts.length);
+            productsGrid.innerHTML = currentProducts.slice(0, displayedCount).map(p => buildProductCard(p)).join('');
+            updateShowMoreVisibility();
+            bindProductCardEvents(productsGrid);
             isLoadingMore = false;
-            spinner.style.display = 'none';
+            if (spinner) spinner.style.display = 'none';
         }
 
         const loadMoreBtn = document.getElementById('loadMoreBtn');
