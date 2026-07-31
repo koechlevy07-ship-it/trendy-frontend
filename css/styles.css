@@ -3674,61 +3674,6 @@
             }
         }
 
-        /* ============================================================
-           PRODUCT IMAGE PINCH-ZOOM (mobile)
-        ============================================================ */
-        .pinch-zoom-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
-            background: rgba(0,0,0,0.92);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.25s ease, visibility 0.25s ease;
-        }
-        .pinch-zoom-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .pinch-zoom-overlay img {
-            max-width: 95vw;
-            max-height: 90vh;
-            object-fit: contain;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-drag: none;
-            transition: transform 0.1s ease-out;
-        }
-        .pinch-zoom-close {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(255,255,255,0.2);
-            color: #fff;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100000;
-        }
-        .pinch-zoom-hint {
-            position: absolute;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255,255,255,0.6);
-            font-size: 0.75rem;
-            pointer-events: none;
-        }
-
         /* Hide compare button on mobile product cards */
         @media (max-width: 768px) {
             .product-card .quick-actions .compare-btn { display: none; }

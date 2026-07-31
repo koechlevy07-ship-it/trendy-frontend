@@ -250,12 +250,12 @@
 
     <!-- MOBILE SEARCH OVERLAY -->
     <div class="search-overlay" id="searchOverlay">
-        <button class="search-close" id="searchClose"><i class="fas fa-times"></i></button>
+        <button class="search-close" id="searchClose" aria-label="Close search"><i class="fas fa-times"></i></button>
         <div class="search-panel">
             <div class="search-input-wrap">
                 <i class="fas fa-search search-input-icon"></i>
                 <input type="text" id="searchOverlayInput" placeholder="Search trench coats, shoes, wardrobe..." autocomplete="off" />
-                <button class="search-submit" id="searchOverlaySubmit"><i class="fas fa-arrow-right"></i></button>
+                <button class="search-submit" id="searchOverlaySubmit" aria-label="Search"><i class="fas fa-arrow-right"></i></button>
             </div>
         </div>
         <div class="search-results-area" id="searchResultsArea">
@@ -806,7 +806,7 @@
     <!-- MINI CART -->
     <div class="mini-cart-overlay" id="miniCartOverlay">
         <div class="mini-cart">
-            <div class="cart-header"><h2>Your Cart</h2><button class="close-cart" id="closeCart"><i class="fas fa-times"></i></button></div>
+            <div class="cart-header"><h2>Your Cart</h2><button class="close-cart" id="closeCart" aria-label="Close cart"><i class="fas fa-times"></i></button></div>
             <div id="cartItemsContainer"></div>
             <div id="cartTotalContainer" style="display:none;">
                 <div class="cart-total"><span>Total</span><span class="total-price" id="cartTotalPrice">Ksh 0</span></div>
@@ -822,7 +822,7 @@
     <!-- CHECKOUT MODAL -->
     <div class="checkout-modal-overlay" id="checkoutOverlay">
         <div class="checkout-modal">
-            <button class="close-checkout" id="checkoutCloseBtn"><i class="fas fa-times"></i></button>
+            <button class="close-checkout" id="checkoutCloseBtn" aria-label="Close checkout"><i class="fas fa-times"></i></button>
             <h2>Checkout</h2>
             <form id="checkoutForm">
                 <div class="form-group"><label>Full Name *</label><input type="text" id="checkoutName" required style="padding:14px 16px;font-size:1rem;border-radius:8px;" /></div>
