@@ -881,7 +881,7 @@
                 filtered.forEach(p => {
                     const img = (p.images && p.images[0]) ? getImageUrl(p.images[0]) : (p.thumbnail ? getImageUrl(p.thumbnail) : '');
                     const discount = p.originalPrice && p.originalPrice > p.price ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
-                    const outOfStock = p.stock !== undefined && p.stock < 1;
+                    const outOfStock = getEffectiveStock(p) < 1;
                     const rating = p.rating || 0;
                     const stars = Array.from({length: 5}, (_, i) => i < Math.round(rating) ? '&#9733;' : '&#9734;').join('');
                     html += `
@@ -918,7 +918,7 @@
                 const res = await fetch(`${API_URL}/products/${productId}`);
                 const raw = await res.json();
                 const product = raw.data || raw;
-                if (product.stock !== undefined && product.stock < 1) { showToast('Out of stock', 'error'); return; }
+                if (getEffectiveStock(product) < 1) { showToast('Out of stock', 'error'); return; }
                 addToCart(product);
                 await removeFromWishlistAPI(productId);
                 loadWishlistDashboard();
@@ -1195,23 +1195,42 @@
             updateMobileCartBadge();
         }
 
+        function getEffectiveStock(product) {
+            if (product.soldOut) return 0;
+            if (product.stock > 0) return product.stock;
+            if (product.limitedAvailable && product.limitedPieces > 0) return product.limitedPieces;
+            if (product.preOrder) return 999;
+            if (product.inStock) return product.stockThreshold || 5;
+            return 0;
+        }
+
+        function isProductAvailable(product) {
+            if (product.soldOut) return false;
+            if (product.stock > 0) return true;
+            if (product.limitedAvailable && product.limitedPieces > 0) return true;
+            if (product.preOrder) return true;
+            if (product.inStock) return true;
+            return false;
+        }
+
         function addToCart(product) {
             const qty = product.quantity || 1;
             const size = product.size || null;
             const color = product.color || null;
+            const effectiveStock = getEffectiveStock(product);
             const existing = cartItems.find(i => i.id === product._id && i.size === size && i.color === color);
             if (existing) {
-                if (product.stock !== undefined && existing.quantity + qty > product.stock) {
-                    showToast('Not enough stock', 'error');
+                if (existing.quantity + qty > effectiveStock) {
+                    showToast(`Only ${effectiveStock} available`, 'error');
                     return;
                 }
                 existing.quantity += qty;
             } else {
-                if (product.stock !== undefined && product.stock < 1) {
+                if (effectiveStock < 1) {
                     showToast('Out of stock', 'error');
                     return;
                 }
-                cartItems.push({ id: product._id, name: product.name, price: product.price, quantity: qty, image: product.images?.[0] || '', size, color });
+                cartItems.push({ id: product._id, name: product.name, price: product.price, quantity: qty, image: product.images?.[0] || '', size, color, stock: effectiveStock });
             }
             saveCart();
             renderMiniCart();
@@ -1358,7 +1377,7 @@
                     const res = await fetch(`${API_URL}/products/${item.id}`);
                     const product = await res.json();
                     const prod = product.data || product;
-                    if (prod.stock < item.quantity) {
+                    if (getEffectiveStock(prod) < item.quantity) {
                         showToast(`Not enough stock for ${prod.name}`, 'error');
                         return;
                     }
