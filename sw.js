@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v40';
+const CACHE_VERSION = 'v41';
 const STATIC_CACHE = 'trendy-static-' + CACHE_VERSION;
 const DYNAMIC_CACHE = 'trendy-dynamic-' + CACHE_VERSION;
 const IMAGE_CACHE = 'trendy-images-' + CACHE_VERSION;
@@ -33,10 +33,23 @@ const API_SEMI_PATHS = [
     '/api/promo/banners/'
 ];
 
+const SHELL_PRECACHE = [
+    '/',
+    '/index.html',
+    '/css/styles.css?v=41',
+    '/js/image-utils.js?v=41',
+    '/js/app.js?v=41',
+    '/manifest.json',
+    '/favicon.svg',
+    '/404.html'
+];
+
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(STATIC_CACHE).then(cache => {
-            return cache.add('/404.html').catch(() => {});
+            return Promise.allSettled(
+                SHELL_PRECACHE.map(url => cache.add(url).catch(() => {}))
+            );
         }).then(() => self.skipWaiting())
     );
 });
