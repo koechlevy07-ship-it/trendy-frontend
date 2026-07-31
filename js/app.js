@@ -1,8 +1,8 @@
         // ============================================================
         // CONFIGURATION
         // ============================================================
-        const API_URL = 'https://trendy-backend-jq27.onrender.com/api';
-        const IMAGE_BASE = API_URL.replace('/api', '');
+        window.API_URL = window.API_URL || 'https://trendy-backend-jq27.onrender.com/api';
+        const IMAGE_BASE = window.API_URL.replace('/api', '');
 
         // SECURITY: XSS prevention — escape HTML entities
         function escHtml(str) {
