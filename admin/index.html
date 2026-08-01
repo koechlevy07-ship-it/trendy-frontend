@@ -10,7 +10,7 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://cdn.vercel-insights.com https://vercel.live https://maps.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://res.cloudinary.com https://placehold.co blob: https://cdn-icons-png.flaticon.com https://maps.googleapis.com https://maps.gstatic.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com; connect-src 'self' https://trendy-backend-jq27.onrender.com https://api.cloudinary.com https://cdn.vercel-insights.com https://vercel.live https://maps.googleapis.com https://www.google-analytics.com https://www.google.com; frame-src https://www.google.com https://www.google.com/maps https://vercel.live; worker-src 'self';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://cdn.vercel-insights.com https://vercel.live https://maps.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://res.cloudinary.com https://placehold.co blob: https://cdn-icons-png.flaticon.com https://maps.googleapis.com https://maps.gstatic.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com; connect-src 'self' https://trendy-backend-jq27.onrender.com https://api.cloudinary.com https://cdn.vercel-insights.com https://vercel.live https://cdn.jsdelivr.net https://maps.googleapis.com https://www.google-analytics.com https://www.google.com; frame-src https://www.google.com https://www.google.com/maps https://vercel.live; worker-src 'self';" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZYYHCQ4HZX"></script>
@@ -4114,6 +4114,386 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
             if (notificationInterval) clearInterval(notificationInterval);
             notificationInterval = setInterval(fetchNotifications, 60000);
         }
+
+        /* CUSTOMER MANAGEMENT */
+        let customersData = [], customersPage = 1, customersTotalPages = 1, customersTotalItems = 0, customersSelected = new Set();
+        let customerSearchTimer = null;
+
+        async function loadCustomerStats() {
+            try {
+                const res = await safeFetch(`${API_URL}/users/admin/statistics`, { headers: getHeaders() });
+                if (!res.ok) return;
+                const d = await res.json();
+                if (!d.success || !d.data) return;
+                const s = d.data;
+                const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v ?? 0; };
+                set('custTotal', s.totalCustomers); set('custNewToday', s.newToday); set('custActive', s.active);
+                set('custSuspended', s.suspended); set('custBlocked', s.blocked); set('custPending', s.pendingVerification);
+                set('custVerified', s.verified);
+                const rev = document.getElementById('custRevenue'); if (rev) rev.textContent = 'Ksh ' + (s.totalRevenue || 0).toLocaleString();
+                const alv = document.getElementById('custALV'); if (alv) alv.textContent = 'Ksh ' + (s.avgLifetimeValue || 0).toLocaleString();
+            } catch (e) { /* non-critical */ }
+        }
+
+        async function loadCustomers(pg) {
+            loadCustomerStats();
+            if (pg !== undefined) customersPage = pg;
+            const search = (document.getElementById('customerSearchInput')?.value || '').trim();
+            const status = document.getElementById('customerStatusFilter')?.value || '';
+            const sort = document.getElementById('customerSort')?.value || '';
+            const params = new URLSearchParams({ page: customersPage, limit: 20 });
+            if (search) params.set('search', search);
+            if (status) params.set('status', status);
+            if (sort) params.set('sort', sort);
+            try {
+                const res = await safeFetch(`${API_URL}/users/admin?${params}`, { headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed');
+                const d = await res.json();
+                customersData = d.data || [];
+                const pag = d.pagination || {};
+                customersTotalPages = pag.pages || 1;
+                customersTotalItems = pag.total || customersData.length;
+                renderCustomersTable();
+            } catch (err) { showToast(err.message || 'Error loading customers'); }
+        }
+
+        function renderCustomersTable() {
+            const tbody = document.getElementById('customersTableBody');
+            const pagEl = document.getElementById('custPagination');
+            if (!tbody) return;
+            if (!customersData.length) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);">No customers found.</td></tr>';
+                if (pagEl) pagEl.innerHTML = '';
+                return;
+            }
+            customersSelected.clear();
+            const selAll = document.getElementById('custSelectAll'); if (selAll) selAll.checked = false;
+            tbody.innerHTML = customersData.map(c => {
+                const st = c.status || 'active';
+                const stClass = st === 'active' ? 'paid' : st === 'suspended' ? 'pending' : 'cancelled';
+                const joined = c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-';
+                const last = c.lastLogin ? new Date(c.lastLogin).toLocaleDateString() : '-';
+                const ver = c.emailVerified ? '<span style="color:var(--success);">Yes</span>' : '<span style="color:var(--text-muted);">No</span>';
+                return `<tr>
+                    <td><input type="checkbox" class="cust-checkbox" data-id="${c._id}" onchange="custCheckboxChanged(this)"></td>
+                    <td><strong>${escHtml(c.name || 'N/A')}</strong>${c.customerId ? `<br><small style="color:var(--text-muted);font-size:0.7rem;">${escHtml(c.customerId)}</small>` : ''}</td>
+                    <td style="font-size:0.85rem;">${escHtml(c.email || '')}<br><small style="color:var(--text-muted);font-size:0.7rem;">${escHtml(c.phone || '')}</small></td>
+                    <td style="font-size:0.85rem;">${c.orderCount || 0}</td>
+                    <td><strong>Ksh ${(c.totalSpent || 0).toLocaleString()}</strong></td>
+                    <td><span class="status-badge ${stClass}">${escStatus(st)}</span><br><small style="color:var(--text-muted);font-size:0.7rem;">${ver}</small></td>
+                    <td style="font-size:0.85rem;">${last}</td>
+                    <td style="font-size:0.85rem;">${joined}</td>
+                    <td style="text-align:right;white-space:nowrap;">
+                        <select onchange="updateCustomerStatus('${c._id}', this.value)" style="padding:3px 6px;border:1px solid var(--border-light);border-radius:4px;font-size:0.72rem;background:var(--bg-primary);color:var(--text-primary);">
+                            <option value="active" ${st === 'active' ? 'selected' : ''}>Active</option>
+                            <option value="suspended" ${st === 'suspended' ? 'selected' : ''}>Suspended</option>
+                            <option value="blocked" ${st === 'blocked' ? 'selected' : ''}>Blocked</option>
+                            <option value="pending_verification" ${st === 'pending_verification' ? 'selected' : ''}>Pending Verif.</option>
+                        </select>
+                    </td>
+                </tr>`;
+            }).join('');
+            renderCustPagination();
+        }
+
+        function renderCustPagination() {
+            const el = document.getElementById('custPagination');
+            if (!el) return;
+            el.innerHTML = `<span>${customersTotalItems} customer(s)</span>`;
+            if (customersTotalPages <= 1) return;
+            let html = `<span>Page ${customersPage} of ${customersTotalPages}</span>`;
+            html += `<span style="display:flex;gap:6px;">`;
+            if (customersPage > 1) html += `<button class="page-btn" data-page="${customersPage - 1}" style="padding:5px 10px;border:1px solid var(--border-light);border-radius:4px;cursor:pointer;font-size:0.78rem;background:var(--bg-primary);">&laquo; Prev</button>`;
+            for (let i = Math.max(1, customersPage - 2); i <= Math.min(customersTotalPages, customersPage + 2); i++) {
+                html += `<button class="page-btn" data-page="${i}" style="padding:5px 10px;border:1px solid ${i === customersPage ? 'var(--gold)' : 'var(--border-light)'};border-radius:4px;cursor:pointer;font-size:0.78rem;background:${i === customersPage ? 'var(--gold)' : 'var(--bg-primary)'};color:${i === customersPage ? '#fff' : 'inherit'};">${i}</button>`;
+            }
+            if (customersPage < customersTotalPages) html += `<button class="page-btn" data-page="${customersPage + 1}" style="padding:5px 10px;border:1px solid var(--border-light);border-radius:4px;cursor:pointer;font-size:0.78rem;background:var(--bg-primary);">Next &raquo;</button>`;
+            html += `</span>`;
+            el.innerHTML += html;
+        }
+
+        function toggleSelectAllCust(el) {
+            document.querySelectorAll('.cust-checkbox').forEach(cb => { cb.checked = el.checked; custCheckboxChanged(cb); });
+        }
+        function custCheckboxChanged(cb) {
+            if (cb.checked) customersSelected.add(cb.dataset.id); else customersSelected.delete(cb.dataset.id);
+        }
+        async function updateCustomerStatus(id, status) {
+            try {
+                const res = await safeFetch(`${API_URL}/users/${id}/status`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ status }) });
+                const d = await res.json();
+                showToast(d.success ? 'Customer status updated' : (d.message || 'Update failed'));
+                if (d.success) loadCustomers();
+            } catch (e) { showToast('Error updating customer status'); }
+        }
+        async function exportCustomers() {
+            try {
+                const search = (document.getElementById('customerSearchInput')?.value || '').trim();
+                const status = document.getElementById('customerStatusFilter')?.value || '';
+                const res = await safeFetch(`${API_URL}/users/export`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ format: 'csv', search, status }) });
+                if (!res.ok) throw new Error('Export failed');
+                const blob = await res.blob();
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'customers.csv'; a.click();
+                URL.revokeObjectURL(a.href);
+            } catch (e) { showToast('Export failed'); }
+        }
+        function showBulkCustModal() {
+            const ids = [...customersSelected];
+            if (!ids.length) { showToast('Select at least one customer'); return; }
+            const action = prompt('Bulk action for ' + ids.length + ' customer(s): active, suspend, block, verify');
+            if (!action) return;
+            const val = action.trim().toLowerCase();
+            let payload = { userIds: ids, action: 'update-status', value: 'active' };
+            if (val === 'suspend') payload = { userIds: ids, action: 'suspend' };
+            else if (val === 'block') payload = { userIds: ids, action: 'block' };
+            else if (val === 'verify') payload = { userIds: ids, action: 'verify-email' };
+            else if (['active', 'suspended', 'blocked', 'pending_verification'].includes(val)) payload = { userIds: ids, action: 'update-status', value: val };
+            else { showToast('Unknown action'); return; }
+            safeFetch(`${API_URL}/users/admin/bulk`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(payload) })
+                .then(r => r.json()).then(d => { showToast(d.message || 'Bulk update done'); if (d.success) loadCustomers(); })
+                .catch(() => showToast('Bulk update failed'));
+        }
+        document.getElementById('customerSearchInput')?.addEventListener('input', function () { clearTimeout(customerSearchTimer); customerSearchTimer = setTimeout(() => { customersPage = 1; loadCustomers(); }, 400); });
+        document.getElementById('customerStatusFilter')?.addEventListener('change', function () { customersPage = 1; loadCustomers(); });
+        document.getElementById('customerSort')?.addEventListener('change', function () { customersPage = 1; loadCustomers(); });
+        document.getElementById('custPagination')?.addEventListener('click', function (e) { const b = e.target.closest('.page-btn'); if (b) { customersPage = parseInt(b.dataset.page) || 1; loadCustomers(); } });
+
+        /* CONTACT MANAGEMENT */
+        let contactsData = [], contactsPage = 1, contactsTotalPages = 1, contactsTotalItems = 0;
+        let contactSearchTimer = null;
+
+        async function loadContactStats() {
+            try {
+                const res = await safeFetch(`${API_URL}/contact/admin/stats`, { headers: getHeaders() });
+                if (!res.ok) return;
+                const d = await res.json();
+                if (!d.success || !d.data) return;
+                const s = d.data;
+                const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v ?? 0; };
+                set('contactTotal', s.total); set('contactNew', s.new); set('contactOpen', s.open);
+                set('contactInProgress', s.in_progress); set('contactPending', s.pending);
+                set('contactResolved', s.resolved); set('contactClosed', s.closed); set('contactSpam', s.spam);
+                set('contactUrgent', s.urgent); set('contactToday', s.today); set('contactMonthly', s.monthly);
+                const ar = document.getElementById('contactAvgResponse'); if (ar) ar.textContent = s.avgResponseTime > 0 ? s.avgResponseTime + 'h' : 0;
+            } catch (e) { /* non-critical */ }
+        }
+
+        async function loadContacts(pg) {
+            loadContactStats();
+            if (pg !== undefined) contactsPage = pg;
+            const search = (document.getElementById('contactSearchInput')?.value || '').trim();
+            const status = document.getElementById('contactStatusFilter')?.value || '';
+            const priority = document.getElementById('contactPriorityFilter')?.value || '';
+            const category = document.getElementById('contactCategoryFilter')?.value || '';
+            const dateFrom = document.getElementById('contactDateFrom')?.value || '';
+            const dateTo = document.getElementById('contactDateTo')?.value || '';
+            const params = new URLSearchParams({ page: contactsPage, limit: 20 });
+            if (search) params.set('search', search);
+            if (status && status !== 'all') params.set('status', status);
+            if (priority && priority !== 'all') params.set('priority', priority);
+            if (category && category !== 'all') params.set('category', category);
+            if (dateFrom) params.set('dateFrom', dateFrom);
+            if (dateTo) params.set('dateTo', dateTo);
+            try {
+                const res = await safeFetch(`${API_URL}/contact/admin?${params}`, { headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed');
+                const d = await res.json();
+                contactsData = d.data || [];
+                contactsTotalPages = d.pages || 1;
+                contactsTotalItems = d.total || contactsData.length;
+                renderContactsTable();
+            } catch (err) { showToast(err.message || 'Error loading contacts'); }
+        }
+
+        function renderContactsTable() {
+            const tbody = document.getElementById('contactsTableBody');
+            const pagEl = document.getElementById('contactPagination');
+            if (!tbody) return;
+            if (!contactsData.length) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text-muted);">No messages found.</td></tr>';
+                if (pagEl) pagEl.innerHTML = '';
+                return;
+            }
+            tbody.innerHTML = contactsData.map(c => {
+                const st = c.status || 'new';
+                const pr = c.priority || 'medium';
+                const stClass = st === 'resolved' || st === 'closed' ? 'paid' : st === 'spam' ? 'cancelled' : st === 'new' ? 'pending' : '';
+                const prClass = pr === 'urgent' ? 'cancelled' : pr === 'high' ? 'pending' : '';
+                const assigned = c.assignedTo ? (c.assignedTo.name || c.assignedTo.email || '') : (c.assignedToName || 'Unassigned');
+                const date = c.createdAt ? new Date(c.createdAt).toLocaleString() : '-';
+                return `<tr>
+                    <td><input type="checkbox"></td>
+                    <td><strong>${escHtml(c.ticketId || '—')}</strong></td>
+                    <td style="font-size:0.8rem;">${date}</td>
+                    <td><strong>${escHtml(c.name || 'N/A')}</strong><br><small style="color:var(--text-muted);font-size:0.7rem;">${escHtml(c.email || '')}</small></td>
+                    <td style="font-size:0.85rem;">${escHtml(c.subject || '')}</td>
+                    <td style="font-size:0.85rem;">${escStatus(c.category)}</td>
+                    <td><span class="status-badge ${prClass}">${escStatus(pr)}</span></td>
+                    <td><span class="status-badge ${stClass}">${escStatus(st)}</span></td>
+                    <td style="font-size:0.85rem;">${escHtml(assigned)}</td>
+                    <td style="text-align:right;white-space:nowrap;">
+                        <select onchange="updateContactStatus('${c._id}', this.value)" style="padding:3px 6px;border:1px solid var(--border-light);border-radius:4px;font-size:0.72rem;background:var(--bg-primary);color:var(--text-primary);">
+                            <option value="new" ${st === 'new' ? 'selected' : ''}>New</option>
+                            <option value="open" ${st === 'open' ? 'selected' : ''}>Open</option>
+                            <option value="read" ${st === 'read' ? 'selected' : ''}>Read</option>
+                            <option value="in_progress" ${st === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="pending" ${st === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="waiting_for_customer" ${st === 'waiting_for_customer' ? 'selected' : ''}>Waiting</option>
+                            <option value="resolved" ${st === 'resolved' ? 'selected' : ''}>Resolved</option>
+                            <option value="closed" ${st === 'closed' ? 'selected' : ''}>Closed</option>
+                            <option value="spam" ${st === 'spam' ? 'selected' : ''}>Spam</option>
+                        </select>
+                    </td>
+                </tr>`;
+            }).join('');
+            renderContactPagination();
+        }
+
+        function renderContactPagination() {
+            const el = document.getElementById('contactPagination');
+            if (!el) return;
+            el.innerHTML = `<span>${contactsTotalItems} message(s)</span>`;
+            if (contactsTotalPages <= 1) return;
+            let html = `<span>Page ${contactsPage} of ${contactsTotalPages}</span>`;
+            html += `<span style="display:flex;gap:6px;">`;
+            if (contactsPage > 1) html += `<button class="page-btn" data-page="${contactsPage - 1}" style="padding:5px 10px;border:1px solid var(--border-light);border-radius:4px;cursor:pointer;font-size:0.78rem;background:var(--bg-primary);">&laquo; Prev</button>`;
+            for (let i = Math.max(1, contactsPage - 2); i <= Math.min(contactsTotalPages, contactsPage + 2); i++) {
+                html += `<button class="page-btn" data-page="${i}" style="padding:5px 10px;border:1px solid ${i === contactsPage ? 'var(--gold)' : 'var(--border-light)'};border-radius:4px;cursor:pointer;font-size:0.78rem;background:${i === contactsPage ? 'var(--gold)' : 'var(--bg-primary)'};color:${i === contactsPage ? '#fff' : 'inherit'};">${i}</button>`;
+            }
+            if (contactsPage < contactsTotalPages) html += `<button class="page-btn" data-page="${contactsPage + 1}" style="padding:5px 10px;border:1px solid var(--border-light);border-radius:4px;cursor:pointer;font-size:0.78rem;background:var(--bg-primary);">Next &raquo;</button>`;
+            html += `</span>`;
+            el.innerHTML += html;
+        }
+
+        async function updateContactStatus(id, status) {
+            try {
+                const res = await safeFetch(`${API_URL}/contact/${id}/status`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ status }) });
+                const d = await res.json();
+                showToast(d.success ? 'Contact status updated' : (d.message || 'Update failed'));
+                if (d.success) loadContacts();
+            } catch (e) { showToast('Error updating contact status'); }
+        }
+        document.getElementById('contactSearchInput')?.addEventListener('input', function () { clearTimeout(contactSearchTimer); contactSearchTimer = setTimeout(() => { contactsPage = 1; loadContacts(); }, 400); });
+        document.getElementById('contactStatusFilter')?.addEventListener('change', function () { contactsPage = 1; loadContacts(); });
+        document.getElementById('contactPriorityFilter')?.addEventListener('change', function () { contactsPage = 1; loadContacts(); });
+        document.getElementById('contactCategoryFilter')?.addEventListener('change', function () { contactsPage = 1; loadContacts(); });
+        document.getElementById('contactDateFrom')?.addEventListener('change', function () { contactsPage = 1; loadContacts(); });
+        document.getElementById('contactDateTo')?.addEventListener('change', function () { contactsPage = 1; loadContacts(); });
+        document.getElementById('contactPagination')?.addEventListener('click', function (e) { const b = e.target.closest('.page-btn'); if (b) { contactsPage = parseInt(b.dataset.page) || 1; loadContacts(); } });
+
+        /* REVIEW MANAGEMENT */
+        let reviewsData = [], reviewsPage = 1, reviewsTotalPages = 1, reviewsTotalItems = 0;
+        let reviewSearchTimer = null;
+
+        async function loadReviewStats() {
+            try {
+                const res = await safeFetch(`${API_URL}/reviews/admin/stats`, { headers: getHeaders() });
+                if (!res.ok) return;
+                const d = await res.json();
+                if (!d.success || !d.data) return;
+                const s = d.data;
+                const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v ?? 0; };
+                set('revTotal', s.total); set('revPending', s.pending); set('revApproved', s.approved);
+                set('revHidden', s.hidden); set('revRejected', s.rejected); set('revReported', s.reported);
+                const avg = document.getElementById('revAvgRating'); if (avg) avg.textContent = s.avgRating != null ? s.avgRating + ' / 5' : '—';
+            } catch (e) { /* non-critical */ }
+        }
+
+        async function loadReviews(pg) {
+            loadReviewStats();
+            if (pg !== undefined) reviewsPage = pg;
+            const search = (document.getElementById('reviewSearchInput')?.value || '').trim();
+            const status = document.getElementById('reviewStatusFilter')?.value || '';
+            const rating = document.getElementById('reviewRatingFilter')?.value || '';
+            const verified = document.getElementById('reviewVerifiedFilter')?.value || '';
+            const featured = document.getElementById('reviewFeaturedFilter')?.value || '';
+            const params = new URLSearchParams({ page: reviewsPage, limit: 20 });
+            if (search) params.set('search', search);
+            if (status && status !== 'all') params.set('status', status);
+            if (rating && rating !== 'all') params.set('rating', rating);
+            if (verified === 'true') params.set('verified', 'true');
+            if (featured === 'true') params.set('featured', 'true');
+            try {
+                const res = await safeFetch(`${API_URL}/reviews/admin/all?${params}`, { headers: getHeaders() });
+                if (!res.ok) throw new Error('Failed');
+                const d = await res.json();
+                reviewsData = d.data || [];
+                const pag = d.pagination || {};
+                reviewsTotalPages = pag.pages || 1;
+                reviewsTotalItems = pag.total || reviewsData.length;
+                renderReviewsTable();
+            } catch (err) { showToast(err.message || 'Error loading reviews'); }
+        }
+
+        function renderReviewsTable() {
+            const tbody = document.getElementById('reviewsTableBody');
+            const pagEl = document.getElementById('reviewPagination');
+            if (!tbody) return;
+            if (!reviewsData.length) {
+                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--text-muted);">No reviews found.</td></tr>';
+                if (pagEl) pagEl.innerHTML = '';
+                return;
+            }
+            tbody.innerHTML = reviewsData.map(r => {
+                const st = r.status || 'pending';
+                const stClass = st === 'approved' ? 'paid' : st === 'rejected' || st === 'hidden' ? 'cancelled' : 'pending';
+                const prod = r.product ? (r.product.name || '—') : '—';
+                const user = r.user ? (r.user.name || r.user.email || '—') : '—';
+                const date = r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '-';
+                const rating = Math.max(0, Math.min(5, r.rating || 0));
+                const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                return `<tr>
+                    <td><input type="checkbox"></td>
+                    <td style="font-size:0.85rem;">${escHtml(prod)}</td>
+                    <td style="font-size:0.85rem;">${escHtml(user)}</td>
+                    <td style="color:var(--gold);white-space:nowrap;">${stars}</td>
+                    <td style="font-size:0.85rem;"><strong>${escHtml(r.title || '')}</strong></td>
+                    <td style="font-size:0.8rem;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml((r.comment || '').slice(0, 90))}</td>
+                    <td style="font-size:0.8rem;">${r.verifiedPurchase ? '<span style="color:var(--success);">Verified</span>' : '<span style="color:var(--text-muted);">No</span>'}</td>
+                    <td><span class="status-badge ${stClass}">${escStatus(st)}</span></td>
+                    <td style="font-size:0.85rem;">${r.helpful || 0}</td>
+                    <td style="font-size:0.85rem;">${r.reportCount || 0}</td>
+                    <td style="font-size:0.85rem;">${date}</td>
+                    <td style="text-align:right;white-space:nowrap;">
+                        <button onclick="updateReviewStatus('${r._id}','approved')" style="padding:3px 8px;border:1px solid var(--success);border-radius:4px;cursor:pointer;font-size:0.7rem;background:var(--bg-primary);color:var(--success);">Approve</button>
+                        <button onclick="updateReviewStatus('${r._id}','hidden')" style="padding:3px 8px;border:1px solid var(--border-light);border-radius:4px;cursor:pointer;font-size:0.7rem;background:var(--bg-primary);color:var(--text-primary);">Hide</button>
+                        <button onclick="updateReviewStatus('${r._id}','rejected')" style="padding:3px 8px;border:1px solid var(--error);border-radius:4px;cursor:pointer;font-size:0.7rem;background:var(--bg-primary);color:var(--error);">Reject</button>
+                    </td>
+                </tr>`;
+            }).join('');
+            renderReviewPagination();
+        }
+
+        function renderReviewPagination() {
+            const el = document.getElementById('reviewPagination');
+            if (!el) return;
+            el.innerHTML = `<span>${reviewsTotalItems} review(s)</span>`;
+            if (reviewsTotalPages <= 1) return;
+            let html = `<span>Page ${reviewsPage} of ${reviewsTotalPages}</span>`;
+            html += `<span style="display:flex;gap:6px;">`;
+            if (reviewsPage > 1) html += `<button class="page-btn" data-page="${reviewsPage - 1}" style="padding:5px 10px;border:1px solid var(--border-light);border-radius:4px;cursor:pointer;font-size:0.78rem;background:var(--bg-primary);">&laquo; Prev</button>`;
+            for (let i = Math.max(1, reviewsPage - 2); i <= Math.min(reviewsTotalPages, reviewsPage + 2); i++) {
+                html += `<button class="page-btn" data-page="${i}" style="padding:5px 10px;border:1px solid ${i === reviewsPage ? 'var(--gold)' : 'var(--border-light)'};border-radius:4px;cursor:pointer;font-size:0.78rem;background:${i === reviewsPage ? 'var(--gold)' : 'var(--bg-primary)'};color:${i === reviewsPage ? '#fff' : 'inherit'};">${i}</button>`;
+            }
+            if (reviewsPage < reviewsTotalPages) html += `<button class="page-btn" data-page="${reviewsPage + 1}" style="padding:5px 10px;border:1px solid var(--border-light);border-radius:4px;cursor:pointer;font-size:0.78rem;background:var(--bg-primary);">Next &raquo;</button>`;
+            html += `</span>`;
+            el.innerHTML += html;
+        }
+
+        async function updateReviewStatus(id, status) {
+            try {
+                const res = await safeFetch(`${API_URL}/reviews/${id}/status`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ status }) });
+                const d = await res.json();
+                showToast(d.success ? 'Review updated' : (d.message || 'Update failed'));
+                if (d.success) loadReviews();
+            } catch (e) { showToast('Error updating review'); }
+        }
+        document.getElementById('reviewSearchInput')?.addEventListener('input', function () { clearTimeout(reviewSearchTimer); reviewSearchTimer = setTimeout(() => { reviewsPage = 1; loadReviews(); }, 400); });
+        document.getElementById('reviewStatusFilter')?.addEventListener('change', function () { reviewsPage = 1; loadReviews(); });
+        document.getElementById('reviewRatingFilter')?.addEventListener('change', function () { reviewsPage = 1; loadReviews(); });
+        document.getElementById('reviewVerifiedFilter')?.addEventListener('change', function () { reviewsPage = 1; loadReviews(); });
+        document.getElementById('reviewFeaturedFilter')?.addEventListener('change', function () { reviewsPage = 1; loadReviews(); });
+        document.getElementById('reviewPagination')?.addEventListener('click', function (e) { const b = e.target.closest('.page-btn'); if (b) { reviewsPage = parseInt(b.dataset.page) || 1; loadReviews(); } });
 
         async function loadDashboard() { try { startNotificationPolling(); } catch(e) {} await loadDashboardData(); await Promise.all([loadProducts(),loadCategories()]); loadOrders(); loadCustomers(); }
 
