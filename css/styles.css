@@ -1145,7 +1145,7 @@
             -webkit-backdrop-filter: blur(6px);
         }
         .hero-content .gold-line { width: 40px; margin-bottom: 14px; }
-        .hero-indicators { bottom: auto; position: relative; justify-content: center; padding: 16px 0 0; background: rgba(10,10,10,0.95); }
+        .hero-indicators { bottom: auto; left: auto; position: relative; justify-content: center; padding: 16px 0 0; background: rgba(10,10,10,0.95); }
         .hero-dot { font-size: 0.65rem; }
         .hero-dot.active .dot-line { width: 24px; }
     }

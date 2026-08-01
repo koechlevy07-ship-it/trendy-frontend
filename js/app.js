@@ -1468,6 +1468,7 @@
                 } catch (e) { console.error('Hero fallback error', e); }
             }
             if (heroSlides.length) {
+                buildHeroIndicators();
                 setHeroSlide(heroSlides[0]);
                 if (heroInterval) clearInterval(heroInterval);
                 heroInterval = setInterval(() => {
@@ -1475,6 +1476,23 @@
                     setHeroSlide(heroSlides[heroIndex]);
                 }, 5000);
             }
+        }
+
+        function buildHeroIndicators() {
+            const inds = document.getElementById('heroIndicators');
+            if (!inds) return;
+            inds.innerHTML = heroSlides.map((s, i) =>
+                `<button class="hero-dot" data-index="${i}" aria-label="Go to slide ${i + 1}"><span class="dot-num">${String(i + 1).padStart(2, '0')}</span><span class="dot-line"></span></button>`
+            ).join('');
+            inds.querySelectorAll('.hero-dot').forEach(dot => {
+                dot.addEventListener('click', () => {
+                    const i = parseInt(dot.dataset.index, 10);
+                    if (!isNaN(i) && i !== heroIndex && heroSlides[i]) {
+                        heroIndex = i;
+                        setHeroSlide(heroSlides[i]);
+                    }
+                });
+            });
         }
 
          function setHeroSlide(slide) {
@@ -1496,7 +1514,7 @@
                     const imgUrl = slide.mobileImage || slide.desktopImage || '';
                     if (imgUrl) {
                         heroVideo.style.display = 'none';
-                        heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl)})`;
+                        heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl, 800)})`;
                     } else {
                         heroVideo.style.display = '';
                     }
@@ -1506,7 +1524,7 @@
                 heroVideo.classList.add('hidden-video');
                 heroVideo.src = '';
                 if (imgUrl) {
-                    heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl)})`;
+                    heroBg.style.backgroundImage = `url(${getImageUrl(imgUrl, isMobile ? 800 : 1600)})`;
                 }
             }
             const heading = document.getElementById('heroHeading');
@@ -1547,6 +1565,13 @@
                         document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
                     }
                 };
+            }
+            const inds = document.getElementById('heroIndicators');
+            if (inds && inds.children.length) {
+                const idx = heroSlides.indexOf(slide);
+                inds.querySelectorAll('.hero-dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === idx);
+                });
             }
         }
 
