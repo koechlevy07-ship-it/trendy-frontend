@@ -100,9 +100,11 @@ function renderOrder(order) {
 
     // Status
     const status = order.status || 'pending';
-    const statusBadge = $('confStatusDetail').querySelector('.conf-status-badge');
-    statusBadge.className = `conf-status-badge ${status}`;
-    statusBadge.textContent = status.replace(/-/g, ' ');
+    const statusBadge = $('confStatusDetail')?.querySelector('.conf-status-badge');
+    if (statusBadge) {
+        statusBadge.className = `conf-status-badge ${status}`;
+        statusBadge.textContent = status.replace(/-/g, ' ');
+    }
 
     const statusMsg = {
         'pending': 'Your order has been placed and is awaiting confirmation.',

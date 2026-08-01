@@ -297,15 +297,15 @@
         function updateUI() {
             const user = getUser();
             if (user) {
-                userIcon.className = 'fas fa-user-check';
+                if (userIcon) userIcon.className = 'fas fa-user-check';
                 // Update desktop profile dropdown
                 updateProfileDropdown(user);
-                if (authOverlay.style.display === 'flex') showDashboard(user);
+                if (authOverlay && authOverlay.style.display === 'flex') showDashboard(user);
             } else {
-                userIcon.className = 'far fa-user';
+                if (userIcon) userIcon.className = 'far fa-user';
                 // Update desktop profile dropdown
                 updateProfileDropdown(null);
-                if (authOverlay.style.display === 'flex') showAuthForms();
+                if (authOverlay && authOverlay.style.display === 'flex') showAuthForms();
             }
             updateWishlistIcon();
             updateCartBadge();
@@ -423,6 +423,7 @@
         // AUTH MODAL
         // ============================================================
         function openAuthModal() {
+            if (!authOverlay) { window.location.href = '/account.html'; return; }
             authOverlay.style.display = 'flex';
             document.body.classList.add('no-scroll');
             if (isLoggedIn()) {
@@ -437,8 +438,10 @@
             document.body.classList.remove('no-scroll');
         }
 
-        authCloseBtn.addEventListener('click', closeAuthModal);
-        authOverlay.addEventListener('click', function(e) {
+
+        function safeOn(el, evt, fn) { if (el) el.addEventListener(evt, fn); }
+                safeOn(authCloseBtn, 'click', closeAuthModal);
+        safeOn(authOverlay, 'click', function(e) {
             if (e.target === this) closeAuthModal();
         });
 
@@ -478,7 +481,7 @@
             switchDashboardTab('dashboard');
         }
 
-        userBtn.addEventListener('click', openAuthModal);
+        safeOn(userBtn, 'click', openAuthModal);
 
         // Auth tabs
         authTabs.forEach(tab => {
@@ -499,7 +502,7 @@
         });
 
         // Login
-        loginForm.addEventListener('submit', async function(e) {
+        safeOn(loginForm, 'submit', async function(e) {
             e.preventDefault();
             loginError.style.display = 'none';
             const email = loginEmail.value.trim();
@@ -533,7 +536,7 @@
         });
 
         // Register
-        registerForm.addEventListener('submit', async function(e) {
+        safeOn(registerForm, 'submit', async function(e) {
             e.preventDefault();
             registerError.style.display = 'none';
             const name = registerName.value.trim();
@@ -574,7 +577,7 @@
         });
 
         // Logout
-        logoutBtn.addEventListener('click', function() {
+        safeOn(logoutBtn, 'click', function() {
             clearAuth();
             closeAuthModal();
             showToast('👋 Logged out successfully', 'info');
@@ -583,7 +586,7 @@
         });
 
         // Profile Update
-        profileUpdateForm.addEventListener('submit', async function(e) {
+        safeOn(profileUpdateForm, 'submit', async function(e) {
             e.preventDefault();
             profileUpdateMsg.style.display = 'none';
             const name = profileName.value.trim();
@@ -1351,8 +1354,8 @@
             document.body.classList.add('no-scroll');
         }
 
-        checkoutCloseBtn.addEventListener('click', closeCheckout);
-        checkoutOverlay.addEventListener('click', function(e) {
+        safeOn(checkoutCloseBtn, 'click', closeCheckout);
+        safeOn(checkoutOverlay, 'click', function(e) {
             if (e.target === this) closeCheckout();
         });
 
@@ -1361,7 +1364,7 @@
             document.body.classList.remove('no-scroll');
         }
 
-        checkoutForm.addEventListener('submit', async function(e) {
+        safeOn(checkoutForm, 'submit', async function(e) {
             e.preventDefault();
             const name = checkoutName.value.trim();
             const phone = checkoutPhone.value.trim();
@@ -1433,7 +1436,7 @@
             }
         });
 
-        orderSuccessDashboard.addEventListener('click', function() {
+        safeOn(orderSuccessDashboard, 'click', function() {
             orderSuccessOverlay.classList.remove('show');
             document.body.classList.remove('no-scroll');
             openAuthModal();
@@ -1448,6 +1451,7 @@
             heroInterval = null;
 
         async function loadHeroImages() {
+            if (!document.getElementById('heroSection')) return;
             try {
                 const res = await fetch(`${API_URL}/homepage/hero`);
                 if (res.ok) {
@@ -1477,6 +1481,7 @@
             const hero = document.getElementById('heroSection');
             const heroBg = document.getElementById('heroBg');
             const heroVideo = document.getElementById('heroVideo');
+            if (!hero || !heroBg) return;
             const isMobile = window.innerWidth <= 768;
 
             if (slide.videoUrl && heroVideo) {
@@ -2588,8 +2593,8 @@
             }
         }
 
-        searchBtn.addEventListener('click', () => performSearch());
-        searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
+        safeOn(searchBtn, 'click', () => performSearch());
+        safeOn(searchInput, 'keypress', e => { if (e.key === 'Enter') performSearch(); });
 
         // Search icon mobile — opens search overlay with recent searches
         if (searchIconMobile) {
@@ -2646,27 +2651,27 @@
             });
         }
 
-        searchClose.addEventListener('click', () => {
+        safeOn(searchClose, 'click', () => {
             searchOverlay.classList.remove('open');
             document.body.classList.remove('no-scroll');
         });
-        searchOverlay.addEventListener('click', e => {
+        safeOn(searchOverlay, 'click', e => {
             if (e.target === searchOverlay || (!e.target.closest('.search-panel') && !e.target.closest('.search-result-item') && !e.target.closest('.search-tag') && !e.target.closest('.search-recent-item'))) {
                 searchOverlay.classList.remove('open');
                 document.body.classList.remove('no-scroll');
             }
         });
-        searchOverlaySubmit.addEventListener('click', () => {
+        safeOn(searchOverlaySubmit, 'click', () => {
             const q = searchOverlayInput.value.trim();
             if (q) { addRecentSearch(q); performSearch(q); }
         });
-        searchOverlayInput.addEventListener('keypress', e => {
+        safeOn(searchOverlayInput, 'keypress', e => {
             if (e.key === 'Enter') {
                 const q = searchOverlayInput.value.trim();
                 if (q) { addRecentSearch(q); performSearch(q); }
             }
         });
-        searchOverlayInput.addEventListener('input', function() {
+        safeOn(searchOverlayInput, 'input', function() {
             const q = this.value.trim();
             const liveResults = document.getElementById('searchLiveResults');
             const suggestions = document.getElementById('searchSuggestions');
@@ -2741,8 +2746,8 @@
         if (hamburgerBtn) {
             hamburgerBtn.addEventListener('click', openDrawer);
         }
-        closeDrawer.addEventListener('click', closeDrawerFn);
-        drawerOverlay.addEventListener('click', closeDrawerFn);
+        safeOn(closeDrawer, 'click', closeDrawerFn);
+        safeOn(drawerOverlay, 'click', closeDrawerFn);
 
         document.querySelectorAll('.drawer-toggle').forEach(toggle => {
             toggle.addEventListener('click', function() {
@@ -2762,9 +2767,9 @@
             });
         });
 
-        drawerHome.addEventListener('click', (e) => { e.preventDefault();
+        safeOn(drawerHome, 'click', (e) => { e.preventDefault();
             showHomeSection(); });
-        drawerContact.addEventListener('click', (e) => {
+        safeOn(drawerContact, 'click', (e) => {
             window.location.href = '/contact.html'; });
 
         // New drawer items
@@ -2850,7 +2855,7 @@
         // ============================================================
         // SHOP NOW BUTTON
         // ============================================================
-        document.getElementById('shopNowBtn').addEventListener('click', () => {
+        safeOn(document.getElementById('shopNowBtn'), 'click', () => {
             showHomeSection();
             document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' });
         });
@@ -3072,7 +3077,7 @@
             });
         });
 
-        document.getElementById('sortSelect').addEventListener('change', function() {
+        safeOn(document.getElementById('sortSelect'), 'change', function() {
             currentSort = this.value;
             setFilterToURL(currentFilter, currentGender, lastFetchSearch, currentSort);
             loadProducts(currentFilter, currentGender);
