@@ -1064,6 +1064,20 @@ $('checkoutForm')?.addEventListener('submit', async function(e) {
     const items = getLocalCart();
     if (!items.length) { showToast('Cart is empty', 'error'); return; }
 
+    // WhatsApp Ordering: take the customer straight to the WhatsApp chat instead of submitting to the API
+    if (($('checkoutPayment')?.value || '') === 'whatsapp') {
+        const nameEl = $('checkoutName');
+        const phoneEl = $('checkoutPhone');
+        const addressEl = $('checkoutAddress');
+        const cityEl = $('checkoutCity');
+        if (!nameEl.value.trim() || !phoneEl.value.trim() || !addressEl.value.trim() || !cityEl.value.trim()) {
+            showToast('Please fill all required fields', 'error');
+            return;
+        }
+        window.open(buildWhatsAppUrl(getLocalCart(), addressEl.value.trim(), cityEl.value.trim(), $('checkoutSubtotal') ? $('checkoutSubtotal').textContent.trim() : '', $('checkoutDelivery') ? $('checkoutDelivery').textContent.trim() : '', $('checkoutTotal') ? $('checkoutTotal').textContent.trim() : ''), '_blank');
+        return;
+    }
+
     const btn = $('placeOrderBtn');
     btn.disabled = true; btn.textContent = 'Placing Order...';
 
