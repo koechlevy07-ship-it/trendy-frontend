@@ -980,6 +980,38 @@ $('checkoutPayment')?.addEventListener('change', function() {
     const map = { mpesa: 'mpesaInstructions', card: 'cardInstructions', bank: 'bankInstructions' };
     const el = $(map[this.value]);
     if (el) el.style.display = 'block';
+    const wa = $('whatsappSupport');
+    if (wa) wa.style.display = this.value === 'whatsapp' ? 'block' : 'none';
+});
+
+function buildWhatsAppUrl(items, address, city, subtotal, delivery, total) {
+    let msg = 'Hello Trendy Wardrobe,\n\nI would like to place an order.\n\nOrder details:\n\n';
+    (items || []).forEach(function(item) {
+        msg += 'Product: ' + (item.name || '') + '\n';
+        msg += 'Quantity: ' + (item.quantity || 1) + '\n';
+        if (item.size) msg += 'Size: ' + item.size + '\n';
+        if (item.color) msg += 'Color: ' + item.color + '\n';
+        msg += 'Price: Ksh ' + ((item.price || 0)).toLocaleString() + '\n\n';
+    });
+    msg += 'Subtotal: ' + subtotal + '\n';
+    msg += 'Delivery Address: ' + (address || '') + '\n';
+    msg += 'City: ' + (city || '') + '\n';
+    msg += 'Total: ' + total + '\n\n';
+    msg += 'Please confirm availability and share the available payment methods.\n\nThank you.';
+    return 'https://wa.me/254728985417?text=' + encodeURIComponent(msg);
+}
+
+$('whatsappChatBtn')?.addEventListener('click', function() {
+    const addressEl = $('checkoutAddress');
+    const cityEl = $('checkoutCity');
+    this.href = buildWhatsAppUrl(
+        getLocalCart(),
+        addressEl ? addressEl.value.trim() : '',
+        cityEl ? cityEl.value.trim() : '',
+        $('checkoutSubtotal') ? $('checkoutSubtotal').textContent.trim() : '',
+        $('checkoutDelivery') ? $('checkoutDelivery').textContent.trim() : '',
+        $('checkoutTotal') ? $('checkoutTotal').textContent.trim() : ''
+    );
 });
 
 function renderCheckout() {

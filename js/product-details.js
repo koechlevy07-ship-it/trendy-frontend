@@ -1406,6 +1406,38 @@ document.getElementById('checkoutPayment').addEventListener('change', function()
     const map = { mpesa: 'mpesaInstructions', card: 'cardInstructions', bank: 'bankInstructions' };
     const el = document.getElementById(map[this.value]);
     if (el) el.style.display = 'block';
+    const wa = document.getElementById('whatsappSupport');
+    if (wa) wa.style.display = this.value === 'whatsapp' ? 'block' : 'none';
+});
+
+function buildWhatsAppUrl(items, address, city, subtotal, delivery, total) {
+    let msg = 'Hello Trendy Wardrobe,\n\nI would like to place an order.\n\nOrder details:\n\n';
+    (items || []).forEach(function(item) {
+        msg += 'Product: ' + (item.name || '') + '\n';
+        msg += 'Quantity: ' + (item.quantity || 1) + '\n';
+        if (item.size) msg += 'Size: ' + item.size + '\n';
+        if (item.color) msg += 'Color: ' + item.color + '\n';
+        msg += 'Price: Ksh ' + ((item.price || 0)).toLocaleString() + '\n\n';
+    });
+    msg += 'Subtotal: ' + subtotal + '\n';
+    msg += 'Delivery Address: ' + (address || '') + '\n';
+    msg += 'City: ' + (city || '') + '\n';
+    msg += 'Total: ' + total + '\n\n';
+    msg += 'Please confirm availability and share the available payment methods.\n\nThank you.';
+    return 'https://wa.me/254728985417?text=' + encodeURIComponent(msg);
+}
+
+document.getElementById('whatsappChatBtn').addEventListener('click', function() {
+    const addressEl = document.getElementById('checkoutAddress');
+    const cityEl = document.getElementById('checkoutCity');
+    this.href = buildWhatsAppUrl(
+        getCart(),
+        addressEl ? addressEl.value.trim() : '',
+        cityEl ? cityEl.value.trim() : '',
+        document.getElementById('checkoutSubtotal') ? document.getElementById('checkoutSubtotal').textContent.trim() : '',
+        document.getElementById('checkoutDelivery') ? document.getElementById('checkoutDelivery').textContent.trim() : '',
+        document.getElementById('checkoutTotal') ? document.getElementById('checkoutTotal').textContent.trim() : ''
+    );
 });
 
 function renderCheckout() {
