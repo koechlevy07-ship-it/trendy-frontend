@@ -1199,20 +1199,16 @@
         }
 
         function getEffectiveStock(product) {
-            if (product.soldOut) return 0;
             if (product.stock > 0) return product.stock;
             if (product.limitedAvailable && product.limitedPieces > 0) return product.limitedPieces;
             if (product.preOrder) return 999;
-            if (product.inStock) return product.stockThreshold || 5;
             return 0;
         }
 
         function isProductAvailable(product) {
-            if (product.soldOut) return false;
             if (product.stock > 0) return true;
             if (product.limitedAvailable && product.limitedPieces > 0) return true;
             if (product.preOrder) return true;
-            if (product.inStock) return true;
             return false;
         }
 
@@ -2326,15 +2322,16 @@
                 const raw = await res.json();
                 const p = raw.data || raw;
                 currentQVProduct = p;
-                const inStock = !p.soldOut && (p.inStock || p.stock > 0 || p.preOrder || p.limitedAvailable || (p.limitedPieces && p.limitedPieces > 0));
+                const inStock = isProductAvailable(p);
+                const effStock = getEffectiveStock(p);
                 const original = p.originalPrice ? `<span class="original">Ksh ${p.originalPrice.toLocaleString()}</span>` : '';
                 const discount = p.originalPrice && p.originalPrice > p.price
                     ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100)
                     : 0;
                 const discountBadge = discount ? `<span class="discount">${discount}%</span>` : '';
                 const inStockHtml = inStock
-                    ? (p.stock !== undefined && p.stock <= 5 && p.stock > 0
-                        ? `<span class="stock-status low">Only ${p.stock} left</span>`
+                    ? (effStock !== 999 && effStock <= 5 && effStock > 0
+                        ? `<span class="stock-status low">Only ${effStock} left</span>`
                         : '<span class="stock-status in-stock">In Stock</span>')
                     : '<span class="stock-status out">Out of Stock</span>';
                 const rating = p.rating || 0;
@@ -2392,7 +2389,7 @@
                         </div>
                         ${p.flashSale && p.flashSaleEnd && new Date(p.flashSaleEnd) > new Date() ? `<div style="color:var(--error);font-size:0.85rem;font-weight:600;margin:4px 0;">⚡ Flash sale ends: ${new Date(p.flashSaleEnd).toLocaleString()}</div>` : ''}
                         ${p.installmentEligible && p.installmentPrice ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin:4px 0;background:var(--bg-secondary);padding:6px 10px;border-radius:4px;">💳 Lipa Mdogo Mdogo: ${Math.ceil(p.price / p.installmentPrice)}x Ksh ${p.installmentPrice.toLocaleString()}/mo</div>` : ''}
-                        <div class="qv-stock ${inStock ? 'in-stock' : 'out'}">${inStock ? (p.stock ? `${p.stock} available` : 'In Stock') : 'Out of Stock'}</div>
+                        <div class="qv-stock ${inStock ? 'in-stock' : 'out'}">${inStock ? (effStock !== 999 ? `${effStock} available` : 'In Stock') : 'Out of Stock'}</div>
                         ${p.shortDescription ? `<div style="font-size:0.85rem;color:var(--text-secondary);margin:8px 0;">${escHtml(p.shortDescription)}</div>` : ''}
                         ${p.description ? `<div class="qv-desc">${escHtml(p.description)}</div>` : ''}
                         ${p.sizes && p.sizes.length ? `
@@ -2409,7 +2406,7 @@
                             <label>Quantity</label>
                             <div class="qty-selector">
                                 <button class="qty-btn minus">-</button>
-                                <input type="number" id="qvQty" value="1" min="1" max="${inStock ? (p.stock || 99) : 0}" ${!inStock ? 'disabled' : ''} />
+                                <input type="number" id="qvQty" value="1" min="1" max="${inStock ? Math.min(effStock, 99) : 0}" ${!inStock ? 'disabled' : ''} />
                                 <button class="qty-btn plus">+</button>
                             </div>
                         </div>
