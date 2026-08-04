@@ -924,6 +924,7 @@ $('placeOrderBtn')?.addEventListener('click', async function() {
                 county: $('shipCounty').value,
                 city: $('shipCity').value.trim(),
                 street: $('shipStreet').value.trim(),
+                address: $('shipStreet').value.trim(),
                 apartment: $('shipApartment').value.trim(),
                 postalCode: $('shipPostalCode').value.trim(),
                 deliveryInstructions: $('shipInstructions').value.trim()
