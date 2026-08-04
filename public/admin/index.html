@@ -1566,8 +1566,9 @@
                         </div>
                     </div>
                     <div class="detail-section">
-                        <h4>Payment Methods Configuration</h4>
-                        <div class="form-grid">
+                        <details style="border:none;background:transparent;">
+                            <summary style="cursor:pointer;font-weight:600;color:var(--text-primary);">Payment gateway credentials (M-Pesa, Stripe, PayPal, Visa, Mastercard, Bank Transfer)</summary>
+                            <div class="form-grid" style="margin-top:12px;">
                             <!-- M-Pesa -->
                             <div class="detail-section" style="margin:0;padding:16px;background:var(--bg-primary);border-radius:var(--radius-sm);">
                                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
@@ -1617,7 +1618,8 @@
                             <div class="detail-section" style="margin:0;padding:16px;background:var(--bg-primary);border-radius:var(--radius-sm);">
                                 <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="payCodEnabled" /> <strong>Cash on Delivery</strong></label>
                             </div>
-                        </div>
+                            </div>
+                        </details>
                     </div>
                 </div>
 
