@@ -1486,17 +1486,20 @@ document.getElementById('checkoutForm').addEventListener('submit', async functio
     const items = getCart();
     if (!items.length) { showToast('Cart is empty', 'error'); return; }
 
-    // WhatsApp Ordering: take the customer straight to the WhatsApp chat instead of submitting to the API
+    const addressEl = document.getElementById('checkoutAddress');
+    const cityEl = document.getElementById('checkoutCity');
+
+    // WhatsApp Ordering: take the customer straight to the WhatsApp chat instead of submitting to the API.
+    // Not gated by shipping fields — details are confirmed in the chat.
     if ((document.getElementById('checkoutPayment')?.value || '') === 'whatsapp') {
-        const nameEl = document.getElementById('checkoutName');
-        const phoneEl = document.getElementById('checkoutPhone');
-        const addressEl = document.getElementById('checkoutAddress');
-        const cityEl = document.getElementById('checkoutCity');
-        if (!nameEl.value.trim() || !phoneEl.value.trim() || !addressEl.value.trim() || !cityEl.value.trim()) {
-            showToast('Please fill all required fields', 'error');
-            return;
-        }
-        window.open(buildWhatsAppUrl(getCart(), addressEl.value.trim(), cityEl.value.trim(), document.getElementById('checkoutSubtotal') ? document.getElementById('checkoutSubtotal').textContent.trim() : '', document.getElementById('checkoutDelivery') ? document.getElementById('checkoutDelivery').textContent.trim() : '', document.getElementById('checkoutTotal') ? document.getElementById('checkoutTotal').textContent.trim() : ''), '_blank');
+        window.open(buildWhatsAppUrl(getCart(), addressEl ? addressEl.value.trim() : '', cityEl ? cityEl.value.trim() : '', document.getElementById('checkoutSubtotal') ? document.getElementById('checkoutSubtotal').textContent.trim() : '', document.getElementById('checkoutDelivery') ? document.getElementById('checkoutDelivery').textContent.trim() : '', document.getElementById('checkoutTotal') ? document.getElementById('checkoutTotal').textContent.trim() : ''), '_blank');
+        return;
+    }
+
+    const nameEl = document.getElementById('checkoutName');
+    const phoneEl = document.getElementById('checkoutPhone');
+    if (!nameEl?.value.trim() || !phoneEl?.value.trim() || !addressEl?.value.trim() || !cityEl?.value.trim()) {
+        showToast('Please fill all required fields', 'error');
         return;
     }
 

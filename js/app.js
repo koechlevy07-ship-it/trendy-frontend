@@ -1395,14 +1395,16 @@
             const address = checkoutAddress.value.trim();
             const city = checkoutCity.value.trim();
             const postcode = document.getElementById('checkoutPostcode')?.value.trim() || '';
-            if (!name || !phone || !address || !city) {
-                showToast('⚠️ Please fill all required fields', 'error');
+
+            // WhatsApp Ordering: take the customer straight to the WhatsApp chat instead of submitting to the API.
+            // Not gated by shipping fields — details are confirmed in the chat.
+            if (checkoutPayment.value === 'whatsapp') {
+                window.open(buildWhatsAppUrl(cartItems, address, city, checkoutSubtotal.textContent.trim(), checkoutDelivery.textContent.trim(), checkoutTotal.textContent.trim()), '_blank');
                 return;
             }
 
-            // WhatsApp Ordering: take the customer straight to the WhatsApp chat instead of submitting to the API
-            if (checkoutPayment.value === 'whatsapp') {
-                window.open(buildWhatsAppUrl(cartItems, address, city, checkoutSubtotal.textContent.trim(), checkoutDelivery.textContent.trim(), checkoutTotal.textContent.trim()), '_blank');
+            if (!name || !phone || !address || !city) {
+                showToast('⚠️ Please fill all required fields', 'error');
                 return;
             }
 
