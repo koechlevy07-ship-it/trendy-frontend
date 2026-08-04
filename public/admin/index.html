@@ -1544,6 +1544,27 @@
 
                 <!-- PAYMENTS TAB -->
                 <div class="system-tab-panel" id="sysTab-payments">
+                    <div class="detail-section" style="margin-bottom:24px;">
+                        <h4>Storefront Payment Methods</h4>
+                        <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 12px;">Only the methods enabled here are shown on the customer storefront checkout. M-Pesa, Card, and Bank Transfer are hidden by default — enable them anytime to display them to customers again.</p>
+                        <div class="form-grid">
+                            <div class="detail-section" style="margin:0;padding:16px;background:var(--bg-primary);border-radius:var(--radius-sm);">
+                                <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="payStoreCash" checked /> <strong>Cash on Delivery</strong></label>
+                            </div>
+                            <div class="detail-section" style="margin:0;padding:16px;background:var(--bg-primary);border-radius:var(--radius-sm);">
+                                <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="payStoreWhatsapp" checked /> <strong>WhatsApp Ordering</strong></label>
+                            </div>
+                            <div class="detail-section" style="margin:0;padding:16px;background:var(--bg-primary);border-radius:var(--radius-sm);">
+                                <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="payStoreMpesa" /> <strong>M-Pesa</strong></label>
+                            </div>
+                            <div class="detail-section" style="margin:0;padding:16px;background:var(--bg-primary);border-radius:var(--radius-sm);">
+                                <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="payStoreCard" /> <strong>Card Payment</strong></label>
+                            </div>
+                            <div class="detail-section" style="margin:0;padding:16px;background:var(--bg-primary);border-radius:var(--radius-sm);">
+                                <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="payStoreBank" /> <strong>Bank Transfer</strong></label>
+                            </div>
+                        </div>
+                    </div>
                     <div class="detail-section">
                         <h4>Payment Methods Configuration</h4>
                         <div class="form-grid">
@@ -3396,6 +3417,12 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
 
                 /* Payments tab */
                 const pm = set.paymentMethods || {};
+                const sm = (set.storefrontPaymentMethods && typeof set.storefrontPaymentMethods === 'object') ? set.storefrontPaymentMethods : {};
+                cb('payStoreCash', sm.cash !== false);
+                cb('payStoreWhatsapp', sm.whatsapp !== false);
+                cb('payStoreMpesa', !!sm.mpesa);
+                cb('payStoreCard', !!sm.card);
+                cb('payStoreBank', !!sm.bank);
                 cb('payMpesaEnabled',pm.mpesa?.enabled);
                 cb('payStripeEnabled',pm.stripe?.enabled);
                 fv('payStripePublishableKey',pm.stripe?.publishableKey||'');
@@ -3553,15 +3580,22 @@ const pageTitles = { dashboard:'Dashboard', products:'Products', categories:'Cat
                     announcementBarEnabled: gc('announcementEnabled'),
                     announcementBarText: gv('announcementText'),
                     cookieNoticeEnabled: gc('cookieNoticeEnabled'),
-                    paymentMethods: {
-                        mpesa: { enabled: gc('payMpesaEnabled') },
-                        stripe: { enabled: gc('payStripeEnabled'), publishableKey: gv('payStripePublishableKey'), secretKey: gv('payStripeSecretKey') },
-                        paypal: { enabled: gc('payPaypalEnabled'), clientId: gv('payPaypalClientId'), secret: gv('payPaypalSecret') },
-                        visa: { enabled: gc('payVisaEnabled') },
-                        mastercard: { enabled: gc('payMastercardEnabled') },
-                        bankTransfer: { enabled: gc('payBankTransferEnabled'), bankName: gv('payBankName'), accountNumber: gv('payBankAccountNumber'), accountName: gv('payBankAccountName') },
-                        cod: { enabled: gc('payCodEnabled') }
-                    }
+paymentMethods: {
+mpesa: { enabled: gc('payMpesaEnabled') },
+stripe: { enabled: gc('payStripeEnabled'), publishableKey: gv('payStripePublishableKey'), secretKey: gv('payStripeSecretKey') },
+paypal: { enabled: gc('payPaypalEnabled'), clientId: gv('payPaypalClientId'), secret: gv('payPaypalSecret') },
+visa: { enabled: gc('payVisaEnabled') },
+mastercard: { enabled: gc('payMastercardEnabled') },
+bankTransfer: { enabled: gc('payBankTransferEnabled'), bankName: gv('payBankName'), accountNumber: gv('payBankAccountNumber'), accountName: gv('payBankAccountName') },
+cod: { enabled: gc('payCodEnabled') }
+},
+storefrontPaymentMethods: {
+cash: gc('payStoreCash'),
+whatsapp: gc('payStoreWhatsapp'),
+mpesa: gc('payStoreMpesa'),
+card: gc('payStoreCard'),
+bank: gc('payStoreBank')
+}
                 };
                 const securityPayload = {
                     passwordMinLength: parseInt(gv('secPasswordMinLength'))||8,

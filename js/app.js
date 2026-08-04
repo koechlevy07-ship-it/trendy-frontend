@@ -4,6 +4,26 @@
         window.API_URL = window.API_URL || 'https://trendy-backend-jq27.onrender.com/api';
         const IMAGE_BASE = window.API_URL.replace('/api', '');
 
+        // Storefront payment methods from admin settings (default: cash + whatsapp)
+        async function loadStorefrontPaymentMethods() {
+            try {
+                const select = document.getElementById('checkoutPayment');
+                if (!select) return;
+                const res = await fetch(`${window.API_URL}/settings/payment-methods`);
+                const json = await res.json();
+                const methods = (json && json.data) || [];
+                if (!methods.length) return;
+                const current = select.value;
+                select.innerHTML = methods.map(m => `<option value="${m.value}">${m.label}</option>`).join('');
+                if (methods.some(m => m.value === current)) select.value = current;
+            } catch (e) { /* keep current options */ }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadStorefrontPaymentMethods);
+        } else {
+            loadStorefrontPaymentMethods();
+        }
+
         // SECURITY: XSS prevention — escape HTML entities
         function escHtml(str) {
             if (str == null) return '';

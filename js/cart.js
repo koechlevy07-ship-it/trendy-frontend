@@ -980,6 +980,21 @@ $('checkoutPayment')?.addEventListener('change', function() {
     if (wa) wa.style.display = this.value === 'whatsapp' ? 'block' : 'none';
 });
 
+async function loadStorefrontPaymentMethods() {
+    try {
+        const select = document.getElementById('checkoutPayment');
+        if (!select) return;
+        const res = await fetch(`${API_URL}/settings/payment-methods`);
+        const json = await res.json();
+        const methods = (json && json.data) || [];
+        if (!methods.length) return;
+        const current = select.value;
+        select.innerHTML = methods.map(m => `<option value="${m.value}">${m.label}</option>`).join('');
+        if (methods.some(m => m.value === current)) select.value = current;
+    } catch (e) { /* keep current options */ }
+}
+document.addEventListener('DOMContentLoaded', loadStorefrontPaymentMethods);
+
 function buildWhatsAppUrl(items, address, city, subtotal, delivery, total) {
     let msg = 'Hello Trendy Wardrobe,\n\nI would like to place an order.\n\nOrder details:\n\n';
     (items || []).forEach(function(item) {

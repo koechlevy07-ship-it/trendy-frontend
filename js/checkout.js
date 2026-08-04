@@ -520,17 +520,16 @@ async function loadPaymentMethods() {
         if (methods.length === 0) throw new Error('No methods');
 
         const iconMap = {
-            'cash-on-delivery': { icon: 'fas fa-money-bill-wave', desc: 'Pay when you receive your order' },
-            'm-pesa': { icon: 'fas fa-mobile-alt', desc: 'Pay via M-Pesa mobile money' },
-            'card-payment': { icon: 'fas fa-credit-card', desc: 'Visa, Mastercard, or Maestro' },
-            'paypal': { icon: 'fab fa-cc-paypal', desc: 'Pay with your PayPal account' },
-            'stripe': { icon: 'fab fa-cc-stripe', desc: 'Secure card payment via Stripe' },
-            'bank-transfer': { icon: 'fas fa-university', desc: 'Direct bank transfer' }
+            'cash': { icon: 'fas fa-money-bill-wave', desc: 'Pay when you receive your order' },
+            'whatsapp': { icon: 'fab fa-whatsapp', desc: 'Order via WhatsApp and confirm details with us' },
+            'mpesa': { icon: 'fas fa-mobile-alt', desc: 'Pay via M-Pesa mobile money' },
+            'card': { icon: 'fas fa-credit-card', desc: 'Visa, Mastercard, or Maestro' },
+            'bank': { icon: 'fas fa-university', desc: 'Direct bank transfer' }
         };
 
         container.innerHTML = methods.map((method, idx) => {
             const info = iconMap[method.id] || { icon: 'fas fa-credit-card', desc: 'Pay securely' };
-            const isDefault = method.id === 'cash-on-delivery' || method.id === 'm-pesa';
+            const isDefault = method.id === 'cash' || method.id === 'whatsapp';
             return `
                 <label class="payment-method ${idx === 0 ? 'selected' : ''}">
                     <input type="radio" name="payment" value="${method.id}" ${idx === 0 ? 'checked' : ''} />
@@ -559,10 +558,8 @@ async function loadPaymentMethods() {
     } catch(e) {
         // Fallback hardcoded
         const fallback = [
-            { id: 'cash-on-delivery', label: 'Cash on Delivery', icon: 'fas fa-money-bill-wave', desc: 'Pay when you receive' },
-            { id: 'm-pesa', label: 'M-Pesa', icon: 'fas fa-mobile-alt', desc: 'Pay via M-Pesa' },
-            { id: 'card-payment', label: 'Card Payment', icon: 'fas fa-credit-card', desc: 'Visa, Mastercard' },
-            { id: 'paypal', label: 'PayPal', icon: 'fab fa-cc-paypal', desc: 'PayPal account' }
+            { id: 'cash', label: 'Cash on Delivery', icon: 'fas fa-money-bill-wave', desc: 'Pay when you receive' },
+            { id: 'whatsapp', label: 'WhatsApp Ordering', icon: 'fab fa-whatsapp', desc: 'Order via WhatsApp' }
         ];
         container.innerHTML = fallback.map((m, idx) => `
             <label class="payment-method ${idx === 0 ? 'selected' : ''}">
@@ -573,7 +570,7 @@ async function loadPaymentMethods() {
                     <div class="payment-method-desc">${m.desc}</div>
                 </div>
             </label>`).join('');
-        selectPaymentMethod('cash-on-delivery', 'Cash on Delivery');
+        selectPaymentMethod('cash', 'Cash on Delivery');
         container.querySelectorAll('input[name="payment"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 container.querySelectorAll('.payment-method').forEach(o => o.classList.remove('selected'));
@@ -587,7 +584,7 @@ async function loadPaymentMethods() {
 function selectPaymentMethod(id, label) {
     selectedPayment = { id, label };
     const mpesaSection = $('mpesaPhoneSection');
-    if (mpesaSection) mpesaSection.style.display = id === 'm-pesa' ? 'block' : 'none';
+    if (mpesaSection) mpesaSection.style.display = id === 'mpesa' ? 'block' : 'none';
 }
 
 // Coupon
@@ -845,7 +842,37 @@ $('placeOrderBtn')?.addEventListener('click', async function() {
     if (this.disabled) return;
     if (!isLoggedIn()) { showToast('Please sign in', 'error'); return; }
 
-    const isMpesa = selectedPayment?.id === 'm-pesa';
+    const isMpesa = selectedPayment?.id === 'mpesa';
+
+    // WhatsApp Ordering: open WhatsApp chat instead of submitting to the API.
+    if (selectedPayment?.id === 'whatsapp') {
+        const subtotal = checkoutData?.subtotal || 0;
+        const deliveryFee = selectedDelivery?.fee || 0;
+        const discount = appliedCoupon?.discount || 0;
+        const giftCardAmount = appliedGiftCard?.applyAmount || 0;
+        const loyaltyAmount = appliedLoyalty?.amount || 0;
+        const total = Math.max(0, subtotal + deliveryFee - discount - giftCardAmount - loyaltyAmount);
+        const street = $('shipStreet')?.value?.trim() || '';
+        const apartment = $('shipApartment')?.value?.trim() || '';
+        const city = $('shipCity')?.value?.trim() || '';
+        const county = $('shipCounty')?.value || '';
+        let msg = 'Hello Trendy Wardrobe,\n\nI would like to place an order.\n\nOrder details:\n\n';
+        (cartItems || []).forEach(function(item) {
+            msg += 'Product: ' + (item.name || '') + '\n';
+            msg += 'Quantity: ' + (item.quantity || 1) + '\n';
+            if (item.size) msg += 'Size: ' + item.size + '\n';
+            if (item.color) msg += 'Color: ' + item.color + '\n';
+            msg += 'Price: Ksh ' + ((item.price || 0)).toLocaleString() + '\n\n';
+        });
+        msg += 'Subtotal: ' + (subtotal ? 'Ksh ' + subtotal.toLocaleString() : 'Ksh 0') + '\n';
+        const addrParts = [street, apartment].filter(Boolean).join(', ');
+        if (addrParts) msg += 'Delivery Address: ' + addrParts + '\n';
+        if (city) msg += 'City: ' + city + (county ? ', ' + county : '') + '\n';
+        msg += 'Total: ' + (total ? 'Ksh ' + total.toLocaleString() : 'Ksh 0') + '\n\n';
+        msg += 'Please confirm availability and share the available payment methods.\n\nThank you.';
+        window.open('https://wa.me/254728985417?text=' + encodeURIComponent(msg), '_blank');
+        return;
+    }
 
     if (isMpesa) {
         const phone = $('mpesaPhoneInput')?.value?.trim() || $('shipPhone')?.value?.trim() || '';
@@ -908,7 +935,7 @@ $('placeOrderBtn')?.addEventListener('click', async function() {
                 estimatedDays: selectedDelivery?.estimatedDays || '3-7 business days',
                 provider: selectedDelivery?.provider || ''
             },
-            paymentMethod: selectedPayment?.id || 'cash-on-delivery',
+            paymentMethod: selectedPayment?.id || 'cash',
             couponCode: appliedCoupon?.code || undefined,
             couponDiscount: discount || undefined,
             giftCardCode: appliedGiftCard?.code || undefined,
