@@ -63,6 +63,7 @@ function showSection(id) {
     if (id === 'loyalty') loadLoyalty();
     if (id === 'coupons') loadCoupons('available');
     if (id === 'settings') loadSettings();
+    if (id === 'security') loadSecurityData();
 }
 
 // ---- Init ----
@@ -106,7 +107,8 @@ async function loadProfile() {
         loadPaymentMethods(),
         loadLoyalty(),
         loadCoupons('available'),
-        loadSettings()
+        loadSettings(),
+        loadSecurityData()
     ]);
 }
 
@@ -452,13 +454,13 @@ function renderTickets() {
 }
 
 window.viewTicket = function(id) {
-    // Could open a modal or navigate to a detail page
-    window.location.href = `/contact.html?ticket=${id}`;
+    const t = tickets.find(x => x._id === id);
+    window.location.href = `/contact.html?ticket=${encodeURIComponent(t ? (t.ticketId || id) : id)}`;
 };
 
 window.replyToTicket = function(id) {
-    // Could open a modal to reply
-    window.location.href = `/contact.html?reply=${id}`;
+    const t = tickets.find(x => x._id === id);
+    window.location.href = `/contact.html?reply=${encodeURIComponent(t ? (t.ticketId || id) : id)}`;
 };
 
 // ---- Notifications ----
@@ -497,8 +499,7 @@ function renderNotifications() {
 }
 
 function renderNotifPrefs(prefs) {
-    const container = $('anPrefs');
-    if (!container || !prefs) return;
+    if (!prefs) return;
     const items = [
         { key: 'orderUpdates', label: 'Order updates & delivery status' },
         { key: 'promotions', label: 'Promotions & offers' },
@@ -506,9 +507,13 @@ function renderNotifPrefs(prefs) {
         { key: 'priceDrops', label: 'Price drop notifications' },
         { key: 'newsletter', label: 'Newsletter' }
     ];
-    container.innerHTML = items.map(i => `
+    const html = items.map(i => `
         <label><input type="checkbox" ${prefs[i.key] ? 'checked' : ''} data-key="${i.key}" onchange="updateNotifPref(this)" /> ${i.label}</label>
     `).join('');
+    const container = $('anPrefs');
+    if (container) container.innerHTML = html;
+    const settingsContainer = $('anPrefsSettings');
+    if (settingsContainer) settingsContainer.innerHTML = html;
 }
 
 window.markNotifRead = async function(id) {
@@ -589,27 +594,44 @@ $('accProfileForm')?.addEventListener('submit', async (e) => {
 $('apCancelBtn')?.addEventListener('click', () => renderProfile());
 
 // ---- Photo Upload ----
+const CLOUDINARY_CONFIG = {
+    cloudName: 'vbnlibtl',
+    uploadPreset: 'trendy-wardrobe',
+    baseUrl: 'https://res.cloudinary.com/vbnlibtl/image/upload'
+};
+
+async function uploadToCloudinary(file) {
+    const preset = CLOUDINARY_CONFIG.uploadPreset;
+    if (!preset) throw new Error('Cloudinary upload preset not configured');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', preset);
+    const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`;
+    const res = await fetch(url, { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || 'Cloudinary upload failed');
+    return data.secure_url;
+}
+
 $('accPhotoUploadBtn')?.addEventListener('click', () => $('accPhotoInput')?.click());
 $('accPhotoInput')?.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    // Upload to Cloudinary or save as data URL
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-        const dataUrl = ev.target.result;
-        try {
-            const res = await authFetch(`${API_URL}/users/profile`, {
-                method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ profilePhoto: dataUrl })
-            });
-            if (!res.ok) throw new Error('Failed');
-            const d = await res.json();
-            profileData = d.data || d;
-            renderProfile();
-            showToast('Photo updated', 'success');
-        } catch(err) { showToast('Could not update photo', 'error'); }
-    };
-    reader.readAsDataURL(file);
+    try {
+        const photoUrl = await uploadToCloudinary(file);
+        const res = await authFetch(`${API_URL}/users/profile`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ profilePhoto: photoUrl })
+        });
+        if (!res.ok) throw new Error('Failed');
+        const d = await res.json();
+        profileData = d.data || d;
+        localStorage.setItem('user', JSON.stringify(profileData));
+        renderProfile();
+        showToast('Photo updated', 'success');
+    } catch(err) {
+        showToast(err.message === 'Cloudinary upload preset not configured' ? 'Photo upload unavailable' : 'Could not update photo', 'error');
+    }
 });
 
 // ---- Password Change ----
@@ -685,6 +707,7 @@ $('asDelForm')?.addEventListener('submit', async (e) => {
 
 // ---- Setup Forms ----
 function setupForms() {
+    // Wire form listeners (defined at top-level below)
 }
 
 // ---- Navigation Setup ----
@@ -724,11 +747,6 @@ function setupNavigation() {
             loadCoupons(tab.dataset.couponTab);
         });
     });
-}
-
-// ---- Setup Forms ----
-function setupForms() {
-    loadRecentlyViewed();
 }
 
 // ============================================================
@@ -1123,13 +1141,14 @@ async function loadCoupons(tab = 'available') {
     try {
         const res = await authFetch(`${API_URL}/users/coupons?status=${tab}`);
         if (!res.ok) return;
-        coupons = await res.json();
+        const d = await res.json();
+        coupons = d.data || (Array.isArray(d) ? d : []);
         renderCoupons(tab);
     } catch(e) { /* ignore */ }
 }
 
 function renderCoupons(tab) {
-    const container = $('acList');
+    const container = $('acCouponList');
     if (!container) return;
     const filtered = coupons.filter(c => {
         const now = new Date();
@@ -1216,7 +1235,11 @@ async function loadSettings() {
             const pd = await prefRes.json();
             renderNotifPrefs(pd.data || pd);
         }
+    } catch(e) { /* ignore */ }
+}
 
+async function loadSecurityData() {
+    try {
         // Load login history
         const histRes = await authFetch(`${API_URL}/users/login-history`);
         if (histRes.ok) {
@@ -1327,7 +1350,7 @@ window.verify2FACode = async function() {
         if (!res.ok) throw new Error('Invalid code');
         showToast('2FA enabled successfully!', 'success');
         document.querySelector('.acc-overlay')?.remove();
-        await loadSettings();
+        await loadSecurityData();
     } catch(e) { showToast(e.message, 'error'); }
 };
 
@@ -1337,7 +1360,7 @@ $('accDisable2faBtn')?.addEventListener('click', async () => {
         const res = await authFetch(`${API_URL}/users/2fa/disable`, { method: 'POST' });
         if (!res.ok) throw new Error('Failed');
         showToast('2FA disabled', 'info');
-        await loadSettings();
+        await loadSecurityData();
     } catch(e) { showToast(e.message, 'error'); }
 });
 
@@ -1367,17 +1390,9 @@ $('#downloadDataBtn')?.addEventListener('click', async () => {
     } catch(e) { showToast('Could not download data', 'error'); }
 });
 
-$('#deleteAllDataBtn')?.addEventListener('click', async () => {
-    if (!confirm('This will permanently delete ALL your data. This cannot be undone. Type "DELETE" to confirm:')) return;
-    const confirmText = prompt('Type DELETE to confirm:');
-    if (confirmText !== 'DELETE') { showToast('Confirmation failed', 'error'); return; }
-    try {
-        const res = await authFetch(`${API_URL}/users/account`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: '', confirmDelete: true }) });
-        if (!res.ok) throw new Error('Failed');
-        clearAuth();
-        showToast('Account and all data deleted', 'info');
-        window.location.href = '/';
-    } catch(e) { showToast(e.message, 'error'); }
+$('#deleteAllDataBtn')?.addEventListener('click', () => {
+    showSection('security');
+    $('asDeleteBtn')?.click();
 });
 
 // Privacy checkboxes

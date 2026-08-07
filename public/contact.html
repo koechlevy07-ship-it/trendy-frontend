@@ -308,6 +308,7 @@ CONTACT PAGE MAIN CONTENT
             <!-- Form Side -->
             <div class="contact-form-wrap">
                 <h3>Send Us a Message</h3>
+                <div id="ticketContext" style="display:none;background:var(--bg-primary);border:1px solid var(--border-light);border-left:4px solid var(--color-gold);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.85rem;color:var(--text-primary);"></div>
                 <form class="contact-form" id="contactForm">
                     <div class="contact-form-row">
                         <input type="text" id="contactName" placeholder="Your Name" required />
@@ -461,6 +462,20 @@ FOOTER
     var ticketSuccess = document.getElementById('ticketSuccess');
     var ticketNumberEl = document.getElementById('ticketNumber');
     if (!contactForm) return;
+
+    function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    var params = new URLSearchParams(window.location.search);
+    var ticketRef = params.get('ticket') || params.get('reply');
+    var contextEl = document.getElementById('ticketContext');
+    if (ticketRef && contextEl) {
+        contextEl.style.display = 'block';
+        var isReply = !!params.get('reply');
+        contextEl.innerHTML = '<i class="fas fa-ticket-alt" style="margin-right:8px;color:var(--color-gold);"></i>' + (isReply ? 'Replying to ticket <strong>' + esc(ticketRef) + '</strong>. Mention your ticket number in the message below.' : 'Following up on ticket <strong>' + esc(ticketRef) + '</strong>. Mention your ticket number in the message below.');
+        var subjectSel = document.getElementById('contactSubject');
+        if (subjectSel) subjectSel.value = 'General Inquiry';
+        var msgEl = document.getElementById('contactMessage');
+        if (msgEl && !msgEl.value) msgEl.placeholder = 'Regarding my ticket ' + ticketRef + ' ...';
+    }
     contactForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         var name = document.getElementById('contactName').value.trim();

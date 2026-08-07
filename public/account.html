@@ -213,6 +213,7 @@
                         <button class="acc-nav-item" data-section="tickets"><i class="fas fa-ticket-alt"></i> My Tickets</button>
                         <button class="acc-nav-item" data-section="reviews"><i class="fas fa-star"></i> Reviews</button>
                         <button class="acc-nav-item" data-section="notifications"><i class="fas fa-bell"></i> Notifications <span class="acc-nav-badge" id="accNotifBadge" style="display:none;">0</span></button>
+                        <button class="acc-nav-item" data-section="security"><i class="fas fa-shield-alt"></i> Security</button>
                         <button class="acc-nav-item" data-section="payment"><i class="fas fa-credit-card"></i> Payment Methods</button>
                         <button class="acc-nav-item" data-section="loyalty"><i class="fas fa-crown"></i> Loyalty & Rewards</button>
                         <button class="acc-nav-item" data-section="coupons"><i class="fas fa-ticket-alt"></i> Coupons & Vouchers</button>
@@ -495,6 +496,18 @@
                                 <p class="acc-text-muted">No points activity yet.</p>
                             </div>
                         </div>
+                        <div class="acc-loyalty-history" style="margin-top:24px;">
+                            <h3>Available Rewards</h3>
+                            <div id="accAvailableRewards" class="acc-rewards-list"></div>
+                        </div>
+                        <div class="acc-loyalty-history" style="margin-top:24px;">
+                            <h3>Referrals</h3>
+                            <div id="accReferrals" class="acc-referrals-list"></div>
+                        </div>
+                        <div class="acc-loyalty-history" style="margin-top:24px;">
+                            <h3>Achievements</h3>
+                            <div id="accAchievements" class="acc-achievements-list"></div>
+                        </div>
                     </section>
 
                     <!-- ===== COUPONS & VOUCHERS ===== -->
@@ -505,7 +518,7 @@
                             <button class="acc-coupon-tab" data-coupon-tab="used">Used</button>
                             <button class="acc-coupon-tab" data-coupon-tab="expired">Expired</button>
                         </div>
-                        <div id="acList" class="acc-coupon-list">
+                        <div id="acCouponList" class="acc-coupon-list">
                             <div class="acc-loading" style="text-align:center;padding:40px;"><div class="acc-loading-spinner"><i class="fas fa-spinner fa-spin"></i></div><p>Loading coupons...</p></div>
                         </div>
                     </section>
@@ -516,7 +529,7 @@
                         <div class="acc-settings-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
                             <div class="acc-settings-card">
                                 <h3><i class="fas fa-bell"></i> Notification Preferences</h3>
-                                <div id="anPrefs" class="acc-prefs-grid"></div>
+                                <div id="anPrefsSettings" class="acc-prefs-grid"></div>
                             </div>
                             <div class="acc-settings-card">
                                 <h3><i class="fas fa-palette"></i> Display Preferences</h3>
