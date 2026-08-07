@@ -1080,7 +1080,8 @@
             padding-bottom: 120%;
             background-size: cover;
             background-position: center top;
-            animation: kenBurnsMobile 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.4s infinite alternate;
+            animation: heroBgReveal 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+                       kenBurnsMobile 10s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.4s infinite alternate;
         }
         @keyframes kenBurnsMobile {
             0% { transform: translateZ(0) scale(1); }
