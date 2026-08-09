@@ -1186,7 +1186,7 @@
                 await fetch(`${API_URL}/cart/sync`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ items: cartItems.map(i => ({ product: i.id, quantity: i.quantity })) })
+                    body: JSON.stringify({ items: cartItems.map(i => ({ productId: i.productId?._id || i.productId || i.id, quantity: i.quantity })) })
                 });
             } catch (e) { console.warn('Cart sync failed', e); }
         }
@@ -1199,11 +1199,13 @@
                 const data = await res.json();
                 if (data.items && data.items.length > 0) {
                     cartItems = data.items.map(i => ({
-                        id: i.product?._id || i.product,
-                        name: i.product?.name || 'Unknown',
-                        price: i.product?.price || 0,
+                        id: i.productId?._id || i.productId || i.id,
+                        name: i.name || i.product?.name || 'Unknown',
+                        price: i.price || i.product?.price || 0,
                         quantity: i.quantity,
-                        image: i.product?.images?.[0] || ''
+                        size: i.size || '',
+                        color: i.color || '',
+                        image: i.image || i.product?.images?.[0] || ''
                     }));
                     saveCart();
                 }
@@ -1448,7 +1450,7 @@
 
             const orderData = {
                 items: cartItems.map(item => ({
-                    productId: item.id,
+                    productId: item.productId?._id || item.productId || item.id,
                     name: item.name,
                     quantity: item.quantity,
                     price: item.price,

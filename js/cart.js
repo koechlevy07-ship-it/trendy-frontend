@@ -1108,7 +1108,7 @@ $('checkoutForm')?.addEventListener('submit', async function(e) {
         }
 
         const orderData = {
-            items: items.map(i => ({ productId: i.id, name: i.name, quantity: i.quantity || 1, price: i.price || 0, size: i.size || undefined, color: i.color || undefined })),
+            items: items.map(i => ({ productId: i.productId?._id || i.productId || i.id, name: i.name, quantity: i.quantity || 1, price: i.price || 0, size: i.size || undefined, color: i.color || undefined })),
             shippingAddress: {
                 fullName: $('checkoutName').value.trim(),
                 phone: $('checkoutPhone').value.trim(),

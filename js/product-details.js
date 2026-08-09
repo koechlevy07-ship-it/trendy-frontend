@@ -1538,7 +1538,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async functio
 
         const orderData = {
             items: items.map(item => ({
-                productId: item.id,
+                productId: item.productId?._id || item.productId || item.id,
                 name: item.name,
                 quantity: item.quantity || 1,
                 price: item.price || 0,

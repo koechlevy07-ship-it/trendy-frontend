@@ -899,7 +899,7 @@ $('placeOrderBtn')?.addEventListener('click', async function() {
 
     try {
         const items = cartItems.map(i => ({
-            productId: i.id,
+            productId: i.productId?._id || i.productId || i.id,
             name: i.name,
             quantity: i.quantity || 1,
             price: i.price || 0,
